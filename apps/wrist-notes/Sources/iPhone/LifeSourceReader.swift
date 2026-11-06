@@ -1,0 +1,411 @@
+import CoreLocation
+import EventKit
+import HealthKit
+import Foundation
+
+/// One independent worker serves both async foreground preparation and the cold-background
+/// launch barrier. Waiting never depends on a Task that needs the blocked MainActor to resume.
+private final class LifeHealthStorePreparation: @unchecked Sendable {
+    private let condition = NSCondition()
+    private let factory: @Sendable () -> HKHealthStore?
+    private var started = false
+    private var finished = false
+    private var store: HKHealthStore?
+    private var waiters: [CheckedContinuation<HKHealthStore?, Never>] = []
+
+    init(factory: @escaping @Sendable () -> HKHealthStore?) { self.factory = factory }
+    var hasStarted: Bool { condition.lock(); defer { condition.unlock() }; return started }
+
+    func start() {
+        condition.lock()
+        guard !started else { condition.unlock(); return }
+        started = true
+        condition.unlock()
+        DispatchQueue.global(qos: .userInitiated).async {
+            let value = self.factory()
+            self.condition.lock()
+            self.store = value; self.finished = true
+            let waiters = self.waiters; self.waiters.removeAll()
+            self.condition.broadcast()
+            self.condition.unlock()
+            waiters.forEach { $0.resume(returning: value) }
+        }
+    }
+
+    func value() async -> HKHealthStore? {
+        start()
+        return await withCheckedContinuation { continuation in
+            condition.lock()
+            if finished {
+                let value = store
+                condition.unlock()
+                continuation.resume(returning: value)
+            } else {
+                waiters.append(continuation)
+                condition.unlock()
+            }
+        }
+    }
+
+    func waitForBackgroundLaunch() -> HKHealthStore? {
+        start()
+        condition.lock()
+        defer { condition.unlock() }
+        while !finished { condition.wait() }
+        return store
+    }
+}
+
+/// Read APIs only. Observation is explicitly started from the persisted source setting.
+@MainActor
+final class LifeSourceReader: NSObject, CLLocationManagerDelegate, LifeSourceReading {
+    var onLocationAuthorizationChange: (() -> Void)?
+    private let healthPreparation: LifeHealthStorePreparation
+    private var health: HKHealthStore?
+    private let events = EKEventStore()
+    private let location = CLLocationManager()
+    private var locationWaiters: [CheckedContinuation<CLLocation, Error>] = []
+    private var timeout: Task<Void, Never>?
+    private var healthObservers: [HKObserverQuery] = []
+    private var observationID = UUID()
+    private var observationError: ((Error) -> Void)?
+    private var observationChange: ((@escaping () -> Void) -> Void)?
+    private var backgroundDeliveryTask: Task<Void, Never>?
+    private var configuredBackgroundGeneration: UUID?
+    private var healthReadCancellations: [UUID: () -> Void] = [:]
+    private var healthReadGeneration = UUID()
+    private var locationServicesEnabled: Bool?
+    private var locationAvailabilityTask: Task<Void, Never>?
+
+    private var observedHealthTypes: [HKSampleType] { [HKQuantityType(.stepCount), HKCategoryType(.sleepAnalysis), HKObjectType.workoutType()] }
+
+    override convenience init() {
+        self.init(healthFactory: { HKHealthStore.isHealthDataAvailable() ? HKHealthStore() : nil })
+    }
+    init(healthFactory: @escaping @Sendable () -> HKHealthStore?) {
+        healthPreparation = LifeHealthStorePreparation(factory: healthFactory)
+        super.init()
+        location.delegate = self; location.desiredAccuracy = kCLLocationAccuracyHundredMeters
+    }
+    private func preparedHealth() async throws -> HKHealthStore {
+        try Task.checkCancellation()
+        if let health { return health }
+        let prepared = await healthPreparation.value()
+        try Task.checkCancellation()
+        guard let prepared else { throw failure(.unavailable, "此设备不支持 Apple 健康。") }
+        health = prepared
+        return prepared
+    }
+    func authorize(_ source: LifeSource) async throws {
+        switch source {
+        case .health:
+            let generation = healthReadGeneration
+            let health = try await preparedHealth()
+            guard healthReadGeneration == generation else { throw CancellationError() }
+            // HealthKit deliberately hides read authorization. Success means the prompt completed only.
+            try await health.requestAuthorization(toShare: [], read: Set(observedHealthTypes).union([HKQuantityType(.activeEnergyBurned)]))
+        case .calendar:
+            if EKEventStore.authorizationStatus(for: .event) == .notDetermined { _ = try await events.requestFullAccessToEvents() }
+            try checkCalendar()
+        case .location:
+            refreshLocationAvailability()
+            await locationAvailabilityTask?.value
+            try Task.checkCancellation()
+            if location.authorizationStatus == .notDetermined { location.requestWhenInUseAuthorization() }
+            else { try checkLocation() }
+        }
+    }
+    func read(_ source: LifeSource, day: Date, calendar: Calendar = .current) async throws -> [DayRecord] {
+        let interval = LifeAggregation.dayInterval(day, calendar: calendar)
+        switch source {
+        case .health:
+            try Task.checkCancellation()
+            let steps = try await stepCount(interval)
+            try Task.checkCancellation()
+            let start = calendar.date(byAdding: .day, value: -1, to: interval.start)!
+            let end = calendar.date(byAdding: .day, value: 1, to: interval.end)!
+            let sleep = try await sleepSamples(.init(start: start, end: end))
+            try Task.checkCancellation()
+            let workouts = try await workoutSamples(interval)
+            return LifeMomentBuilder.workouts(workouts, day: day, now: .now, calendar: calendar) + LifeMomentBuilder.health(day: day, steps: steps, samples: sleep, now: .now, calendar: calendar)
+        case .calendar:
+            try checkCalendar()
+            let found = events.events(matching: events.predicateForEvents(withStart: interval.start, end: interval.end, calendars: nil))
+            return found.filter { $0.status != .canceled && $0.startDate < interval.end && $0.endDate > interval.start }.map { event in
+                let key = event.calendarItemIdentifier + "|" + (event.occurrenceDate.map { String($0.timeIntervalSince1970) } ?? "single")
+                let time = event.isAllDay ? "全天" : event.startDate.formatted(date: .omitted, time: .shortened) + "–" + event.endDate.formatted(date: .omitted, time: .shortened)
+                let title = event.title?.isEmpty == false ? event.title! : "未命名日程"
+                return DayRecord(id: LifeAggregation.recordID(source: .calendar, key: key, day: interval.start), capturedAt: max(interval.start, event.startDate), kind: .calendar, title: title,
+                    text: "日历：\(event.calendar.title) · \(time)\n\(title)" + (event.location.map { "\n地点：\($0)" } ?? ""))
+            }
+        case .location: return [] // Location is attached only after a record is saved.
+        }
+    }
+    func oneShotLocation() async throws -> LifeCoordinate {
+        refreshLocationAvailability()
+        await locationAvailabilityTask?.value
+        try Task.checkCancellation()
+        try checkLocation()
+        let value: CLLocation = try await withCheckedThrowingContinuation { continuation in
+            locationWaiters.append(continuation)
+            guard locationWaiters.count == 1 else { return }
+            location.requestLocation()
+            timeout = Task { [weak self] in
+                try? await Task.sleep(for: .seconds(20))
+                guard !Task.isCancelled else { return }
+                self?.finishLocation(.failure(self?.failure(.error, "定位超时，请在前台保存下一条记录时重试。") ?? CancellationError()))
+            }
+        }
+        return LifeCoordinate(latitude: value.coordinate.latitude, longitude: value.coordinate.longitude, accuracy: value.horizontalAccuracy)
+    }
+    func locationAvailabilityIssue() -> LifeSourceReadFailure? {
+        // Foreground refresh also rechecks the global switch asynchronously when authorization
+        // is denied. The synchronous status path only reads CLLocationManager's cached status.
+        refreshLocationAvailability()
+        do { try checkLocation(); return nil }
+        catch { return error as? LifeSourceReadFailure }
+    }
+    func stop(_ source: LifeSource) {
+        if source == .health {
+            healthReadGeneration = UUID()
+            let cancellations = Array(healthReadCancellations.values)
+            healthReadCancellations.removeAll()
+            cancellations.forEach { $0() }
+        }
+        if source == .location { location.stopUpdatingLocation(); finishLocation(.failure(CancellationError())) }
+    }
+
+    func startHealthObservation(onChange: @escaping (@escaping () -> Void) -> Void, onError: @escaping (Error) -> Void) {
+        guard observationChange == nil else { return }
+        observationID = UUID(); observationError = onError; observationChange = onChange
+        // Start independently of view presentation, but leave normal app launch nonblocking.
+        healthPreparation.start()
+        if let health { installHealthObservers(using: health) }
+        reconcileBackgroundDelivery()
+    }
+
+    func finishHealthObservationForBackgroundLaunch() {
+        guard observationChange != nil else { return }
+        // HealthKit cold background launches require observers before didFinishLaunching returns.
+        // Only that launch path waits; the factory itself still performs I/O off the main thread.
+        guard let prepared = health ?? healthPreparation.waitForBackgroundLaunch() else {
+            observationError?(failure(.unavailable, "此设备不支持 Apple 健康。")); return
+        }
+        health = prepared
+        installHealthObservers(using: prepared)
+        reconcileBackgroundDelivery()
+    }
+
+    private func installHealthObservers(using health: HKHealthStore) {
+        guard healthObservers.isEmpty, let onChange = observationChange else { return }
+        let id = observationID, onError = observationError
+        for type in observedHealthTypes {
+            let query = HKObserverQuery(sampleType: type, predicate: nil) { [weak self] _, completion, error in
+                Task { @MainActor [weak self] in
+                    guard let self, self.observationID == id else { completion(); return }
+                    if let error { onError?(error); completion(); return }
+                    onChange(completion)
+                }
+            }
+            healthObservers.append(query)
+            health.execute(query)
+        }
+    }
+
+    func stopHealthObservation() {
+        observationID = UUID(); observationError = nil; observationChange = nil
+        healthObservers.forEach { health?.stop($0) }; healthObservers.removeAll()
+        stop(.health)
+        reconcileBackgroundDelivery()
+    }
+
+    /// Keep enable/disable operations serialized. A quick pause/re-enable must not leave a
+    /// late disable call winning over the user's most recent setting.
+    private func reconcileBackgroundDelivery() {
+        guard backgroundDeliveryTask == nil, observationChange != nil || healthPreparation.hasStarted else { return }
+        backgroundDeliveryTask = Task { [weak self] in
+            guard let self else { return }
+            defer { self.backgroundDeliveryTask = nil }
+            let health: HKHealthStore
+            do { health = try await self.preparedHealth() }
+            catch { self.observationError?(error); return }
+            while self.configuredBackgroundGeneration != self.observationID {
+                let id = self.observationID
+                let enabled = self.observationChange != nil
+                // Reconcile only the latest desired generation after asynchronous preparation.
+                // A pause/re-enable during initialization must not install the obsolete observer.
+                self.installHealthObservers(using: health)
+                for type in self.observedHealthTypes {
+                    do {
+                        if enabled {
+                            let frequency: HKUpdateFrequency = type == HKQuantityType(.stepCount) ? .hourly : .immediate
+                            try await health.enableBackgroundDelivery(for: type, frequency: frequency)
+                        } else { try await health.disableBackgroundDelivery(for: type) }
+                    } catch {
+                        if enabled, self.observationID == id { self.observationError?(error) }
+                    }
+                }
+                self.configuredBackgroundGeneration = id
+            }
+        }
+    }
+
+    /// HealthKit does not promise a callback after stop(query). Own the continuation so pause,
+    /// timeout, and a racing query callback can resume it exactly once.
+    private func healthQuery<Value>(_ makeQuery: (@escaping (Result<Value, Error>) -> Void) -> HKQuery) async throws -> Value {
+        let generation = healthReadGeneration
+        let health = try await preparedHealth()
+        guard healthReadGeneration == generation else { throw CancellationError() }
+        let id = UUID()
+        return try await withTaskCancellationHandler {
+            try Task.checkCancellation()
+            return try await withCheckedThrowingContinuation { continuation in
+                let query = makeQuery { [weak self] result in
+                    Task { @MainActor [weak self] in
+                        guard let self, self.healthReadCancellations.removeValue(forKey: id) != nil else { return }
+                        continuation.resume(with: result)
+                    }
+                }
+                healthReadCancellations[id] = { [health] in
+                    health.stop(query)
+                    continuation.resume(throwing: CancellationError())
+                }
+                health.execute(query)
+            }
+        } onCancel: {
+            Task { @MainActor [weak self] in self?.healthReadCancellations.removeValue(forKey: id)?() }
+        }
+    }
+    private func stepCount(_ interval: DateInterval) async throws -> Double? {
+        try await healthQuery { complete in
+            // HKStatisticsQuery uses HealthKit's cumulative merge across sources; never sum raw Watch/iPhone samples.
+            HKStatisticsQuery(quantityType: HKQuantityType(.stepCount), quantitySamplePredicate: HKQuery.predicateForSamples(withStart: interval.start, end: interval.end, options: [.strictStartDate]), options: .cumulativeSum) { _, result, error in
+                if let error { complete(.failure(error)) }
+                else { complete(.success(result?.sumQuantity()?.doubleValue(for: .count()))) }
+            }
+        }
+    }
+    private func sleepSamples(_ interval: DateInterval) async throws -> [LifeSleepSample] {
+        try await healthQuery { complete in
+            HKSampleQuery(sampleType: HKCategoryType(.sleepAnalysis), predicate: HKQuery.predicateForSamples(withStart: interval.start, end: interval.end), limit: HKObjectQueryNoLimit, sortDescriptors: nil) { _, samples, error in
+                if let error { complete(.failure(error)); return }
+                let stages: [Int: SleepStage] = [HKCategoryValueSleepAnalysis.asleepUnspecified.rawValue: .asleep,
+                    HKCategoryValueSleepAnalysis.asleepCore.rawValue: .core, HKCategoryValueSleepAnalysis.asleepDeep.rawValue: .deep,
+                    HKCategoryValueSleepAnalysis.asleepREM.rawValue: .rem, HKCategoryValueSleepAnalysis.awake.rawValue: .awake,
+                    HKCategoryValueSleepAnalysis.inBed.rawValue: .inBed]
+                complete(.success((samples as? [HKCategorySample] ?? []).compactMap { sample in
+                    guard let stage = stages[sample.value] else { return nil }
+                    let source = sample.sourceRevision.source
+                    return LifeSleepSample(start: sample.startDate, end: sample.endDate, stage: stage,
+                        sourceID: source.bundleIdentifier + "|" + (sample.device?.localIdentifier ?? ""), sourceName: source.name)
+                }))
+            }
+        }
+    }
+    private func workoutSamples(_ interval: DateInterval) async throws -> [WorkoutMoment] {
+        try await healthQuery { complete in
+            HKSampleQuery(sampleType: HKObjectType.workoutType(),
+                predicate: HKQuery.predicateForSamples(withStart: interval.start, end: interval.end, options: [.strictStartDate]),
+                limit: HKObjectQueryNoLimit, sortDescriptors: nil) { _, samples, error in
+                if let error { complete(.failure(error)); return }
+                complete(.success((samples as? [HKWorkout] ?? []).map { workout in
+                    WorkoutMoment(id: workout.uuid, activity: Self.workoutName(workout.workoutActivityType),
+                        startedAt: workout.startDate, endedAt: workout.endDate, duration: workout.duration,
+                        distanceMeters: workout.totalDistance?.doubleValue(for: .meter()),
+                        activeKilocalories: workout.statistics(for: HKQuantityType(.activeEnergyBurned))?.sumQuantity()?.doubleValue(for: .kilocalorie()),
+                        sourceName: workout.sourceRevision.source.name,
+                        manuallyEntered: workout.metadata?[HKMetadataKeyWasUserEntered] as? Bool ?? false)
+                }))
+            }
+        }
+    }
+    nonisolated private static func workoutName(_ type: HKWorkoutActivityType) -> String {
+        switch type {
+        case .walking: "步行"
+        case .running: "跑步"
+        case .cycling: "骑行"
+        case .swimming: "游泳"
+        case .hiking: "徒步"
+        case .yoga: "瑜伽"
+        case .pilates: "普拉提"
+        case .traditionalStrengthTraining: "传统力量训练"
+        case .functionalStrengthTraining: "功能性力量训练"
+        case .highIntensityIntervalTraining: "高强度间歇训练"
+        case .elliptical: "椭圆机"
+        case .rowing: "划船"
+        case .stairClimbing, .stairs: "爬楼梯"
+        case .coreTraining: "核心训练"
+        case .dance, .cardioDance, .socialDance: "舞蹈"
+        case .cooldown: "放松整理"
+        case .mindAndBody: "身心训练"
+        case .basketball: "篮球"
+        case .badminton: "羽毛球"
+        case .tennis: "网球"
+        case .tableTennis: "乒乓球"
+        case .soccer: "足球"
+        case .golf: "高尔夫"
+        case .jumpRope: "跳绳"
+        case .boxing: "拳击"
+        case .martialArts: "武术"
+        case .climbing: "攀岩"
+        case .crossCountrySkiing: "越野滑雪"
+        case .downhillSkiing: "高山滑雪"
+        case .snowboarding: "单板滑雪"
+        case .wheelchairRunPace: "轮椅跑步配速"
+        case .wheelchairWalkPace: "轮椅步行配速"
+        case .other: "其他训练"
+        default: "其他训练（类型 \(type.rawValue)）"
+        }
+    }
+
+    private func checkCalendar() throws {
+        guard EKEventStore.authorizationStatus(for: .event) == .fullAccess else { throw failure(.denied, "未获日历读取权限。请在系统设置中允许完整访问；本应用只读取日程，不会写入日历。") }
+    }
+    private func checkLocation() throws {
+        switch location.authorizationStatus {
+        case .authorizedAlways, .authorizedWhenInUse: return
+        case .notDetermined: throw failure(.awaitingAuthorization, "等待定位授权；之后仅在前台保存新记录时获取一次地点。")
+        case .denied where locationServicesEnabled == false: throw failure(.unavailable, "系统定位服务未开启。")
+        default: throw failure(.denied, "未获定位权限。请前往系统设置。")
+        }
+    }
+
+    private func refreshLocationAvailability() {
+        guard location.authorizationStatus == .denied else {
+            locationAvailabilityTask?.cancel(); locationAvailabilityTask = nil
+            locationServicesEnabled = nil
+            return
+        }
+        guard locationAvailabilityTask == nil else { return }
+        locationAvailabilityTask = Task { [weak self] in
+            // CoreLocation can synchronously contact its daemon for the global switch. Its
+            // authorization delegate remains the primary signal; only distinguish denial from
+            // disabled system services here, without blocking the main thread or requesting GPS.
+            let enabled = await Task.detached(priority: .utility) { CLLocationManager.locationServicesEnabled() }.value
+            guard let self, !Task.isCancelled, self.location.authorizationStatus == .denied else { return }
+            defer { self.locationAvailabilityTask = nil }
+            let changed = self.locationServicesEnabled != enabled
+            self.locationServicesEnabled = enabled
+            if changed { self.onLocationAuthorizationChange?() }
+        }
+    }
+    private func failure(_ status: LifeSourceStatus, _ message: String) -> LifeSourceReadFailure { LifeSourceReadFailure(status: status, message: message) }
+    nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        Task { @MainActor in
+            self.refreshLocationAvailability()
+            self.onLocationAuthorizationChange?()
+        }
+    }
+    nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        Task { @MainActor in
+            guard let value = locations.last, value.horizontalAccuracy >= 0, abs(value.timestamp.timeIntervalSinceNow) < 60 else { self.finishLocation(.failure(self.failure(.error, "没有获得新的有效地点。"))); return }
+            self.finishLocation(.success(value))
+        }
+    }
+    nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) { Task { @MainActor in self.finishLocation(.failure(error)) } }
+    private func finishLocation(_ result: Result<CLLocation, Error>) {
+        timeout?.cancel(); timeout = nil
+        let waiters = locationWaiters; locationWaiters.removeAll()
+        waiters.forEach { $0.resume(with: result) }
+    }
+}

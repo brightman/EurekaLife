@@ -1,0 +1,306 @@
+import CryptoKit
+import Foundation
+
+enum DaybookHomeRecapTitle {
+    static func text(date: Date, yesterday: Bool, localeIdentifier: String) -> String {
+        let language = localeIdentifier.split(separator: "-").first.map(String.init) ?? "zh"
+        if yesterday {
+            switch language {
+            case "en": return "Yesterday's recap"
+            case "ja": return "昨日の振り返り"
+            default: return "昨日回顾"
+            }
+        }
+        let formattedDate = date.formatted(.dateTime.locale(Locale(identifier: localeIdentifier)).month().day())
+        let label: String
+        switch language {
+        case "en": label = "Recap"
+        case "ja": label = "振り返り"
+        default: label = "回顾"
+        }
+        return "\(formattedDate) · \(label)"
+    }
+}
+
+enum DaybookRecapFailure: LocalizedError, Equatable {
+    case unavailable, unsupportedLanguage, invalid, generation, storage, changed, contextBudget, timedOut, languageMismatch
+    var errorDescription: String? {
+        switch self {
+        case .unavailable: "Apple Intelligence尚不可用。请检查 Apple Intelligence 设置，或选择其他 AI 模型后重试。"
+        case .unsupportedLanguage: "当前 Apple Intelligence不支持所选语言，请更换语言或模型后重试。"
+        case .invalid: "AI 未返回有效的回顾及来源，未保存此次结果。请重试。"
+        case .generation: "回顾生成未完成，请稍后重试。"
+        case .storage: "每日回顾未能读取或保存，请解锁设备并检查存储空间后重试。"
+        case .changed: "记录或 AI 设置已更新，请查看最新资料后重试。"
+        case .contextBudget: "模型上下文窗口不足，请检查 AI 模型的窗口设置，或换用更大窗口的模型。"
+        case .timedOut: "回顾生成超时，已停止等待。请检查模型服务后手动重试。"
+        case .languageMismatch: "模型未按界面语言生成回顾，此次结果未保存。请重试。"
+        }
+    }
+}
+
+/// A complete date manifest, separate from Ask AI's ranked top-k retrieval.
+struct DaybookRecapInput: Equatable, Sendable {
+    struct Reference: Codable, Equatable, Identifiable, Sendable {
+        let id: UUID
+        let number: Int?
+        let title: String
+        let kind: DayRecord.Kind
+        let capturedAt: Date
+        let digest: String
+        var legacyDigest: String? = nil
+    }
+    struct Source: Equatable, Sendable {
+        let number: Int
+        let content: String
+    }
+    let dayKey: String
+    let scope: DateInterval
+    let references: [Reference]
+    let sources: [Source]
+    let pendingCount: Int
+    let excerptedCount: Int
+    let hasUserSpeech: Bool
+    let fingerprint: String
+
+    static func homeDay(selected: Date, now: Date, calendar: Calendar = .current) -> Date {
+        let day = calendar.startOfDay(for: selected)
+        return calendar.isDate(selected, inSameDayAs: now) ? calendar.date(byAdding: .day, value: -1, to: day)! : day
+    }
+    static func key(_ day: Date, calendar: Calendar = .current) -> String {
+        let formatter = DateFormatter(); formatter.calendar = calendar; formatter.timeZone = calendar.timeZone
+        formatter.locale = Locale(identifier: "en_US_POSIX"); formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: day)
+    }
+    static func date(for key: String, calendar: Calendar = .current) -> Date? {
+        let parts = key.split(separator: "-").compactMap { Int($0) }
+        guard parts.count == 3, let date = calendar.date(from: DateComponents(year: parts[0], month: parts[1], day: parts[2])),
+              Self.key(date, calendar: calendar) == key else { return nil }
+        return date
+    }
+    static func digest<T: Encodable>(_ value: T) -> String {
+        let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys]
+        encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "+Inf", negativeInfinity: "-Inf", nan: "NaN")
+        return SHA256.hash(data: try! encoder.encode(value)).map { String(format: "%02x", $0) }.joined()
+    }
+    private struct Evidence: Encodable, Equatable {
+        let sourceID: UUID
+        let sourceKind: String
+        let sourceDate: Date
+        let configurationKey: String
+        let contentSignature: String
+        let ranges: [DayRecord.ContentProvenance.AudioRange]
+        let transcript: [DayRecord.ContentProvenance.TextSpan]
+    }
+    private struct Fact: Encodable, Equatable {
+        let id: UUID; let capturedAt: Date; let kind: DayRecord.Kind; let text: String
+        let provenance: Evidence?
+        let speakers: [DayRecord.ContentProvenance.TextSpan]?
+    }
+    private static func fact(_ record: DayRecord) -> Fact {
+        let evidence = record.contentProvenance.map {
+            Evidence(sourceID:$0.sourceID,sourceKind:$0.sourceKind,sourceDate:$0.sourceDate,
+                configurationKey:$0.configurationKey,contentSignature:$0.contentSignature,ranges:$0.ranges,transcript:$0.transcript)
+        }
+        return Fact(id:record.id,capturedAt:record.capturedAt,kind:record.kind,text:record.text,provenance:evidence,speakers:record.attributedTranscript)
+    }
+    static func factDigest(_ record: DayRecord) -> String {
+        digest(fact(record))
+    }
+    /// Match the exact persisted digest fields without serializing a long transcript
+    /// twice on the UI thread. Progress and generated descriptions are not new facts.
+    static func sameFacts(_ lhs: DayRecord, _ rhs: DayRecord) -> Bool {
+        fact(lhs) == fact(rhs)
+    }
+    /// Exact pre-v2 digest permits a proven-compatible archive upgrade without
+    /// discarding saved prose merely because the hashing format changed.
+    private static func legacyFactDigest(_ record: DayRecord) -> String {
+        struct Fact: Encodable {
+            let id: UUID
+            let capturedAt: Date
+            let kind: DayRecord.Kind
+            let text: String
+            let provenance: DayRecord.ContentProvenance?
+        }
+        // Health refreshedAt/updatedAt, generated titles/summaries and unused capture metadata
+        // are not new factual evidence. Freshness warnings already live in record.text.
+        return digest(Fact(id: record.id, capturedAt: record.capturedAt, kind: record.kind, text: record.text, provenance: record.contentProvenance))
+    }
+    private static func sourceGroup(_ record: DayRecord) -> UUID {
+        record.contentProvenance?.sourceID ?? record.recordingSessionID ?? record.parentRecordID ?? record.id
+    }
+    private static func evidenceRole(_ kind: DayRecord.Kind) -> String {
+        switch kind {
+        case .thought: "主动闪念：优先理解用户意图；区分设想、决定和已完成，引用他人不代表本人意图。"
+        case .voice: "录音转写：按每段发言人标记归属；只有明确标记为用户本人的发言可作为本人表达。已关联联系人是对方，不自动等于用户；说话人未确认时不能把计划归给用户。背景音仅作弱辅助线索。"
+        case .activity: "系统活动数据：对应测量范围内的优先事实依据；注意统计范围、缺失与延迟，不推断活动目的。体能训练按开始日期归属，训练持续时长不等于锻炼圆环分钟数，不与每日步数或能量相加；标注手动录入的记录属于用户填写，不能当作设备测量；不同来源的重复训练不能重复累计。"
+        case .sleep: "系统睡眠数据：对应测量范围内的优先事实依据；属于测量或估算，不推断原因或诊断。"
+        case .calendar: "日程安排：计划依据，不证明实际参加或完成。"
+        case .location: "地点采样及变化：结合时间顺序、步数、训练和已确认发言推断可能到访的地方与活动；单点不证明完整行程、到访目的或停留时长，派生变化不是独立佐证。"
+        case .image: "图片文字：只依据提供的文字；不能据此识别人或推断未描述的图片内容。"
+        }
+    }
+    static func prepare(records: [DayRecord], day: Date, allowedKinds: Set<DayRecord.Kind>, calendar: Calendar = .current) -> Self {
+        let scope = calendar.dateInterval(of: .day, for: day)!
+        let records = DayRecord.evidenceRecords(LegacyAudioDeletionLedger.shared.filter(records), scope: scope).filter { allowedKinds.contains($0.kind) }
+            .sorted { $0.capturedAt == $1.capturedAt ? $0.id.uuidString < $1.id.uuidString : $0.capturedAt < $1.capturedAt }
+        var references: [Reference] = [], sources: [Source] = [], pending = 0, excerpted = 0
+        var hasUserSpeech = false
+        var groups: [UUID: Int] = [:]
+        let time = DateFormatter(); time.calendar = calendar; time.timeZone = calendar.timeZone
+        time.locale = Locale(identifier: "en_US_POSIX"); time.dateFormat = "HH:mm"
+        for record in records {
+            let raw = record.text.trimmingCharacters(in: .whitespacesAndNewlines)
+            let ready = !raw.isEmpty || record.kind == .image
+            let number = ready ? sources.count + 1 : nil
+            references.append(Reference(id: record.id, number: number, title: String(record.title.prefix(100)), kind: record.kind,
+                capturedAt: record.capturedAt, digest: factDigest(record),
+                legacyDigest: record.contentProvenance == nil ? nil : legacyFactDigest(record)))
+            guard let number else { pending += 1; continue }
+            if record.kind == .thought { hasUserSpeech = true }
+            let body: String
+            let speech = record.contentProvenance?.transcript ?? record.attributedTranscript
+            if let speech, speech.contains(where: { $0.speaker != nil }), speech.map(\.text).joined().trimmingCharacters(in: .whitespacesAndNewlines) == raw {
+                body = speakerExcerpts(speech)
+                hasUserSpeech = hasUserSpeech || speech.contains {
+                    $0.speaker?.hasPrefix("用户本人（") == true && !$0.text.trimmingCharacters(in:.whitespacesAndNewlines).isEmpty
+                }
+                if raw.count > 600 { excerpted += 1 }
+            } else if raw.count > 600 {
+                let middle = raw.index(raw.startIndex, offsetBy: (raw.count - 200) / 2)
+                body = String(raw.prefix(200)) + "\n[…]\n" + String(raw[middle..<raw.index(middle, offsetBy: 200)]) + "\n[…]\n" + String(raw.suffix(200))
+                excerpted += 1
+            } else { body = raw.isEmpty ? "图片记录没有文字描述；无法判断图片内容。" : raw }
+            // Titles, capture coordinates and device metadata are not factual input to the model.
+            let groupID = sourceGroup(record)
+            if groups[groupID] == nil { groups[groupID] = groups.count + 1 }
+            sources.append(Source(number: number, content: "[\(number)] \(time.string(from: record.capturedAt)) · \(record.kind.rawValue) · 同源组 \(groups[groupID]!)\n证据说明：\(evidenceRole(record.kind))\n原文：\n\(body)"))
+        }
+        let key = key(day, calendar: calendar)
+        return Self(dayKey: key, scope: scope, references: references, sources: sources, pendingCount: pending,
+            excerptedCount: excerpted, hasUserSpeech: hasUserSpeech,
+            fingerprint: digest([key, String(scope.start.timeIntervalSinceReferenceDate), String(scope.end.timeIntervalSinceReferenceDate)] + references.map(\.digest)))
+    }
+    /// Re-attach attribution at every excerpt boundary, including when an excerpt
+    /// starts in the middle of a long utterance. Never infer identity from text.
+    private static func speakerExcerpts(_ spans: [DayRecord.ContentProvenance.TextSpan]) -> String {
+        var turns: [(speaker: String, text: String)] = []
+        for span in spans {
+            let speaker = span.speaker ?? "身份未确认"
+            if turns.last?.speaker == speaker { turns[turns.count - 1].text += span.text }
+            else { turns.append((speaker, span.text)) }
+        }
+        let count = turns.reduce(0) { $0 + $1.text.count }
+        let ranges = count > 600 ? [0..<200, (count - 200)/2..<(count - 200)/2+200, count-200..<count] : [0..<count]
+        return ranges.map { range in
+            var offset = 0, parts: [String] = []
+            for turn in turns {
+                let end = offset + turn.text.count
+                let low = max(offset, range.lowerBound), high = min(end, range.upperBound)
+                if low < high {
+                    let start = turn.text.index(turn.text.startIndex, offsetBy: low-offset)
+                    let finish = turn.text.index(turn.text.startIndex, offsetBy: high-offset)
+                    parts.append("【\(String(turn.speaker.prefix(100)))】\(turn.text[start..<finish])")
+                }
+                offset = end
+            }
+            return parts.joined(separator: "\n")
+        }.joined(separator: "\n[…]\n")
+    }
+    var coverage: String {
+        "\(dayKey) · \(sources.count) 条资料 · \(pendingCount) 条文字待就绪 · \(excerptedCount) 条长文本摘录"
+    }
+    var promptContext: String {
+        let dayWord = Calendar.current.isDateInYesterday(scope.start) ? "昨天" : Calendar.current.isDateInToday(scope.start) ? "今天" : "那天"
+        let ownership = hasUserSpeech ? "只将明确标记为本人的发言或主动闪念归给用户。" : "这批录音没有已确认的本人发言。只能说‘录音里聊到’，禁止说‘你提到/你计划’。不能将其中的出行、考试、家庭关系或他人的安排变成用户的任务；健康与活动可单独支持生活建议。"
+        return "回顾日期：\(dayKey)，叙述已发生的经历应称‘\(dayWord)’；给接下来建议时可用‘今天/接下来’。\(ownership)资料可能是摘录，同源组不是独立佐证。只回顾生活、工作和学习事项，不把 App 的转写、摘录或整理状态当作待办。"
+    }
+    func validateNarrative(_ text: String) throws {
+        if !hasUserSpeech {
+            // A narrow guard for explicit ownership phrases observed in provider
+            // output. It does not claim to understand or verify all natural language.
+            let pattern = #"你(?:也?提到|聊到|说起|说过|表示|计划|打算|下周[^。；，\n]{0,16}(?:要|出行))|\byou\s+(?:mentioned|said|planned|are planning)\b"#
+            if text.range(of:pattern,options:[.regularExpression,.caseInsensitive]) != nil { throw DaybookRecapFailure.invalid }
+        }
+    }
+    // Leave context space for authority rules and the final synthesis on the on-device model.
+    var batches: [String] { Self.pack(sources.map(\.content), limit: 1800) }
+    var preview: String { promptContext + "\n\n" + sources.map(\.content).joined(separator: "\n\n") }
+    static func pack(_ pieces: [String], limit: Int) -> [String] {
+        var batches: [String] = [], current = ""
+        for piece in pieces {
+            if !current.isEmpty && current.count + piece.count + 2 > limit { batches.append(current); current = "" }
+            current += (current.isEmpty ? "" : "\n\n") + piece
+        }
+        if !current.isEmpty { batches.append(current) }; return batches
+    }
+    static func validate(_ text: String, sourceNumbers: Set<Int>) throws {
+        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, text.count <= 1200 else { throw DaybookRecapFailure.invalid }
+        let numbers = try citationNumbers(text)
+        guard !numbers.isEmpty, numbers.isSubset(of: sourceNumbers) else { throw DaybookRecapFailure.invalid }
+    }
+    static func citationNumbers(_ text: String) throws -> Set<Int> {
+        let expression = try! NSRegularExpression(pattern: #"\[(\d[\d,， ]*)\]"#)
+        let matches = expression.matches(in: text, range: NSRange(text.startIndex..., in: text))
+        var result = Set<Int>()
+        for match in matches {
+            guard let range = Range(match.range(at: 1), in: text) else { throw DaybookRecapFailure.invalid }
+            // Older saved results may contain [1,2]; validate every member rather
+            // than ignoring the entire group when another valid [n] is present.
+            for part in text[range].split(whereSeparator: { $0 == "," || $0 == "，" }) {
+                guard let number = Int(part.trimmingCharacters(in: .whitespaces)), number > 0 else { throw DaybookRecapFailure.invalid }
+                result.insert(number)
+            }
+        }
+        return result
+    }
+}
+
+struct DaybookRecapEntry: Codable, Equatable, Identifiable {
+    enum Relationship { case current, additions, invalid }
+    let dayKey: String
+    var scope: DateInterval
+    var references: [DaybookRecapInput.Reference]
+    var fingerprint: String
+    var text: String?
+    var generatedAt: Date?
+    var provider = ""
+    var language = ""
+    var coverage = ""
+    var attemptKey: String?
+    var message: String?
+    var id: String { dayKey }
+    init(input: DaybookRecapInput) {
+        dayKey = input.dayKey; scope = input.scope; references = input.references; fingerprint = input.fingerprint
+    }
+    func relationship(to input: DaybookRecapInput) -> Relationship {
+        guard scope == input.scope else { return .invalid }
+        if fingerprint == input.fingerprint { return .current }
+        let current = Dictionary(uniqueKeysWithValues: input.references.map { ($0.id, $0) })
+        guard references.allSatisfy({ old in
+            guard let next = current[old.id] else { return false }
+            return next.digest == old.digest || next.legacyDigest == old.digest
+        }) else { return .invalid }
+        return references.count == input.references.count ? .current : .additions
+    }
+    func upgradingDigests(to input: DaybookRecapInput) -> Self {
+        let current = Dictionary(uniqueKeysWithValues:input.references.map { ($0.id,$0) })
+        var result = self
+        result.references = references.map { old in
+            guard let next = current[old.id], next.legacyDigest == old.digest, next.digest != old.digest else { return old }
+            // Keep the archived citation numbers/titles, including when new records
+            // were inserted earlier in the day and the new input numbers differ.
+            return .init(id:old.id,number:old.number,title:old.title,kind:old.kind,capturedAt:old.capturedAt,digest:next.digest)
+        }
+        if result.references != references {
+            result.fingerprint = DaybookRecapInput.digest([dayKey,String(scope.start.timeIntervalSinceReferenceDate),String(scope.end.timeIntervalSinceReferenceDate)] + result.references.map(\.digest))
+        }
+        return result
+    }
+    func matches(_ query: String) -> Bool {
+        let date = scope.start.formatted(.dateTime.year().month().day())
+        let haystack = "\(dayKey) \(date) \(text ?? "")"
+        return query.trimmingCharacters(in: .whitespacesAndNewlines).split(whereSeparator: \.isWhitespace)
+            .allSatisfy { haystack.localizedStandardContains(String($0)) }
+    }
+}

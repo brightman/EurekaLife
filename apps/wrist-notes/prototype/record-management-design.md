@@ -1,0 +1,81 @@
+# 详情页管理入口原型
+
+日期：2026-10-24；更新：2026-11-02。原入口规划为 HTML 原型；11/02 录制时刻显示已同步原生，范围与验证见下文。
+
+## 交互约定
+
+- 语音、闪念、图片、内容片段均通过详情页右上角「⋯」进入管理。
+- 菜单按能力展示：编辑记录、生成/重新生成总结、调整片段、查看处理状态、删除对应对象。
+- 总结为空时，内容区保留生成按钮；生成过程及删除确认仅为页内演示，无模型或存储请求。
+- 内容片段播放器只展示当前时间范围。10 分钟物理文件可被多个片段按范围引用；不增加完整录音播放入口。
+- 播放会话的系统激活／停用在串行后台队列执行；普通文件播放器的创建、播放、暂停、停止与进度读取也由该队列管理，界面仅接收状态快照。页面退出取消未完成启动，只有当前拥有者可以停用会话；系统中断保留播放进度，自然结束后可从头重播。开始录音先登记采集状态并等待已有播放切换结束，防止迟到的播放关闭录音会话。普通语音与内容范围播放器共用会话协调器。实现及验证见 [2026-11-05 Xcode 修复记录](../docs/work/2026-11-05-xcode-warnings/README.md)。
+- 内容片段的播放器左侧显示当前音频对应的真实录制时刻，右侧显示片段录制结束时刻，格式为 `HH:mm:ss`；全文段落使用同一时钟。录音总时长仍显示于元信息。
+- 调整片段在独立面板中预览拆分、合并相邻片段和边界调整；保存后更新本页时间轴，可撤销最近一次未被后续编辑覆盖的调整。
+- 原始文件按录制批次列于「设置 → 数据管理 → 原始录音」，展示 10 分钟文件、末尾短片和处理状态。
+- 原型示例状态仅保存在内存。刷新页面恢复，原始录音、SQLite、Swift 与真实 AI 均不参与本次修改。
+
+## 实施清单
+
+- [x] 新建 `daybook-record-management.js/css`，集中管理菜单、编辑、总结、片段范围与原始文件示例。
+- [x] `daybook.js` / `daybook-photos.js` 接入共享详情页菜单，保留原有播放器与总结/全文排版。
+- [x] `iphone-day.html` 增加菜单容器、数据管理入口与明确的 review 快捷入口。
+- [x] 接入现有语言表，检查脚本语法、页内状态流转与资源引用。
+- [x] 尝试浏览器验收；工具不可用时记录具体限制，不将静态检查表述为视觉验收。
+
+## 评审入口
+
+本地启动：`python3 -m http.server 8769 --bind 127.0.0.1 --directory apps/wrist-notes/prototype`。
+
+| 场景 | URL |
+| --- | --- |
+| 内容片段 · 26 分钟 | `http://127.0.0.1:8769/iphone-day.html?preview=segment#product` |
+| 普通语音 | `http://127.0.0.1:8769/iphone-day.html?preview=record-voice#product` |
+| 闪念 · 总结为空 | `http://127.0.0.1:8769/iphone-day.html?preview=record-thought#product` |
+| 图片记录 | `http://127.0.0.1:8769/iphone-day.html?preview=record-image#product` |
+| 原始录音 | `http://127.0.0.1:8769/iphone-day.html?preview=raw-recordings#product` |
+
+桌面端右侧也提供这五类入口；手机窄屏可通过时间轴、设置或上面的 URL 进入。
+
+### 可点击的流程
+
+1. 内容片段右上角「⋯」→ 调整片段 → 拆分 / 合并相邻 / 调整边界；预览后确认，或取消返回。两段示例分别为 14:00–14:26 和 14:26–14:40，可合并成 40 分钟。
+2. 调整后，片段全文按示例时间范围更新，总结清空待重新生成；最新一次调整可撤销。如果之后修改了片段内容，撤销入口禁用以保留编辑。
+3. 普通语音与闪念支持编辑标题、全文；图片支持编辑标题、补充说明，保留图片与图片文字。
+4. 总结为空时显示行内「生成总结」，已有总结时菜单为「重新生成总结」。只对当前记录生效，生成结束不重新打开已关闭的详情页。
+5. 删除操作单独确认。删除内容片段后，原始录音文件仍可从数据管理查看；其他片段保留。
+6. 原始录音按两次录制展示：40 分钟为 4 个文件，42 分钟为 4 个 10 分钟文件及 1 个 2 分钟末片。此处可返回关联内容片段，不提供整次录制的播放入口。
+
+## 验证与边界
+
+- `node --test apps/wrist-notes/prototype/tests/record-management.test.cjs`：6 项通过，覆盖不修改数据的预览、范围守恒、跨记录保护、撤销保护、边界重叠拦截与缩短后扩展的文字恢复。
+- 整页 DOM 检查：`tests/record-management-dom.mjs`。在仓库外安装 `happy-dom`，通过 `WISELIFE_TEST_DOM` 指定模块文件运行；没有添加 App 或仓库级依赖。例如：
+
+  ```sh
+  WISELIFE_TEST_DOM=/tmp/wiselife-record-management-dom/node_modules/happy-dom/lib/index.js node apps/wrist-notes/prototype/tests/record-management-dom.mjs
+  ```
+
+- DOM 检查覆盖菜单关闭、编辑/取消、总结完成后的页面状态、拆分/合并/边界/撤销、处理状态、图片返回、删除片段保留源文件及末尾短片。
+- JavaScript 语法与本地资源引用已检查。浏览器工具返回 `Sky Computer Use native pipe startup failed`，且浏览器列表为空，**尚未做真实浏览器截图、布局或触摸验收**。
+- 音频仅计时演示；示例转写按预设文字时间范围分配，不能用于评价真实 ASR 或分段质量。总结由当前文字的少量句子模拟，无模型请求。刷新页面重置所有记录操作。
+
+## 2026-11-02：内容片段按真实录制时刻显示
+
+状态：原生代码与当前 iPhone 原型已完成；自动检查、iOS Debug 构建和原型浏览器验证通过，尚未安装真机验收。此次仅变更时间呈现，不重新处理录音或修改 SQLite。
+
+- 例如片段开始于 `14:32:10`，播放 15 秒显示 `14:32:25`；右侧为片段最后一个范围的真实结束时刻。
+- 原生使用源录音 `capturedAt` 加该音频范围的 `sessionStartOffset`，再加范围内播放偏移。片段截取的 `startFrame` 已计入范围的源时间偏移，不重复累加。
+- 多文件和手动合并中的音频缺口保持真实时间跳变。播放位置和拖动仍使用可播放音频累计秒数，缺口不补静音，不改变 seek 帧位置。
+- 全文时间为 `capturedAt + span.start/end`，这些偏移属于源录音，不能再次加片段起点。跨午夜相对片段开始日增加 `MM-dd` 前缀，例如 `01-01 00:00:05`。显示时区与 App 时间轴一致，采用设备当前本地时区。
+- 元信息里的“时长”和正在录音的计时仍表达持续时间；本次修改针对内容片段详情的播放和全文时间。普通语音／闪念及原始录音详情沿用原有显示。
+
+验证环境：macOS、Xcode 26.3、iOS Debug 通用设备目标；Chrome/Playwright 原型 390×844。未运行真实音频端到端播放、未安装模拟器／真机、未发布 TestFlight。
+
+| 检查 | 结果 |
+| --- | --- |
+| `sh apps/wrist-notes/scripts/test_recording_playback_clock.sh` | 通过：非零片段起点、裁剪帧不重复计算、连续推进、跨文件缺口、精确末尾、越界输入、跨午夜／跨年 |
+| `ruby apps/wrist-notes/Tests/ProjectSourceMembershipSmoke.rb` | 通过，未增加原生源文件或调整 target |
+| `node --test apps/wrist-notes/prototype/tests/record-management.test.cjs` | 6 项通过，片段拆分、合并与边界交互保持 |
+| 原型浏览器操作 | `14:00:00 → 14:00:02`，暂停保持；右侧 `14:26:00`；全文 `14:00:00 / 14:00:47`；起点调整后显示 `14:01:00`；移动端控件未溢出，无 JS 错误 |
+| `xcodebuild -workspace apps/wrist-notes/WristNotes.xcworkspace -scheme WristNotes -configuration Debug -destination 'generic/platform=iOS' -jobs 2 IPHONEOS_DEPLOYMENT_TARGET=26.0 build` | 同现有依赖缓存和 DerivedData 构建，exit 0 / `BUILD SUCCEEDED` |
+
+原型截图（源工作区资料，未随代码导入：`../verification/recording-playback-clock-2026-11-02.webp`）。完整本机命令、日志与浏览器检查保留于 `WiseLife-Reports/2026-11-02-recording-clock/`，Git 不收录本机构建产物。

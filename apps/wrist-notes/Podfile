@@ -1,0 +1,32 @@
+source 'https://cdn.cocoapods.org/'
+require_relative 'scripts/build_features'
+ring_enabled = WristNotesBuildFeatures.enabled?(__dir__)
+
+platform :ios, '26.0'
+project 'WristNotes.xcodeproj'
+use_frameworks! :linkage => :static
+
+target 'WristNotes' do
+  if ring_enabled
+    pod 'br_flutter_plugin_ble/Native', :path => '../../pods/br_flutter_plugin_ble'
+  end
+  target 'RingIntegrationTests' do
+    inherit! :search_paths
+  end
+end
+
+post_integrate do |_installer|
+  app_project = Xcodeproj::Project.open(File.join(__dir__, 'WristNotes.xcodeproj'))
+  WristNotesBuildFeatures.apply(app_project, enabled: ring_enabled)
+  app_project.save
+  WristNotesBuildFeatures.prepare_resource_scripts(__dir__)
+end
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+      config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
+    end
+  end
+end
