@@ -11,8 +11,13 @@
 - [iPhone→Mac 记录同步设计](../apps/wrist-notes/docs/iphone-mac-sync.md)
 - [EurekaLife 官网与产品演示](../apps/wiselife-website/docs/INDEX.md)
 - [文档维护规则](documentation-rules.md)
+- [Apache-2.0 许可](../LICENSE) · [NOTICE](../NOTICE) · [第三方许可索引](../THIRD_PARTY_NOTICES.md) · [品牌规则](../TRADEMARKS.md)
 
 ## 2026-11-09
+
+Apache-2.0 许可与 ChatGPT 套餐接入已实现：官方授权入口、合成连接测试、Agent 工具循环与历史压缩。专项测试和两端构建通过，已原位安装 iPhone，真实授权、模型目录、固定文本和合成工具续传通过；已修复真机缺少 SSE 媒体响应头导致的无效响应。设置补充 Plus／Pro 套餐说明，刷新与连接测试按钮并排，真机显示已核验。当前验证进度见 [实施与验收](../apps/wrist-notes/verification/chatgpt-native.md#opensource-plan-20261109)，计划见 [任务计划](work/2026-11-09-chatgpt-plan-usage/plan.md)。
+
+明确 ChatGPT 接入仅用于授权使用用户套餐调用 LLM，不作为 EurekaLife 注册／登录方式；保留服务授权所需身份验证。此前范围确认阶段未启用真实接入；后续开启与验证见上条，商业申请未发送。见 [接入范围](../apps/wrist-notes/verification/chatgpt-native.md#plan-usage-scope-20261109)。
 
 Ask AI 第二期实现完整问答压缩、记事本四类只读工具、SQLite 精确账目统计、模型窗口预算和跨轮权限继承。设置提供四个独立开关；原问答保留。专项回归、复审和完整模拟器构建通过，未安装或发布；既有独立脚本限制另记。见 [当前实现](../apps/wrist-notes/docs/ask-ai-session-orchestration.md#memory-notebook-agent-20261108)、[验证记录](../apps/wrist-notes/verification/ask-ai-runtime-2026-11-01.md#memory-notebook-20261109)。
 

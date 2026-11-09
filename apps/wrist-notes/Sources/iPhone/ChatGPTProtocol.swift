@@ -29,7 +29,7 @@ enum ChatGPTError: Error, Equatable, LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .unavailableConfiguration: return NSLocalizedString("此版本尚未启用 ChatGPT 登录。", comment: "")
+        case .unavailableConfiguration: return NSLocalizedString("此版本尚未启用 ChatGPT 套餐连接。", comment: "")
         case .cancelled: return NSLocalizedString("已取消 ChatGPT 登录。", comment: "")
         case .invalidCallback: return NSLocalizedString("无法验证 ChatGPT 登录回调，请重新登录。", comment: "")
         case .invalidIdentity: return NSLocalizedString("无法验证 ChatGPT 账号身份，请重新登录。", comment: "")
@@ -100,5 +100,102 @@ extension Data {
         let padded = string.replacingOccurrences(of: "-", with: "+").replacingOccurrences(of: "_", with: "/") + String(repeating: "=", count: (4 - string.utf8.count % 4) % 4)
         guard let decoded = Data(base64Encoded: padded), decoded.chatGPTBase64URL == string else { return nil }
         self = decoded
+    }
+}
+
+// Responses transport types intentionally have no AskAI dependency.
+struct ChatGPTResponseTool: Sendable {
+    let name: String
+    let description: String
+    let parameters: Data
+}
+struct ChatGPTResponseCall: Sendable {
+    let id: String
+    let name: String
+    let arguments: Data
+}
+struct ChatGPTResponseOutput: Sendable {
+    let json: Data
+}
+enum ChatGPTResponseInput: Sendable {
+    enum Role: String, Sendable { case user, assistant, developer }
+    case message(role: Role, text: String)
+    case output(ChatGPTResponseOutput)
+    case functionOutput(callID: String, text: String)
+
+    func object() throws -> [String:Any] {
+        switch self {
+        case let .message(role,text): return ["role":role.rawValue,"content":text]
+        case let .output(item):
+            guard let object = try JSONSerialization.jsonObject(with:item.json) as? [String:Any],
+                  ["message","function_call","reasoning"].contains(object["type"] as? String ?? "") else { throw ChatGPTError.invalidResponse }
+            return object
+        case let .functionOutput(id,text):
+            guard !id.isEmpty, id.utf8.count <= 128, text.utf8.count <= 262_144 else { throw ChatGPTError.invalidResponse }
+            return ["type":"function_call_output","call_id":id,"output":text]
+        }
+    }
+}
+struct ChatGPTResponsesRequest: Sendable {
+    static let toolNamespace = "eurekalife"
+    let model: String
+    let instruction: String
+    let input: [ChatGPTResponseInput]
+    let tools: [ChatGPTResponseTool]
+
+    func encodedBody() throws -> Data {
+        guard !model.isEmpty, model.utf8.count <= 512, !input.isEmpty, input.count <= 256,
+              tools.count <= 32, Set(tools.map(\.name)).count == tools.count else { throw ChatGPTError.invalidResponse }
+        let definitions: [[String:Any]] = try tools.map { tool in
+            guard !tool.name.isEmpty, tool.name.utf8.count <= 80,
+                  tool.name.utf8.allSatisfy({ (65...90).contains($0) || (97...122).contains($0) || (48...57).contains($0) || $0 == 95 }),
+                  tool.description.utf8.count <= 8192, tool.parameters.count <= 32_768,
+                  let schema = try JSONSerialization.jsonObject(with:tool.parameters) as? [String:Any], schema["type"] as? String == "object" else { throw ChatGPTError.invalidResponse }
+            // Existing schemas contain optional fields; explicitly retain non-strict validation.
+            return ["type":"function","name":tool.name,"description":tool.description,"parameters":schema,"strict":false]
+        }
+        var body: [String:Any] = ["model":model,"instructions":instruction,"input":try input.map { try $0.object() },"store":false,"stream":true,"include":["reasoning.encrypted_content"]]
+        if !definitions.isEmpty { body["tools"] = [["type":"namespace","name":Self.toolNamespace,"description":"Read only, consent-scoped EurekaLife data tools","tools":definitions]] }
+        let data = try JSONSerialization.data(withJSONObject:body,options:.sortedKeys)
+        guard data.count <= 1_048_576 else { throw ChatGPTError.invalidResponse }
+        return data
+    }
+}
+struct ChatGPTResponsesResult: Sendable {
+    let text: String
+    let calls: [ChatGPTResponseCall]
+    /// Complete output, including opaque encrypted reasoning, for stateless continuations.
+    let output: [ChatGPTResponseOutput]
+
+    static func completed(_ response: [String:Any], tools: [ChatGPTResponseTool]) throws -> Self {
+        guard response["status"] as? String == "completed", response["error"] == nil || response["error"] is NSNull,
+              let items = response["output"] as? [[String:Any]], items.count <= 128 else { throw ChatGPTError.invalidResponse }
+        var texts:[String] = [], calls:[ChatGPTResponseCall] = [], output:[ChatGPTResponseOutput] = []
+        let names = Set(tools.map(\.name))
+        for item in items {
+            if let status = item["status"] as? String, status != "completed" { throw ChatGPTError.incompleteResponse }
+            switch item["type"] as? String {
+            case "message":
+                guard item["role"] as? String == "assistant", let content = item["content"] as? [[String:Any]] else { throw ChatGPTError.invalidResponse }
+                for piece in content {
+                    guard piece["type"] as? String == "output_text", let text = piece["text"] as? String else { throw ChatGPTError.invalidResponse }
+                    texts.append(text)
+                }
+            case "function_call":
+                guard item["namespace"] as? String == ChatGPTResponsesRequest.toolNamespace,
+                      let name = item["name"] as? String, names.contains(name),
+                      let id = item["call_id"] as? String, !id.isEmpty, id.utf8.count <= 128,
+                      !calls.contains(where: { $0.id == id }), calls.count < 6,
+                      let arguments = item["arguments"] as? String, arguments.utf8.count <= 2048,
+                      (try? JSONSerialization.jsonObject(with:Data(arguments.utf8))) is [String:Any] else { throw ChatGPTError.invalidResponse }
+                calls.append(.init(id:id,name:name,arguments:Data(arguments.utf8)))
+            case "reasoning": break // Opaque model state, never displayed or interpreted as evidence.
+            default: throw ChatGPTError.invalidResponse
+            }
+            output.append(.init(json:try JSONSerialization.data(withJSONObject:item,options:.sortedKeys)))
+        }
+        let text = texts.joined(separator:"\n")
+        guard text.utf8.count <= 262_144, !text.trimmingCharacters(in:.whitespacesAndNewlines).isEmpty || !calls.isEmpty else { throw ChatGPTError.invalidResponse }
+        return .init(text:text,calls:calls,output:output)
     }
 }

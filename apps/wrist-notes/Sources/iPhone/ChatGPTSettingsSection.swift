@@ -7,15 +7,19 @@ struct ChatGPTSettingsSection: View {
     @Binding var configuration: AIConfiguration
     @State private var pendingAccountID = ""
     @State private var confirmsDisconnect = false
+    @State private var connectionTestTask: Task<Void, Never>?
+    @State private var connectionTestID: UUID?
+    @State private var connectionTestMessage: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             connectionStatus
+            SettingsFootnote(text: "授权使用你的 ChatGPT 套餐调用 AI，无需 API Key。这只连接模型服务，不用于登录 EurekaLife。")
             if account.needsStorageRecovery {
                 storageRecovery
             } else if !account.isEnabled {
                 SettingsInfo(title: "ChatGPT 连接尚未开通",
-                             text: "此版本尚未启用 ChatGPT 登录。商业应用需要先获得 OpenAI 的接入资格，开通后才能连接账号。")
+                             text: "此版本尚未启用 ChatGPT 套餐连接。请使用支持此功能的版本。")
                 continueButton.disabled(true)
             } else if account.isConnecting {
                 SettingsFootnote(text: "请在 ChatGPT 授权页面完成登录。EurekaLife 不会接收你的密码。")
@@ -50,11 +54,15 @@ struct ChatGPTSettingsSection: View {
             alignDraftAccount()
             await account.loadModels()
         }
-        .onChange(of: account.selectedID) { _, _ in alignDraftAccount() }
+        .onChange(of: account.selectedID) { _, _ in cancelConnectionTest(); alignDraftAccount() }
+        .onChange(of: configuration.chatGPTModel) { _, _ in cancelConnectionTest() }
+        .onChange(of: account.isReady) { _, isReady in
+            if !isReady { cancelConnectionTest() }
+        }
         .onChange(of: account.needsStorageRecovery) { _, needsRecovery in
             if needsRecovery { confirmsDisconnect = false }
         }
-        .onDisappear { account.cancelSignIn() }
+        .onDisappear { cancelConnectionTest(); account.cancelSignIn() }
         .confirmationDialog("断开 ChatGPT 连接？", isPresented: $confirmsDisconnect, titleVisibility: .visible) {
             Button("确认断开", role: .destructive) { Task { await account.disconnect() } }
             Button("保留连接", role: .cancel) {}
@@ -187,20 +195,70 @@ struct ChatGPTSettingsSection: View {
                 !account.models.contains(where: { $0.id == configuration.chatGPTModel }) {
                 SettingsFootnote(text: "已保存的模型暂不可用。请刷新模型列表，或主动选择其他模型后再保存。")
             }
-            Button {
-                Task {
-                    if account.status == .limited { await account.retryUsage() }
-                    else { await account.loadModels() }
+            HStack(spacing: 10) {
+                Button {
+                    Task {
+                        if account.status == .limited { await account.retryUsage() }
+                        else { await account.loadModels() }
+                    }
+                } label: {
+                    HStack(spacing: 7) {
+                        if account.isLoadingModels { ProgressView().controlSize(.small) }
+                        Text(LocalizedStringKey(account.isLoadingModels ? "正在加载模型…" : account.status == .limited ? "额度恢复后重试" : "刷新可用模型"))
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 28)
                 }
-            } label: {
-                HStack(spacing: 7) {
-                    if account.isLoadingModels { ProgressView().controlSize(.small) }
-                    Text(LocalizedStringKey(account.isLoadingModels ? "正在加载模型…" : account.status == .limited ? "额度恢复后重试" : "刷新可用模型"))
+                .disabled(account.isLoadingModels || account.isDisconnecting)
+                Button {
+                    testConnection()
+                } label: {
+                    HStack(spacing: 7) {
+                        if connectionTestID != nil { ProgressView().controlSize(.small) }
+                        Text(LocalizedStringKey(connectionTestID == nil ? "测试套餐连接" : "正在测试套餐连接…"))
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 28)
                 }
+                .disabled(connectionTestID != nil || !account.canSave(modelID: configuration.chatGPTModel, accountID: configuration.chatGPTAccountID))
             }
             .buttonStyle(DaybookSettingsButtonStyle())
-            .disabled(account.isLoadingModels || account.isDisconnecting)
+            .multilineTextAlignment(.center)
+            SettingsFootnote(text: "仅发送固定测试消息，不包含你的记录；会使用少量套餐额度。")
+            if let connectionTestMessage {
+                Text(LocalizedStringKey(connectionTestMessage))
+                    .font(.system(size: 12)).foregroundStyle(DaybookStyle.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityIdentifier("chatgpt.connectionTestResult")
+            }
         }
+    }
+
+    private func testConnection() {
+        cancelConnectionTest()
+        let id = UUID(), modelID = configuration.chatGPTModel, accountID = configuration.chatGPTAccountID
+        guard account.canSave(modelID: modelID, accountID: accountID) else { return }
+        connectionTestID = id
+        connectionTestTask = Task { @MainActor in
+            defer {
+                if connectionTestID == id { connectionTestID = nil; connectionTestTask = nil }
+            }
+            do {
+                _ = try await account.complete(instruction: "This is a connection test. Reply only OK.",
+                    content: "Please confirm that this model can respond.", modelID: modelID, accountID: accountID,
+                    isCurrent: { connectionTestID == id && configuration.chatGPTModel == modelID && configuration.chatGPTAccountID == accountID })
+                guard !Task.isCancelled, connectionTestID == id else { return }
+                connectionTestMessage = "套餐连接成功，模型已完成测试回答。"
+            } catch {
+                guard !Task.isCancelled, connectionTestID == id else { return }
+                connectionTestMessage = error.localizedDescription
+            }
+        }
+    }
+
+    private func cancelConnectionTest() {
+        connectionTestID = nil
+        connectionTestTask?.cancel()
+        connectionTestTask = nil
+        connectionTestMessage = nil
     }
 
     private var accountActions: some View {

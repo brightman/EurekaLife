@@ -14,6 +14,8 @@ related:
 
 # Ask AI 会话、上下文与工具编排
 
+> 2026-11-09：ChatGPT 套餐模式新增 `AskAIChatGPTDriver`，已接入官方 Responses 工具循环与历史压缩。专项测试、模拟器与真机签名构建已通过；真实账号授权及推理验收状态见 [ChatGPT 接入记录](../verification/chatgpt-native.md#opensource-plan-20261109)。下方标注日期的首期边界与实施前基线保留历史事实。
+
 > 2026-11-09 已实现[第二期：历史压缩与记事本 Agent](#memory-notebook-agent-20261108)，范围为查询、统计、关联分析和建议，按 LLM 窗口预算加载／卸载能力。首期历史事实保留；当前代码落点见第 14.11 节，自动测试、编译和设备边界见[验证记录](../verification/ask-ai-runtime-2026-11-01.md#memory-notebook-20261109)。
 
 > 用户于 2026-11-01 回复“同意”，批准首期方案实施；首期自动验证、模拟器、真机和发布状态分别见第 12 节。
@@ -33,7 +35,11 @@ related:
 
 在 iOS 26.3 上增强连续追问、历史压缩、按需读取原文、多轮工具查询和跨类型统计；保持 SQLite 为历史与业务数据的主存储。
 
-**采用“现有 Ask AI 链路 + 应用层运行管理 + 按模型能力选择执行器”。** Apple 模型使用 Foundation Models 原生会话和 Tool；自定义云端模型由应用适配 OpenAI Chat Completions / Anthropic Messages。ChatGPT 账号和本地 Mac 保留现有传输，未验证工具能力前继续使用确定性检索与一次回答。
+**采用“现有 Ask AI 链路 + 应用层运行管理 + 按模型能力选择执行器”。** Apple 模型使用 Foundation Models 原生会话和 Tool；自定义云端模型由应用适配 OpenAI Chat Completions / Anthropic Messages。ChatGPT 套餐模式使用官方 Responses 专用驱动；本地 Mac 保留确定性检索与一次回答。
+
+ChatGPT 驱动通过 `ChatGPTAccountModel.respond` 复用串行刷新、Keychain 持久化、账号代次和来源校验。请求使用 `store:false`、`stream:true`、`eurekalife` 工具 namespace；逐轮携带完整输入、服务端不透明 reasoning 输出及 `call_id` 对应结果，只有 `response.completed` 才算完成。不使用私有接口或不受支持的 `previous_response_id`／输出上限字段。
+
+运行继续受最多 6 次工具、8 次请求和端上时限约束；工具参数最多 2 KiB，序列化上下文还受 96 KiB 传输上限与完整输入的 token 估算预算约束。模型窗口未知时沿用保守的 4,096-token 策略。历史压缩使用同一驱动但不装载工具，原始聊天仍保留在 SQLite；新增工具文字继续受外发许可和证据新鲜度校验约束。服务端拒绝能力或配额不足时明确失败，不自动切换服务。
 
 这次更新相对初稿的主要修正：
 
@@ -166,9 +172,11 @@ flowchart TD
     CT --> SELECT{模型与能力}
     SELECT --> AP[AppleSessionDriver]
     SELECT --> CP[CustomProviderDriver]
-    SELECT --> LEG[ChatGPT / NearbyMac 兼容执行器]
+    SELECT --> CG[ChatGPT Responses Driver]
+    SELECT --> LEG[NearbyMac 兼容执行器]
     AP --> FM[Foundation Models 原生工具循环]
     CP --> LOOP[应用协议循环]
+    CG --> LOOP
     FM --> TOOLS[共用查询工具]
     LOOP --> TOOLS
     TOOLS --> READ[AskAIRecordReader / Speaker / Metrics]
@@ -292,7 +300,7 @@ SQL 负责筛选、去重和可以确定表达的聚合；`life_moment_metadata`
 | local | SystemLanguageModel，一次 respond | 新增 AppleSessionDriver；框架负责内部工具循环 |
 | custom/openai | 自建 JSON + URLSession，文本响应 | 新增 Chat Completions 工具 DTO 与循环；之后支持 SSE |
 | custom/anthropic | Messages API，文本 block | 新增 tool_use/tool_result 与 stop_reason 处理；之后支持 SSE |
-| chatgpt | ChatGPTAccountModel.complete，账号/用量/模型目录检查 | 先保留现有文本路径，不把账号凭据当 API Key；工具能力另验 |
+| chatgpt | AskAIChatGPTDriver → ChatGPTAccountModel.respond；账号/用量/模型目录检查 | 官方 Responses namespace 工具循环与无工具历史压缩；完整输入续传、终止事件和预算校验；真实服务验收另记 |
 | nearbyMac | 配对、证书 pin、局域网请求，stream=false | 保留身份/就绪检查；工具协议需 Companion 同步支持后启用 |
 
 能力按 provider 配置修订 + model ID 缓存，unknown 不等于支持。保留已有 `contextWindowTokens` 配置，不能根据模型名猜容量。无工具能力使用本地确定性检索 + 一次回答，不自动转到其他服务。

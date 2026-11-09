@@ -8,6 +8,7 @@ import CryptoKit
     }
     private let original: DaybookRetrieval.Prepared
     private let records: [DayRecord]
+    private let chatGPTAccount: ChatGPTAccountModel
     private let configuration: AIConfiguration
     private let configurationRevision: Int
     private let turnID: UUID
@@ -56,11 +57,13 @@ import CryptoKit
     init(prepared: DaybookRetrieval.Prepared, records: [DayRecord], configuration: AIConfiguration,
          configurationRevision: Int, turnID: UUID, store: AskAIRuntimeStore,
          notebookPermissions: AgentNotebookPermissions = .init(), notebookReader: AskAINotebookReader? = nil, queryScope: AgentQueryScope? = nil,
+         chatGPTAccount: ChatGPTAccountModel? = nil,
          isCurrent: @escaping @MainActor () -> Bool,
          ensureFresh: @escaping @MainActor () async throws -> Void = {},
          onStage: @escaping @MainActor (String) -> Void,
          authorizeAdditional: @escaping @MainActor (String) async throws -> Void) {
         original = prepared; self.records = records; self.configuration = configuration
+        self.chatGPTAccount = chatGPTAccount ?? .shared
         self.notebookPermissions = notebookPermissions; self.notebookReader = notebookReader
         self.queryScope = queryScope ?? AgentQueryScope(domains:notebookPermissions.allowedDomains,allowedKinds:prepared.evidence.allowedKinds,destination:configuration.isRemote ? .allowedRemote : .localOnly)
         self.configurationRevision = configurationRevision; self.turnID = turnID; self.store = store
@@ -71,6 +74,7 @@ import CryptoKit
         (original.evidence.speakerContactID == nil ? "" : "当前资料仅包含关联联系人的说话人发言；直接概括这些发言，以‘关联为该联系人的说话人在录音中提到’限定，不推断现实身份或出席。\n")
     }
     static func policy(configuration: AIConfiguration) -> AskAIModelBudgetPolicy { AskAIContextBudget.policy(window:configuration.contextWindowTokens,isCustom:configuration.mode == .custom) }
+    private var runtimeModel: String { configuration.mode == .chatgpt ? configuration.chatGPTModel : configuration.model }
     private var policy: AskAIModelBudgetPolicy { Self.policy(configuration:configuration) }
     private var initialBudget: AskAIContextBudget { policy.initial }
     private var workingBudget: AskAIContextBudget { policy.working }
@@ -121,7 +125,7 @@ import CryptoKit
     func prepare() async throws -> DaybookRetrieval.Prepared {
         try check(); guard run == nil else { throw Failure.invalidState }
         generation = try await store.cacheGeneration()
-        run = try await store.startAttempt(turnID:turnID,provider:configuration.mode.rawValue,model:configuration.model,configRevision:String(configurationRevision))
+        run = try await store.startAttempt(turnID:turnID,provider:configuration.mode.rawValue,model:runtimeModel,configRevision:String(configurationRevision))
         history = try await store.runtimeHistory(limit:40).filter { $0.id != turnID && $0.evidence.allowedKinds.isSubset(of:original.evidence.allowedKinds) && $0.evidence.speakerContactID == original.evidence.speakerContactID }
         definitions = relevantDefinitions()
         memoryBlocks = try await store.loadMemoryBlocks(permissionDigest:permissionDigest,destination:queryScope.destination)
@@ -257,6 +261,8 @@ import CryptoKit
             var summarizer: (any AskAIDriving)? = testSummaryDriver
             if summarizer == nil, configuration.mode == .custom, let apiKey {
                 summarizer = try AskAICustomDriver(configuration:configuration,apiKey:apiKey,session:customSession,toolDefinitions:[],outputTokens:workingBudget.outputReserve,check:{ [weak self] in guard let self else { throw CancellationError() }; try await self.ensureFresh(); guard try await self.validateCurrentEvidence() else { throw CancellationError() };try self.check() })
+            } else if summarizer == nil, configuration.mode == .chatgpt {
+                summarizer = try makeChatGPTDriver(toolDefinitions:[])
             } else if summarizer == nil, configuration.mode == .local, #available(iOS 26.3,macOS 26.3,*) {
                 summarizer = AskAIAppleDriver(toolDefinitions:[],budget:workingBudget,execute:{ _ in throw Failure.invalidState })
             }
@@ -267,13 +273,21 @@ import CryptoKit
             try await countRequest(); onStage("正在整理较早的对话…")
             let reply = try await timed(timeout:min(15,summaryTimeout)) { try await summarizer.next(correction:nil) }
             guard reply.calls.isEmpty else { return }
-            let block = try AskAIMemoryBlock.parse(Data(reply.text.utf8),candidate:candidate,model:configuration.model)
+            let block = try AskAIMemoryBlock.parse(Data(reply.text.utf8),candidate:candidate,model:runtimeModel)
             try check(); try await ensureFresh()
             try await store.saveMemoryBlock(block,expectedGeneration:generation,publicationFence:fence)
             memoryBlocks.insert(block,at:0)
             prepared = try bounded(tools?.evidence.map(\.source) ?? original.sources,history:history,memory:nil)
         } catch is CancellationError { try check() }
         catch { try check() } // Optional cache failure preserves original history and read tools.
+    }
+    private func makeChatGPTDriver(toolDefinitions: [[String:Any]]) throws -> AskAIChatGPTDriver {
+        try AskAIChatGPTDriver(configuration:configuration,account:chatGPTAccount,toolDefinitions:toolDefinitions,budget:workingBudget,check:{ [weak self] in
+            guard let self else { throw CancellationError() }
+            try await self.ensureFresh()
+            guard try await self.validateCurrentEvidence() else { throw CancellationError() }
+            try self.check()
+        })
     }
     func generate(apiKey:String?,fallback:any DaybookAnswering) async throws -> AskAIReadTools.Finalized {
         activeStart = ProcessInfo.processInfo.systemUptime; consentSeconds = 0
@@ -290,6 +304,8 @@ import CryptoKit
             let custom = try AskAICustomDriver(configuration:configuration,apiKey:apiKey,session:customSession,toolDefinitions:definitions,outputTokens:workingBudget.outputReserve,check:{ [weak self] in guard let self else { throw CancellationError() }; try await self.ensureFresh(); guard try await self.validateCurrentEvidence() else { throw CancellationError() };try self.check() })
             try await countRequest()
             if try await timed({ try await custom.probe() }) { driver = custom }
+        } else if driver == nil, configuration.mode == .chatgpt {
+            driver = try makeChatGPTDriver(toolDefinitions:definitions)
         } else if driver == nil, configuration.mode == .local {
             if #available(iOS 26.3, macOS 26.3, *) {
                 let native = AskAIAppleDriver(toolDefinitions:definitions,budget:workingBudget,execute:{ [weak self] call in

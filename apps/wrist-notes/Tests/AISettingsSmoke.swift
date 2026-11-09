@@ -83,6 +83,7 @@ private actor FixtureChatGPTAPI: ChatGPTServing {
         if hold { try await Task.sleep(for: .seconds(30)) }
         return "Fixture answer [1]"
     }
+    func respond(_ request:ChatGPTResponsesRequest,accessToken:String) async throws -> ChatGPTResponsesResult { throw ChatGPTError.invalidResponse }
     func revoke(_ credential: ChatGPTCredential) async throws {}
     func setFailure(_ error: ChatGPTError) { refreshFailure = error }
     func setHold() { hold = true }

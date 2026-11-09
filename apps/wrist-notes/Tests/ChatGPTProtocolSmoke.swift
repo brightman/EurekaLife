@@ -143,6 +143,19 @@ private struct SigningFixture {
         }
         let answer = try await api.complete(instruction: "Instruction", content: "Fixture content", model: "model-a", accessToken: "fixture")
         try check(answer == "Hello", "Completed text")
+        // Observed on physical iPhone: HTTP 200 SSE without Content-Type.
+        // The terminal event remains mandatory even when the media header is absent.
+        let streamingHandler = FixtureProtocol.handler!
+        FixtureProtocol.handler = { _ in (200, [:], stream(events)) }
+        let headerlessAnswer = try await api.complete(instruction:"i",content:"c",model:"m",accessToken:"fixture")
+        try check(headerlessAnswer == "Hello", "Headerless completed SSE")
+        FixtureProtocol.handler = { _ in (200, [:], stream([["type":"response.output_text.delta","delta":"Partial"]])) }
+        try await rejects(.incompleteResponse) { _ = try await api.complete(instruction:"i",content:"c",model:"m",accessToken:"fixture") }
+        FixtureProtocol.handler = { _ in (200, [:], Data("data: <html>not a response</html>\n\n".utf8)) }
+        try await rejects(.invalidResponse) { _ = try await api.complete(instruction:"i",content:"c",model:"m",accessToken:"fixture") }
+        FixtureProtocol.handler = { _ in (200, ["Content-Type":"text/html"], stream(events)) }
+        try await rejects(.invalidResponse) { _ = try await api.complete(instruction:"i",content:"c",model:"m",accessToken:"fixture") }
+        FixtureProtocol.handler = streamingHandler
         events = [["type": "response.output_text.delta", "delta": "Partial"]]
         try await rejects(.incompleteResponse) { _ = try await api.complete(instruction: "i", content: "c", model: "m", accessToken: "t") }
         events += [["type": "response.incomplete"]]
@@ -222,6 +235,44 @@ private struct SigningFixture {
         try await rejects(.incompleteResponse) { _ = try await api.complete(instruction: "i", content: "c", model: "m", accessToken: "t") }
         FixtureProtocol.handler = { _ in (200, ["Content-Type": "text/event-stream"], stream([["type": "response.completed", "response": ["status": "completed", "output": []]]])) }
         try await rejects(.invalidResponse) { _ = try await api.complete(instruction: "i", content: "c", model: "m", accessToken: "t") }
+        // A text-only caller must not silently discard model-requested tool execution.
+        FixtureProtocol.handler = { _ in (200, ["Content-Type": "text/event-stream"], stream([["type":"response.completed","response":["status":"completed","output":[
+            ["type":"message","role":"assistant","content":[["type":"output_text","text":"Half answer"]]],
+            ["type":"function_call","namespace":"eurekalife","name":"readRecord","call_id":"call-1","arguments":"{}"]
+        ]]]])) }
+        try await rejects(.invalidResponse) { _ = try await api.complete(instruction:"i",content:"c",model:"m",accessToken:"t") }
+        let tool = ChatGPTResponseTool(name:"readRecord",description:"Read an allowed record",parameters:json(["type":"object","properties":[:]]))
+        let toolRequest = ChatGPTResponsesRequest(model:"m",instruction:"i",input:[.message(role:.user,text:"Original question and history")],tools:[tool])
+        var toolEvents: [[String:Any]] = [["type":"response.completed","response":["status":"completed","output":[
+            ["type":"reasoning","id":"rs_1","summary":[],"encrypted_content":"opaque-fixture"],
+            ["type":"function_call","id":"fc_1","namespace":"eurekalife","name":"readRecord","call_id":"call-1","arguments":"{\"id\":\"record-1\"}","status":"completed"]
+        ]]]]
+        FixtureProtocol.handler = { request in
+            let body = try JSONSerialization.jsonObject(with:requestBody(request)) as! [String:Any]
+            try check(Set(body.keys) == ["model","instructions","input","tools","store","stream","include"],"Only supported stateless fields")
+            let namespaces = body["tools"] as! [[String:Any]]
+            try check(namespaces[0]["type"] as? String == "namespace" && namespaces[0]["name"] as? String == "eurekalife", "Tools are namespaced")
+            let functions = namespaces[0]["tools"] as! [[String:Any]]
+            try check(functions[0]["type"] as? String == "function" && functions[0]["name"] as? String == "readRecord", "Responses function schema")
+            return (200,["Content-Type":"text/event-stream"],stream(toolEvents))
+        }
+        let called = try await api.respond(toolRequest,accessToken:"t")
+        try check(called.text.isEmpty && called.calls.count == 1 && called.calls[0].id == "call-1" && called.output.count == 2,"Tool-only completed result and reasoning retained")
+        toolEvents = [["type":"response.function_call_arguments.done","arguments":"{}"]]
+        try await rejects(.incompleteResponse) { _ = try await api.respond(toolRequest,accessToken:"t") }
+        toolEvents += [["type":"response.failed","response":["error":["code":"subscription_sharing_usage_limit_exceeded"]]]]
+        try await rejects(.usageLimit) { _ = try await api.respond(toolRequest,accessToken:"t") }
+        for calls in [
+            [["name":"readRecord","call_id":"dup","arguments":"{}"],["name":"readRecord","call_id":"dup","arguments":"{}"]],
+            [["name":"deleteRecord","call_id":"unknown","arguments":"{}"]],
+            [["name":"readRecord","call_id":"big","arguments":String(repeating:"a",count:2049)]],
+            [["name":"readRecord","call_id":"scalar","arguments":"[]"]]
+        ] {
+            toolEvents = [["type":"response.completed","response":["status":"completed","output":calls.map { $0.merging(["type":"function_call","namespace":"eurekalife"]) { a,_ in a } }]]]
+            try await rejects(.invalidResponse) { _ = try await api.respond(toolRequest,accessToken:"t") }
+        }
+        toolEvents = [["type":"response.completed","response":["status":"completed","output":[["type":"function_call","namespace":"foreign","name":"readRecord","call_id":"bad-ns","arguments":"{}"]]]]]
+        try await rejects(.invalidResponse) { _ = try await api.respond(toolRequest,accessToken:"t") }
         try check(ChatGPTAPI.failure(status: 403, code: "subscription_sharing_route_not_supported", requestID: "req-fixture") == .http(status: 403, code: "subscription_sharing_route_not_supported", requestID: "req-fixture"), "Route errors retain exact safe diagnosis")
         try check(ChatGPTAPI.failure(status: 401, body: json(["detail": "admission denied"]), requestID: nil) == .permissionMissing, "Admission 401 retains credential")
         try check(ChatGPTAPI.failure(status: 401, code: "subscription_sharing_invalid_user") == .permissionMissing, "Subscriber admission failure is not confirmed session revocation")

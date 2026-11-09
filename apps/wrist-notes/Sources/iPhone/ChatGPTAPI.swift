@@ -102,21 +102,29 @@ final class ChatGPTAPI {
     }
 
     func complete(instruction: String, content: String, model: String, accessToken: String) async throws -> String {
-        guard !model.isEmpty, model.utf8.count <= 512, instruction.utf8.count + content.utf8.count <= 1_048_576 else { throw ChatGPTError.invalidResponse }
+        let result = try await respond(.init(model:model,instruction:instruction,input:[.message(role:.user,text:content)],tools:[]),accessToken:accessToken)
+        guard result.calls.isEmpty else { throw ChatGPTError.invalidResponse }
+        return result.text
+    }
+
+    func respond(_ request: ChatGPTResponsesRequest, accessToken: String) async throws -> ChatGPTResponsesResult {
         var req = URLRequest(url: URL(string: Self.resource + "/responses")!)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.setValue("text/event-stream", forHTTPHeaderField: "Accept")
         try authorize(&req, token: accessToken)
-        req.httpBody = try JSONSerialization.data(withJSONObject: ["model": model, "instructions": instruction,
-            "input": [["role": "user", "content": content]], "store": false, "stream": true])
+        req.httpBody = try request.encodedBody()
         let (bytes, response) = try await open(req)
         guard (200..<300).contains(response.statusCode) else {
             let body = try await collect(bytes, limit: 262_144)
             throw Self.failure(status: response.statusCode, body: body, requestID: response.value(forHTTPHeaderField: "x-request-id"))
         }
-        guard response.value(forHTTPHeaderField: "Content-Type")?.lowercased().split(separator: ";").first?.trimmingCharacters(in: .whitespaces) == "text/event-stream" else { throw ChatGPTError.invalidResponse }
-        var parser = ChatGPTEventStream()
+        // Some successful plan-usage streams omit Content-Type. They still must
+        // pass the bounded SSE parser and a complete terminal response below.
+        let mediaType = response.value(forHTTPHeaderField: "Content-Type")?.lowercased()
+            .split(separator: ";").first?.trimmingCharacters(in: .whitespaces)
+        guard mediaType == nil || mediaType == "text/event-stream" else { throw ChatGPTError.invalidResponse }
+        var parser = ChatGPTEventStream(tools:request.tools)
         var total = 0
         do {
             for try await byte in bytes {
@@ -276,7 +284,8 @@ private struct ChatGPTEventStream {
     private var previousCR = false
     private var eventName: String?
     private var completed = false
-    private var output = ""
+    private var output: ChatGPTResponsesResult?
+    let tools: [ChatGPTResponseTool]
     private var delta = ""
 
     mutating func accept(_ byte: UInt8) throws {
@@ -322,28 +331,15 @@ private struct ChatGPTEventStream {
             throw ChatGPTAPI.failure(status: 400, code: code)
         case "response.incomplete": throw ChatGPTError.incompleteResponse
         case "response.completed":
-            guard let response = object["response"] as? [String: Any], response["status"] as? String == "completed",
-                  response["error"] == nil || response["error"] is NSNull else { throw ChatGPTError.invalidResponse }
-            var texts: [String] = []
-            if let items = response["output"] as? [[String: Any]] {
-                for item in items where item["type"] as? String == "message" && item["role"] as? String == "assistant" {
-                    if let content = item["content"] as? [[String: Any]] {
-                        for piece in content where piece["type"] as? String == "output_text" {
-                            guard let text = piece["text"] as? String else { throw ChatGPTError.invalidResponse }
-                            texts.append(text)
-                        }
-                    }
-                }
-            }
-            let text = texts.joined(separator: "\n")
-            guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, text.utf8.count <= 262_144 else { throw ChatGPTError.invalidResponse }
-            output = text; completed = true
+            guard let response = object["response"] as? [String:Any] else { throw ChatGPTError.invalidResponse }
+            output = try ChatGPTResponsesResult.completed(response,tools:tools); completed = true
         default: break
         }
     }
-    mutating func finish() throws -> String {
+    mutating func finish() throws -> ChatGPTResponsesResult {
         // An unfinished SSE event is a truncated response, even after valid earlier deltas.
         guard line.isEmpty, eventData.isEmpty, completed else { throw ChatGPTError.incompleteResponse }
+        guard let output else { throw ChatGPTError.incompleteResponse }
         return output
     }
 }

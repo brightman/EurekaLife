@@ -142,7 +142,7 @@ struct AISettingsView: View {
                     editor.selectMode(.nearbyMac)
                 }
                 ModelChoice(title: "ChatGPT 账号", badge: "云端",
-                            description: "使用已有 ChatGPT 账号，按套餐额度在云端处理。",
+                            description: "支持符合条件的 ChatGPT Plus / Pro 套餐，使用套餐额度在云端处理，无需 API Key。",
                             selected: editor.configuration.mode == .chatgpt) {
                     editor.selectMode(.chatgpt)
                 }

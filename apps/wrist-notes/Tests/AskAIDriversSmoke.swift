@@ -63,6 +63,7 @@ private actor RuntimeAccountAPI: ChatGPTServing {
     }
     func models(accessToken:String) async throws -> [ChatGPTModel] { catalogs += 1; try await Task.sleep(nanoseconds:40_000_000); return [.init(id:"fixture-model",displayName:"Fixture")] }
     func complete(instruction:String,content:String,model:String,accessToken:String) async throws -> String { requests += 1; return "fixture [1]" }
+    func respond(_ request:ChatGPTResponsesRequest,accessToken:String) async throws -> ChatGPTResponsesResult { throw ChatGPTError.invalidResponse }
     func revoke(_ credential:ChatGPTCredential) async throws {}
     func counts() -> (Int,Int,Int) { (refreshes,catalogs,requests) }
 }

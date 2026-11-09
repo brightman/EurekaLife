@@ -41,3 +41,15 @@ Mac Companion 要求 Apple silicon 和 macOS 15+；MLX Metal shaders 需要 Xcod
 此仓库在 2026-11-06 导入两端的当前工作区代码，包含 iPhone 的 Eureka Ring 合并和本地功能修改。导入为独立初始提交，不包含 Vessel 服务端、Web console 或原仓库历史。历史验证文字保留当时结论，未随代码导入的截图、设备报告及本地文件会明确标注。
 
 第三方代码、模型和 SDK 保留各自声明与许可；仓库公开不改变这些许可。相关说明位于 `apps/wrist-notes/Vendor`、各 App 资源与 `pods/br_flutter_plugin_ble/Licenses`。
+
+## 开源许可
+
+EurekaLife 自有源码与项目文档采用 [Apache License 2.0](LICENSE)，另有明确声明的文件除外。版权归各贡献者所有；品牌素材见 [品牌使用规则](TRADEMARKS.md)。第三方 SDK、开源依赖和模型保持原许可，详见 [第三方许可索引](THIRD_PARTY_NOTICES.md) 与 [NOTICE](NOTICE)。
+
+仓库包含独立许可的 Ring SDK，不代表这些二进制也采用 Apache-2.0。只开发 iPhone／Apple Watch 时，可以关闭 `Config/BuildFeatures.json` 中的 Ring 开关并重新运行 `pod install --no-repo-update`，使用不依赖该 SDK 的构建。
+
+## ChatGPT 套餐模型服务
+
+在 iPhone 的「设置 → AI 模型」中选择 ChatGPT，使用官方 Continue with ChatGPT 完成套餐授权，选择账号可用模型并测试连接。连接只用于 LLM 请求，不创建 EurekaLife 登录账号；授权凭证留在本机 Keychain。测试连接只发送固定测试消息，实际任务按现有发送范围规则使用文字。账号资格、可用模型和额度以 OpenAI 返回结果为准。
+
+当前实现与设备验证边界见 [ChatGPT 接入记录](apps/wrist-notes/verification/chatgpt-native.md#opensource-plan-20261109)。

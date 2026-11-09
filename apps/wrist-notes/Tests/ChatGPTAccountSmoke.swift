@@ -41,6 +41,12 @@ private actor FixtureChatGPTAPI: ChatGPTServing {
         if hold { try await Task.sleep(for: .seconds(30)) }
         return "Fixture answer [1]"
     }
+    func respond(_ request: ChatGPTResponsesRequest, accessToken: String) async throws -> ChatGPTResponsesResult {
+        requestCount += 1
+        if let completionHook { await completionHook() }
+        if hold { try await Task.sleep(for: .seconds(30)) }
+        return .init(text:"Structured fixture",calls:[],output:[])
+    }
     func revoke(_ credential: ChatGPTCredential) async throws {}
     func setFailure(_ error: ChatGPTError) { refreshFailure = error }
     func setHold() { hold = true }
@@ -183,6 +189,33 @@ struct ChatGPTAccountSmoke {
             let count = await staleAPI.counts()
             precondition(count.2 == 0, "no inference after consent invalidates during refresh/catalog")
         }
+        // Structured requests share the existing lifecycle, including refresh persistence and source guards.
+        let structuredRequest = ChatGPTResponsesRequest(model:"fixture-model",instruction:"Fixture",input:[.message(role:.user,text:"approved")],tools:[])
+        let structuredAPI = FixtureChatGPTAPI(), structuredStore = MemoryChatGPTStore(vault(expired:true))
+        let structured = ChatGPTAccountModel(storage:structuredStore,api:structuredAPI,defaults:defaults,isEnabled:true)
+        async let structuredFirst = structured.respond(structuredRequest,accountID:"fixture-client")
+        async let structuredSecond = structured.complete(instruction:"Fixture",content:"approved",modelID:"fixture-model",accountID:"fixture-client")
+        _ = try await (structuredFirst,structuredSecond)
+        let structuredCounts = await structuredAPI.counts()
+        precondition(structuredCounts.0 == 1 && structuredCounts.1 == 1 && structuredCounts.2 == 2,"structured and text requests serialize refresh/catalog")
+        precondition(structuredStore.value?.registrations[0].credential?.refreshToken == "rotated-fixture-refresh")
+        for expired in [true,false] {
+            let changingAPI = FixtureChatGPTAPI()
+            let changing = ChatGPTAccountModel(storage:MemoryChatGPTStore(vault(expired:expired)),api:changingAPI,defaults:defaults,isEnabled:true)
+            var currentSource = true
+            let pending = Task { try await changing.respond(structuredRequest,accountID:"fixture-client",sourceIsCurrent:{ await Task.yield();return currentSource }) }
+            while true { let counts = await changingAPI.counts();if expired ? counts.0 > 0 : counts.1 > 0 { break };await Task.yield() }
+            currentSource = false
+            do { _ = try await pending.value;fatalError("structured request sent a stale source") } catch is CancellationError {}
+            let counts = await changingAPI.counts();precondition(counts.2 == 0)
+        }
+        let switchingAPI = FixtureChatGPTAPI()
+        let switching = ChatGPTAccountModel(storage:MemoryChatGPTStore(vault()),api:switchingAPI,defaults:defaults,isEnabled:true)
+        await switchingAPI.setHold()
+        let switchingPending = Task { try await switching.respond(structuredRequest,accountID:"fixture-client") }
+        while await switchingAPI.counts().2 < 1 { await Task.yield() }
+        await switching.selectAccount("fixture-client") // Even reselecting advances the account generation.
+        do { _ = try await switchingPending.value;fatalError("structured account-generation change returned a result") } catch is CancellationError {}
         let summaryStore = MemoryChatGPTStore(vault()), summaryAPI = FixtureChatGPTAPI()
         // Model/account selection can remain current while newly received GPS or ASR
         // changes the approved source during credential/catalog suspension.

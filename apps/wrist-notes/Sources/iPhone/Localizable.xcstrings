@@ -1,6 +1,167 @@
 {
   "sourceLanguage" : "zh-Hans",
   "strings" : {
+    "仅发送固定测试消息，不包含你的记录；会使用少量套餐额度。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sends only a fixed test message, without your records. Uses a small amount of your plan allowance."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "記録を含まない固定のテストメッセージのみを送信します。プランの利用枠を少量消費します。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "仅发送固定测试消息，不包含你的记录；会使用少量套餐额度。"
+          }
+        }
+      }
+    },
+    "套餐连接成功，模型已完成测试回答。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plan connection successful. The model completed the test response."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プラン接続に成功しました。モデルのテスト回答が完了しました。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "套餐连接成功，模型已完成测试回答。"
+          }
+        }
+      }
+    },
+    "授权使用你的 ChatGPT 套餐调用 AI，无需 API Key。这只连接模型服务，不用于登录 EurekaLife。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Authorize AI requests using your ChatGPT plan. No API key needed. This connects a model service, not a sign-in to EurekaLife."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ChatGPT プランを使う AI リクエストを許可します。API キーは不要です。EurekaLife へのログインではなく、モデルサービスへの接続です。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "授权使用你的 ChatGPT 套餐调用 AI，无需 API Key。这只连接模型服务，不用于登录 EurekaLife。"
+          }
+        }
+      }
+    },
+    "正在测试套餐连接…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Testing plan connection…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プラン接続をテスト中…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在测试套餐连接…"
+          }
+        }
+      }
+    },
+    "此版本尚未启用 ChatGPT 套餐连接。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ChatGPT plan access is not enabled in this build."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このバージョンでは ChatGPT プランへの接続が有効になっていません。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此版本尚未启用 ChatGPT 套餐连接。"
+          }
+        }
+      }
+    },
+    "此版本尚未启用 ChatGPT 套餐连接。请使用支持此功能的版本。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ChatGPT plan access is not enabled in this build. Please use a version that supports this feature."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このバージョンでは ChatGPT プランへの接続が有効になっていません。対応バージョンをご利用ください。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此版本尚未启用 ChatGPT 套餐连接。请使用支持此功能的版本。"
+          }
+        }
+      }
+    },
+    "测试套餐连接" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Test plan connection"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プラン接続をテスト"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "测试套餐连接"
+          }
+        }
+      }
+    },
     "·" : {
 
     },
@@ -3645,25 +3806,25 @@
         }
       }
     },
-    "使用已有 ChatGPT 账号，按套餐额度在云端处理。" : {
-      "extractionState" : "stale",
+    "支持符合条件的 ChatGPT Plus / Pro 套餐，使用套餐额度在云端处理，无需 API Key。" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Use your ChatGPT account and plan allowance for cloud processing."
+            "value" : "Eligible ChatGPT Plus and Pro plans support cloud AI using your plan allowance. No API key needed."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ChatGPT アカウントとプランの利用枠でクラウド処理します。"
+            "value" : "対象の ChatGPT Plus / Pro プランの利用枠でクラウド AI を使えます。API キーは不要です。"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "使用已有 ChatGPT 账号，按套餐额度在云端处理。"
+            "value" : "支持符合条件的 ChatGPT Plus / Pro 套餐，使用套餐额度在云端处理，无需 API Key。"
           }
         }
       }

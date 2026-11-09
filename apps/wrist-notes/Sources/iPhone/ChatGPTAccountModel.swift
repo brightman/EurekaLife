@@ -7,6 +7,7 @@ protocol ChatGPTServing {
     func refresh(_ credential: ChatGPTCredential) async throws -> ChatGPTCredential
     func models(accessToken: String) async throws -> [ChatGPTModel]
     func complete(instruction: String, content: String, model: String, accessToken: String) async throws -> String
+    func respond(_ request: ChatGPTResponsesRequest, accessToken: String) async throws -> ChatGPTResponsesResult
     func revoke(_ credential: ChatGPTCredential) async throws
 }
 extension ChatGPTAPI: ChatGPTServing {}
@@ -40,7 +41,7 @@ final class ChatGPTAccountModel: ObservableObject {
     private var connectionTask: Task<Void, Never>?
     private var refreshTask: (id: UUID, task: Task<ChatGPTCredential, Error>)?
     private var catalogTask: (id: UUID, task: Task<[ChatGPTModel], Error>)?
-    private var requestTasks: [UUID: Task<String, Error>] = [:]
+    private var requestTasks: [UUID: () -> Void] = [:]
     #if os(iOS)
     private let browser = ChatGPTBrowserAuthorization()
     #endif
@@ -141,7 +142,7 @@ final class ChatGPTAccountModel: ObservableObject {
         isLoadingModels = false
         refreshTask?.task.cancel(); refreshTask = nil
         catalogTask?.task.cancel(); catalogTask = nil
-        requestTasks.values.forEach { $0.cancel() }; requestTasks.removeAll()
+        requestTasks.values.forEach { $0() }; requestTasks.removeAll()
     }
 
     func acknowledgePlan() {
@@ -285,6 +286,24 @@ final class ChatGPTAccountModel: ObservableObject {
     func complete(instruction: String, content: String, modelID: String, accountID: String,
                   isCurrent: @escaping @MainActor () -> Bool = { true },
                   sourceIsCurrent: @escaping @MainActor () async throws -> Bool = { true }) async throws -> String {
+        try await authorizedRequest(modelID:modelID,accountID:accountID,isCurrent:isCurrent,sourceIsCurrent:sourceIsCurrent) { api,token in
+            try await api.complete(instruction:instruction,content:content,model:modelID,accessToken:token)
+        }
+    }
+
+    func respond(_ request: ChatGPTResponsesRequest, accountID: String,
+                 isCurrent: @escaping @MainActor () -> Bool = { true },
+                 sourceIsCurrent: @escaping @MainActor () async throws -> Bool = { true }) async throws -> ChatGPTResponsesResult {
+        try await authorizedRequest(modelID:request.model,accountID:accountID,isCurrent:isCurrent,sourceIsCurrent:sourceIsCurrent) { api,token in
+            try await api.respond(request,accessToken:token)
+        }
+    }
+
+    /// Text inference and tool continuations share the same grant, refresh, and cancellation fence.
+    private func authorizedRequest<T: Sendable>(modelID: String, accountID: String,
+        isCurrent: @escaping @MainActor () -> Bool,
+        sourceIsCurrent: @escaping @MainActor () async throws -> Bool,
+        operation: @escaping @MainActor (any ChatGPTServing, String) async throws -> T) async throws -> T {
         try Task.checkCancellation()
         guard isCurrent() else { throw CancellationError() }
         guard !storageFailed else { throw ChatGPTError.storage }
@@ -311,9 +330,9 @@ final class ChatGPTAccountModel: ObservableObject {
                 guard let self, isCurrent(), self.isReady, self.generation == version,
                       self.selectedID == accountID else { throw CancellationError() }
                 // This MainActor check is immediately before invoking the transport.
-                return try await api.complete(instruction: instruction, content: content, model: modelID, accessToken: credential.accessToken)
+                return try await operation(api,credential.accessToken)
             }
-            requestTasks[requestID] = task
+            requestTasks[requestID] = { task.cancel() }
             defer { requestTasks[requestID] = nil }
             let text = try await withTaskCancellationHandler(operation: { try await task.value }, onCancel: { task.cancel() })
             try Task.checkCancellation()

@@ -108,6 +108,7 @@
 		692DB95FD6B051A1341200A7 /* AudioSourceDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45BC086F8C7DEE4D6385EBEC /* AudioSourceDiscovery.swift */; };
 		6A0356C56EF7AB11FC0AF4B7 /* Pods_RingIntegrationTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F0DF8C039A7DBA0789BC035 /* Pods_RingIntegrationTests.framework */; };
 		6A2A524FA8ED365A8F074593 /* ContentSegmentRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3EB2CC88406D78A5F8C5652 /* ContentSegmentRepository.swift */; };
+		6A2BC3EBD618831F99150EB9 /* AskAIChatGPTDriver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C77F48E14E32553C5DA2912 /* AskAIChatGPTDriver.swift */; };
 		6A417F124A5BCC95CE4CE9AE /* ContentSegmentPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13ACF97FC86547D454A75153 /* ContentSegmentPresentation.swift */; };
 		6B954FF25137DF2AAD90207F /* PlaybackAudioSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FCCADFC742E09D3B2DB7132 /* PlaybackAudioSession.swift */; };
 		6D41594AA577F0577E2DA446 /* FlashCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FE4A8C3060EBD36556043CD /* FlashCaptureService.swift */; };
@@ -402,6 +403,7 @@
 		376FDDC2ACFE631C13E0F2AF /* DaybookPreferences.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DaybookPreferences.swift; sourceTree = "<group>"; };
 		37858EE0C328F109A2325CCD /* RecordingAudioFile.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RecordingAudioFile.swift; sourceTree = "<group>"; };
 		3C1F98B9E5B53E21F77026AC /* WatchRetentionSettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WatchRetentionSettingsView.swift; sourceTree = "<group>"; };
+		3C77F48E14E32553C5DA2912 /* AskAIChatGPTDriver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AskAIChatGPTDriver.swift; sourceTree = "<group>"; };
 		3E23E7A9462D7E8A0299CE36 /* PhotoRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PhotoRepository.swift; sourceTree = "<group>"; };
 		3E86DB5D82E2C32CF329F548 /* ChatGPTSettingsSection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChatGPTSettingsSection.swift; sourceTree = "<group>"; };
 		3E9F6DB4870648661FBD4A50 /* AskAINotebookReader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AskAINotebookReader.swift; sourceTree = "<group>"; };
@@ -883,6 +885,7 @@
 				3E9F6DB4870648661FBD4A50 /* AskAINotebookReader.swift */,
 				8F4079515F6F1C08E0B98E2B /* AskAIReferenceView.swift */,
 				EA9C91EE0C7E84018DC432DA /* AskAINotebookIndex.swift */,
+				3C77F48E14E32553C5DA2912 /* AskAIChatGPTDriver.swift */,
 			);
 			path = iPhone;
 			sourceTree = "<group>";
@@ -1566,6 +1569,7 @@
 				A92618D98699983C70EA9B75 /* AskAINotebookReader.swift in Sources */,
 				4968E1ECE0E6F0814A25C392 /* AskAIReferenceView.swift in Sources */,
 				EB8A1C3B99CA6FDF71C35295 /* AskAINotebookIndex.swift in Sources */,
+				6A2BC3EBD618831F99150EB9 /* AskAIChatGPTDriver.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

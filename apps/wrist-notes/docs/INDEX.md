@@ -124,6 +124,10 @@ App 对外统一为 EurekaLife，历史文档保留当时名称。构建 16 已�
 
 ### 2026-11-09
 
+- **Apache-2.0 与 ChatGPT 套餐** · 官方授权、合成连接测试、Agent 工具循环与历史压缩已实现；专项测试和两端构建通过，真机原位安装，官方授权、固定文本和合成工具续传通过，并修复缺少 SSE 响应头的兼容问题。设置补充 Plus／Pro 套餐说明，刷新与连接测试按钮并排，真机显示已核验。当前验证进度见 [实施与验收](../verification/chatgpt-native.md#opensource-plan-20261109)，计划见 [任务计划](../../../docs/work/2026-11-09-chatgpt-plan-usage/plan.md)。
+
+- **ChatGPT 套餐调用范围** · 仅授权用户套餐调用 LLM，不建立 EurekaLife 注册／登录会话。源码已按独立模型连接实现；此前范围确认阶段仅更新说明和申请需求草稿；后续开启与验证见上条，申请未发送。见 [产品与技术边界](../verification/chatgpt-native.md#plan-usage-scope-20261109)。
+
 - **Ask AI 历史与记事本** · 完整问答压缩、灵感／记账／人物／地点只读查询、精确统计、类型化引用、跨轮权限继承和按模型窗口装载能力。专项回归、复审和完整模拟器构建通过，未安装或发布；既有独立脚本限制另记。见 [实现](ask-ai-session-orchestration.md#memory-notebook-agent-20261108)、[Prompt](ai-prompts.md)、[SQLite](local-data-schema.md)、[验证](../verification/ask-ai-runtime-2026-11-01.md#memory-notebook-20261109)。
 
 ### 2026-11-08
