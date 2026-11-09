@@ -15,6 +15,13 @@ final class DaybookPreferences: ObservableObject {
     @Published var allowHealth: Bool { didSet { defaults.set(allowHealth, forKey: key("allowHealth")) } }
     @Published var allowCalendar: Bool { didSet { defaults.set(allowCalendar, forKey: key("allowCalendar")) } }
     @Published var allowLocation: Bool { didSet { defaults.set(allowLocation, forKey: key("allowLocation")) } }
+    @Published var allowIdeas: Bool { didSet { defaults.set(allowIdeas, forKey: key("allowIdeas")) } }
+    @Published var allowLedger: Bool { didSet { defaults.set(allowLedger, forKey: key("allowLedger")) } }
+    @Published var allowPeople: Bool { didSet { defaults.set(allowPeople, forKey: key("allowPeople")) } }
+    @Published var allowPlaces: Bool { didSet { defaults.set(allowPlaces, forKey: key("allowPlaces")) } }
+    var notebookPermissions: AgentNotebookPermissions {
+        .init(allowIdeas:allowIdeas,allowLedger:allowLedger,allowPeople:allowPeople,allowPlaces:allowPlaces)
+    }
     func allows(_ kind: DayRecord.Kind) -> Bool {
         switch kind { case .voice, .thought: allowAudio; case .image: allowPhotos; case .activity, .sleep: allowHealth; case .calendar: allowCalendar; case .location: allowLocation }
     }
@@ -62,6 +69,10 @@ final class DaybookPreferences: ObservableObject {
         allowHealth = bool("allowHealth", fallback: false)
         allowCalendar = bool("allowCalendar", fallback: false)
         allowLocation = bool("allowLocation", fallback: false)
+        allowIdeas = bool("allowIdeas", fallback: false)
+        allowLedger = bool("allowLedger", fallback: false)
+        allowPeople = bool("allowPeople", fallback: false)
+        allowPlaces = bool("allowPlaces", fallback: false)
         quietEnabled = bool("quietEnabled", fallback: true)
         quietStartMinutes = integer("quietStartMinutes", fallback: 22 * 60, range: 0...1439)
         quietEndMinutes = integer("quietEndMinutes", fallback: 8 * 60, range: 0...1439)

@@ -61,7 +61,7 @@ struct NotebookPlacesView:View {
     }
 }
 
-private struct NotebookPlaceDetail:View {
+struct NotebookPlaceDetail:View {
     let place:NotebookPlace
     let onOpenSource:(UUID)->Void
     @Environment(\.dismiss) private var dismiss

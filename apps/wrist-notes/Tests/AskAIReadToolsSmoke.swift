@@ -72,6 +72,43 @@ import Foundation
         do { _ = try await freshTools.execute(name:"readRecord",arguments:Data("{\"id\":\"\(records[0].id.uuidString)\"}".utf8)); throw Failed(message:"stale edit read") } catch AskAIReadTools.Failure.staleEvidence { }
         let revokedSpeaker = AskAIReadTools(prepared:speaker,records:records,scopeIsCurrent:{false})
         do { _ = try await revokedSpeaker.execute(name:"readRecord",arguments:Data("{\"id\":\"\(records[0].id.uuidString)\"}".utf8)); throw Failed(message:"revoked speaker read") } catch AskAIReadTools.Failure.staleEvidence { }
-        print("Ask AI read tools: scope, identity, citations, typed metrics, history and limits passed")
+        try await testNotebookAndHistory(prepared:prepared,records:records,day:day)
+        print("Ask AI read tools: scope, mixed citations, original history, unloaded tools, typed metrics and limits passed")
     }
+    @MainActor static func testNotebookAndHistory(prepared:DaybookRetrieval.Prepared,records:[DayRecord],day:Date) async throws {
+        let root=FileManager.default.temporaryDirectory.appendingPathComponent("ask-tools-\(UUID())")
+        defer { try? FileManager.default.removeItem(at:root) }
+        let url=root.appendingPathComponent("fixture.sqlite3"),db=try DaybookDatabase(url:url)
+        try db.execute("CREATE TABLE flash_assets(id TEXT PRIMARY KEY,source_id TEXT,kind TEXT,captured_at REAL,revision INTEGER,revoked INTEGER,ready INTEGER,currency TEXT,direction TEXT,amount_minor INTEGER,payload BLOB)")
+        try db.execute("INSERT INTO flash_assets VALUES('ledger-string-id','deleted-parent','expense',0,1,0,1,'USD','expense',1234,?)",[.blob(Data(#"{"title":"Lunch","text":"Lunch body","date":"2026-11-01"}"#.utf8))])
+        let scope=AgentQueryScope(domains:[.timeline,.ledger,.conversation],allowedKinds:[.voice])
+        let reader=AskAINotebookReader(databaseURL:url,permissions:.init(allowLedger:true),scope:scope)
+        let tools=AskAIReadTools(prepared:prepared,records:records,notebookReader:reader,queryScope:scope,enabledToolNames:["aggregateLedger","searchRecords"])
+        let result=try await tools.execute(name:"aggregateLedger",arguments:Data("{}".utf8))
+        try check(result.text.contains("USD expense") && result.text.contains("amountMinor=1234") && !result.text.contains("querySpecification"),"compact exact ledger values precede hidden internal metadata")
+        let ledger=tools.evidenceRefs[0],timeline=tools.evidence[0]
+        try check(ledger.number != timeline.source.number,"global number namespace")
+        let final=try tools.finalize(answer:"Total [\(ledger.number)]; original record [\(timeline.source.number)].")
+        try check(final.evidenceRefs.map(\.number)==[1,2] && final.sources.map(\.number)==[2],"mixed refs renumber and legacy timeline subset matches")
+        try check(final.prepared.directResponse == nil && final.evidenceRefs[0].entityID.hasPrefix("aggregate:"),"tool answers clear direct response; string aggregate identity")
+        let initialValid=try await tools.validateEvidence();try check(initialValid,"mixed current validation")
+        try db.execute("UPDATE flash_assets SET amount_minor=2000 WHERE id='ledger-string-id'")
+        let changedValid=try await tools.currentEvidenceValidation();try check(!changedValid,"current mixed scope detects mutation")
+        do { _=try await tools.execute(name:"readRecord",arguments:Data("{}".utf8));throw Failed(message:"unloaded known tool executed") } catch AskAIReadTools.Failure.unknownTool {}
+        let store=DaybookConversationStore(url:root.appendingPathComponent("absent.json"),database:db)
+        var originals:[DaybookConversationTurn]=[]
+        for i in 0..<55 {
+            let turn=DaybookConversationTurn(id:UUID(),question:"old question \(i)",text:i == 2 ? "1. First plan\n2. EXACT_SECOND_POINT\n3. Third plan\nOld source [99]" : "answer \(i)",generated:true,provider:"synthetic",evidence:prepared.evidence,sources:[],scopeDescription:"fixture",state:.completed,createdAt:day.addingTimeInterval(Double(i)))
+            try store.saveTurn(turn,day:day);originals.append(turn)
+        }
+        let historyTools=AskAIReadTools(prepared:prepared,records:records,runtimeStore:AskAIRuntimeStore(conversationStore:store),queryScope:scope)
+        let found=try await historyTools.execute(name:"searchConversationHistory",arguments:Data(#"{"query":"EXACT_SECOND_POINT"}"#.utf8))
+        try check(found.text.contains(originals[2].id.uuidString) && found.text.contains("EXACT_SECOND_POINT"),"SQL searches original answer beyond40 loaded turns")
+        let exact=try await historyTools.execute(name:"readConversationTurn",arguments:Data("{\"id\":\"\(originals[2].id)\"}".utf8))
+        try check(!exact.text.contains("[99]") && exact.text.contains("(historical source 99)"),"old citation brackets cannot alias fresh runtime sources")
+        try check(exact.text.contains("1. First plan\n2. EXACT_SECOND_POINT\n3. Third plan") && historyTools.evidenceRefs.contains(where:{$0.domain == .conversation}),"exact original numbered answer and typed conversation ref")
+        let historyValid=try await historyTools.validateEvidence();try check(historyValid,"original history refs validate")
+        try check(try store.load().first?.turns.map(\.id) == originals.map(\.id),"read tools preserve all history order and IDs")
+    }
+
 }

@@ -116,11 +116,15 @@ struct DaybookRetrieval {
         }
 
         /// Rebuild the final citation view without broadening or reconstructing its evidence snapshot.
-        func projecting(sources: [Source], context: String) -> Prepared {
+        func projecting(sources: [Source], context: String, allowRuntime: Bool = false) -> Prepared {
             Prepared(question: question, providerQuestion: providerQuestion, questionReferenceIDs: questionReferenceIDs,
                      dayStart: dayStart, dayEnd: dayEnd, dateLabel: dateLabel, statistics: statistics,
-                     matchedCount: matchedCount, sources: sources, context: context, directResponse: directResponse,
+                     matchedCount: matchedCount, sources: sources, context: context, directResponse: allowRuntime ? nil : directResponse,
                      scopeDescription: scopeDescription, evidence: evidence)
+        }
+
+        func responding(_ text: String) -> Prepared {
+            Prepared(question:question,providerQuestion:providerQuestion,questionReferenceIDs:questionReferenceIDs,dayStart:dayStart,dayEnd:dayEnd,dateLabel:dateLabel,statistics:statistics,matchedCount:matchedCount,sources:[],context:"",directResponse:text,scopeDescription:scopeDescription,evidence:evidence)
         }
 
         private init(question: String, providerQuestion: String, questionReferenceIDs: [Int: UUID], dayStart: Date,

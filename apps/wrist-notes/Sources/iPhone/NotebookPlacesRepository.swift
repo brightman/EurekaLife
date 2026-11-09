@@ -124,6 +124,17 @@ final class NotebookPlacesRepository {
         }
         return sources.keys.sorted(by:>).map { .init(day:$0,sourceCount:sources[$0]!.count) }
     }
+    /// Read the current saved place without rebuilding its evidence index.
+    func lookup(_ id: String, now: Date = .now) throws -> NotebookPlace? {
+        let days = try visitDays(placeID:id,now:now)
+        guard !days.isEmpty else { return nil }
+        let label = try db.query("SELECT * FROM notebook_place_labels WHERE place_id=?", [.text(id)]).first
+        let fallback = try db.query("SELECT display_label,coordinate_label FROM notebook_place_evidence WHERE place_id=? ORDER BY (display_label IS NULL),captured_at DESC,id LIMIT 1", [.text(id)]).first
+        let name = label?["name"]?.string ?? ""
+        return .init(id:id,name:name.isEmpty ? (fallback?["display_label"]?.string ?? "未命名区域") : name,
+                     type:label?["type"]?.string,days:days.count,revision:Int(label?["revision"]?.double ?? 0),
+                     coordinateHint:fallback?["coordinate_label"]?.string,address:fallback?["display_label"]?.string)
+    }
     func visits(placeID:String,day:String? = nil,now:Date = .now,limit:Int = 50,offset:Int = 0) throws -> [NotebookPlaceVisit] {
         let rows=try db.query("SELECT * FROM notebook_place_evidence WHERE place_id=? AND (? IS NULL OR day=?) ORDER BY day DESC,captured_at DESC,id",[.text(placeID),day.map{.text($0)} ?? .null,day.map{.text($0)} ?? .null])
         // Keep every different-time observation; the list groups by day without inflating day counts.

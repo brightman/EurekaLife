@@ -1,6 +1,6 @@
 # EurekaLife 文档入口
 
-类型：导航 · 状态：current · 更新：2026-11-08 · 适用：EurekaLife iPhone／Watch、Mac Companion。
+类型：导航 · 状态：current · 更新：2026-11-09 · 适用：EurekaLife iPhone／Watch、Mac Companion。
 
 - [仓库首页与构建](../README.md)
 - [初始代码导入与验证](repository-import.md)
@@ -12,9 +12,13 @@
 - [EurekaLife 官网与产品演示](../apps/wiselife-website/docs/INDEX.md)
 - [文档维护规则](documentation-rules.md)
 
+## 2026-11-09
+
+Ask AI 第二期实现完整问答压缩、记事本四类只读工具、SQLite 精确账目统计、模型窗口预算和跨轮权限继承。设置提供四个独立开关；原问答保留。专项回归、复审和完整模拟器构建通过，未安装或发布；既有独立脚本限制另记。见 [当前实现](../apps/wrist-notes/docs/ask-ai-session-orchestration.md#memory-notebook-agent-20261108)、[验证记录](../apps/wrist-notes/verification/ask-ai-runtime-2026-11-01.md#memory-notebook-20261109)。
+
 ## 2026-11-08
 
-Ask AI 历史压缩与记事本 Agent 第二期设计已补充：按 LLM 窗口预算装载能力，覆盖灵感／记账／人物／地点的查询、统计、关联分析与建议。具体方案待评审，尚未开发，见 [设计](../apps/wrist-notes/docs/ask-ai-session-orchestration.md#memory-notebook-agent-20261108)。
+Ask AI 历史压缩与记事本 Agent 第二期设计已补充并获批准：按 LLM 窗口预算装载能力，覆盖灵感／记账／人物／地点的查询、统计、关联分析与建议。后续实现见 11 月 9 日记录；[设计](../apps/wrist-notes/docs/ask-ai-session-orchestration.md#memory-notebook-agent-20261108)持续维护。
 
 记事本四类原型与原生代码同步：灵感合并与编辑删除、账目管理、人物资料和关联片段、地点按日查看及标记。SQLite 回归与完整模拟器构建通过，原生界面验收待 Simulator 窗口恢复。见 [产品与验证](../apps/wrist-notes/prototype/flash-assets-design.md#notebook-management-20261108)。
 

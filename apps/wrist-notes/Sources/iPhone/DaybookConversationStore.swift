@@ -47,6 +47,15 @@ struct DaybookConversationTurn: Codable, Equatable, Identifiable, Sendable {
     var questionReferenceIDs: [Int: UUID]? = nil
     var state: State? = nil
     var createdAt: Date? = nil
+    var evidenceRefs: [AgentEvidenceRef]? = nil
+    var notebookPermissions: AgentNotebookPermissions? = nil
+    var runProvenance: AgentRunProvenance? = nil
+    var disclosurePolicy: AgentDisclosurePolicy {
+        // Missing metadata is conservatively local-only, including legacy histories.
+        if let runProvenance { return runProvenance.disclosurePolicy }
+        guard let refs = evidenceRefs, !refs.isEmpty else { return .localOnly }
+        return refs.contains { $0.disclosurePolicy == .localOnly } ? .localOnly : .allowedRemote
+    }
     var completionState: State { state ?? .completed }
 
     func replacing(text: String, state: State) -> Self {
@@ -91,7 +100,7 @@ final class DaybookConversationStore {
         set { connectionLock.lock(); defer { connectionLock.unlock() }; blockedValue = newValue }
     }
     static let pageSize = 10
-    struct Cursor: Equatable { let createdAt: Double; let id: String }
+    struct Cursor: Equatable, Sendable { let createdAt: Double; let id: String }
     struct Page { let turns: [DaybookConversationTurn]; let cursor: Cursor?; let hasMore: Bool }
 
     static func local() -> DaybookConversationStore {
@@ -115,6 +124,24 @@ final class DaybookConversationStore {
             try db.execute("UPDATE conversation_turns SET created_at = (SELECT updated_at FROM conversations WHERE day = conversation_turns.day) - ((SELECT COUNT(*) FROM conversation_turns AS sibling WHERE sibling.day = conversation_turns.day) - 1 - position) * 0.000001")
             try db.execute("CREATE INDEX conversation_turns_history ON conversation_turns(created_at DESC, id DESC)")
         }
+        try db.migrate("ask-ai-contracts-v2") {
+            try db.execute("CREATE TABLE ask_ai_privacy_state (id INTEGER PRIMARY KEY CHECK(id=1), notebook_digest TEXT NOT NULL)")
+            try db.execute("CREATE TABLE ask_ai_turn_evidence_v2 (turn_id TEXT PRIMARY KEY REFERENCES conversation_turns(id) ON DELETE CASCADE, refs BLOB, notebook_permissions BLOB)")
+            try db.execute("CREATE TABLE ask_ai_memory_blocks (id TEXT PRIMARY KEY, session_key TEXT NOT NULL, summary_json BLOB NOT NULL, permission_digest TEXT NOT NULL, input_digest TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'valid')")
+            try db.execute("CREATE TABLE ask_ai_memory_dependencies (block_id TEXT NOT NULL REFERENCES ask_ai_memory_blocks(id) ON DELETE CASCADE, dependency_key TEXT NOT NULL, turn_id TEXT REFERENCES conversation_turns(id) ON DELETE CASCADE, content_digest TEXT, domain TEXT, entity_id TEXT, revision TEXT, permission_digest TEXT, PRIMARY KEY(block_id,dependency_key))")
+            try db.execute("CREATE INDEX ask_ai_memory_dependency_turn ON ask_ai_memory_dependencies(turn_id)")
+            try db.execute("CREATE TRIGGER ask_ai_memory_turn_delete BEFORE DELETE ON conversation_turns BEGIN UPDATE ask_ai_memory_blocks SET status='invalid' WHERE id IN (SELECT block_id FROM ask_ai_memory_dependencies WHERE turn_id=OLD.id); END")
+            try db.execute("CREATE TRIGGER ask_ai_memory_turn_update AFTER UPDATE ON conversation_turns WHEN OLD.question != NEW.question OR OLD.text != NEW.text OR OLD.evidence != NEW.evidence OR COALESCE(OLD.state,'completed') != COALESCE(NEW.state,'completed') BEGIN UPDATE ask_ai_memory_blocks SET status='invalid' WHERE id IN (SELECT block_id FROM ask_ai_memory_dependencies WHERE turn_id=OLD.id); END")
+            try db.execute("CREATE TRIGGER ask_ai_memory_refs_update AFTER UPDATE ON ask_ai_turn_evidence_v2 WHEN OLD.refs IS NOT NEW.refs OR OLD.notebook_permissions IS NOT NEW.notebook_permissions BEGIN UPDATE ask_ai_memory_blocks SET status='invalid' WHERE id IN (SELECT block_id FROM ask_ai_memory_dependencies WHERE turn_id=OLD.turn_id); END")
+        }
+        try db.migrate("ask-ai-run-provenance-v1") {
+            try db.execute("ALTER TABLE ask_ai_turn_evidence_v2 ADD COLUMN run_provenance BLOB")
+            try db.execute("CREATE TRIGGER ask_ai_memory_provenance_update AFTER UPDATE OF run_provenance ON ask_ai_turn_evidence_v2 WHEN OLD.run_provenance IS NOT NEW.run_provenance BEGIN UPDATE ask_ai_memory_blocks SET status='invalid' WHERE id IN (SELECT block_id FROM ask_ai_memory_dependencies WHERE turn_id=OLD.turn_id); END")
+        }
+        try db.migrate("ask-ai-memory-entity-revisions-v1") {
+            // Row absence = no mutation observed; NULL revision = durable deletion tombstone.
+            try db.execute("CREATE TABLE IF NOT EXISTS ask_ai_memory_entity_revisions (domain TEXT NOT NULL, entity_id TEXT NOT NULL, revision TEXT, PRIMARY KEY(domain,entity_id))")
+        }
         try db.migrate("conversations") {
             guard FileManager.default.fileExists(atPath: url.path) else { return }
             let data = try Data(contentsOf: url)
@@ -130,7 +157,7 @@ final class DaybookConversationStore {
     func runtimeDatabase() throws -> DaybookDatabase { try preparedConnection() }
 
     func runtimeTurn(id: UUID) throws -> DaybookConversationTurn? {
-        try preparedConnection().query("SELECT * FROM conversation_turns WHERE id = ?", [.text(id.uuidString)]).first.map(Self.turn)
+        try preparedConnection().query("SELECT * FROM conversation_turns WHERE id = ?", [.text(id.uuidString)]).first.map { try Self.turn($0, db: preparedConnection()) }
     }
 
     func load() throws -> [DaybookConversation] {
@@ -168,7 +195,7 @@ final class DaybookConversationStore {
             values.append(.integer(Int64(count + 1)))
             let rows = try db.query(query, values)
             let page = Array(rows.prefix(count))
-            let turns = try page.map(Self.turn).reversed()
+            let turns = try page.map { try Self.turn($0, db: db) }.reversed()
             let next = try page.last.map { Cursor(createdAt: try $0.requiredDouble("created_at"), id: try $0.requiredString("id")) }
             blocked = false
             return Page(turns: Array(turns), cursor: next, hasMore: rows.count > count)
@@ -206,10 +233,15 @@ final class DaybookConversationStore {
     }
 
     /// Read only bounded batches of permission metadata; unrelated rows and their content are untouched.
-    func redactDisallowed(_ allowedKinds: Set<DayRecord.Kind>) throws {
+    func redactDisallowed(_ allowedKinds: Set<DayRecord.Kind>, notebookPermissions: AgentNotebookPermissions? = nil) throws {
         let db = try preparedConnection()
         try db.transaction {
             var didRedact = false
+            if let permissions = notebookPermissions {
+                let old = try db.query("SELECT notebook_digest FROM ask_ai_privacy_state WHERE id=1").first?["notebook_digest"]?.string
+                didRedact = old != permissions.digest
+                try db.execute("INSERT INTO ask_ai_privacy_state(id,notebook_digest) VALUES(1,?) ON CONFLICT(id) DO UPDATE SET notebook_digest=excluded.notebook_digest", [.text(permissions.digest)])
+            }
             var cursor = ""
             while true {
                 let rows = try db.query("SELECT id,evidence FROM conversation_turns WHERE id > ? AND COALESCE(state,'completed') != 'redacted' ORDER BY id LIMIT 128", [.text(cursor)])
@@ -217,16 +249,26 @@ final class DaybookConversationStore {
                 for row in rows {
                     cursor = try row.requiredString("id")
                     let evidence = try DaybookDatabase.decode(DaybookEvidenceSnapshot.self, row["evidence"])
-                    if !evidence.allowedKinds.isSubset(of: allowedKinds) {
+                    let metadata = try db.query("SELECT * FROM ask_ai_turn_evidence_v2 WHERE turn_id=?", [.text(cursor)]).first
+                    let refs: [AgentEvidenceRef] = try metadata?["refs"].flatMap { $0 == .null ? nil : try DaybookDatabase.decode([AgentEvidenceRef].self, $0) } ?? []
+                    let provenance: AgentRunProvenance? = try metadata?["run_provenance"].flatMap { $0 == .null ? nil : try DaybookDatabase.decode(AgentRunProvenance.self,$0) }
+                    let transitiveDenied = provenance.map { !$0.sourceKinds.isSubset(of:allowedKinds) || (notebookPermissions.map { !$0.allowedDomains.isSuperset(of:provenance!.domains) } ?? false) } ?? false
+                    let notebookDenied = transitiveDenied || refs.contains { ref in !ref.sourceKinds.isSubset(of: allowedKinds) || (notebookPermissions.map { !$0.allowedDomains.contains(ref.domain) } ?? false) }
+                    if !evidence.allowedKinds.isSubset(of: allowedKinds) || notebookDenied {
                         didRedact = true
+                        try db.execute("DELETE FROM ask_ai_turn_evidence_v2 WHERE turn_id=?", [.text(cursor)])
                         try db.execute("UPDATE conversation_turns SET state = 'redacted', text = ?, generated = 0, provider = '', sources = ?, scope = '', question_references = NULL WHERE id = ?", [.text("相关资料的读取权限已关闭，回答和引用已移除。你的问题仍保留在历史中。"), try DaybookDatabase.json([DaybookRetrieval.Source]()), .text(cursor)])
                     }
                 }
             }
             // Privacy cleanup must work even when this launch has not constructed the runtime.
             // Routine refreshes with unchanged permissions retain stable caches and active runs.
-            if didRedact, !(try db.query("SELECT domain FROM storage_migrations WHERE domain = 'ask-ai-runtime-v1'")).isEmpty {
-                try Self.invalidateRuntimeCaches(db)
+            if didRedact {
+                if !(try db.query("SELECT domain FROM storage_migrations WHERE domain = 'ask-ai-runtime-v1'")).isEmpty { try Self.invalidateRuntimeCaches(db) }
+                else {
+                    try db.execute("DELETE FROM ask_ai_memory_blocks")
+                    try db.execute("INSERT INTO storage_migrations(domain,imported_at) VALUES('ask-ai-runtime-cache-generation',1) ON CONFLICT(domain) DO UPDATE SET imported_at=imported_at+1")
+                }
             }
         }
     }
@@ -236,7 +278,7 @@ final class DaybookConversationStore {
         try db.execute("INSERT INTO storage_migrations(domain,imported_at) VALUES('ask-ai-runtime-cache-generation',1) ON CONFLICT(domain) DO UPDATE SET imported_at=imported_at+1")
         try db.execute("UPDATE conversation_turns SET state='cancelled',text=?,generated=0,provider='',sources=?,scope='',question_references=NULL WHERE state='pending' AND id IN (SELECT turn_id FROM ask_ai_runs WHERE state NOT IN ('completed','failed','cancelled','interrupted'))", [.text("资料权限已变化，本次回答已中断，可重试。"), try DaybookDatabase.json([DaybookRetrieval.Source]())])
         try db.execute("UPDATE ask_ai_runs SET state='interrupted',ended_at=?,error_code='permissions_changed' WHERE state NOT IN ('completed','failed','cancelled','interrupted')", [.real(Date.now.timeIntervalSinceReferenceDate)])
-        for table in ["ask_ai_evidence", "ask_ai_tool_calls", "ask_ai_memory", "ask_ai_checkpoints"] { try db.execute("DELETE FROM " + table) }
+        for table in ["ask_ai_evidence", "ask_ai_tool_calls", "ask_ai_memory", "ask_ai_checkpoints", "ask_ai_memory_blocks"] { try db.execute("DELETE FROM " + table) }
     }
 
     func reset() throws {
@@ -244,6 +286,9 @@ final class DaybookConversationStore {
         do {
             let db = try connection()
             try db.transaction {
+                if !(try db.query("SELECT domain FROM storage_migrations WHERE domain='ask-ai-runtime-v1'")).isEmpty { try Self.invalidateRuntimeCaches(db) }
+                else { try db.execute("INSERT INTO storage_migrations(domain,imported_at) VALUES('ask-ai-runtime-cache-generation',1) ON CONFLICT(domain) DO UPDATE SET imported_at=imported_at+1") }
+                if !(try db.query("SELECT domain FROM storage_migrations WHERE domain='ask-ai-contracts-v2'")).isEmpty { try db.execute("DELETE FROM ask_ai_memory_blocks") }
                 try db.execute("DELETE FROM conversations")
                 try db.markMigrated("conversations")
             }
@@ -262,6 +307,15 @@ final class DaybookConversationStore {
                           turn.sources.count <= 5, turn.sources.allSatisfy({ $0.snippet.count <= 200 && $0.title.count <= 48 }),
                           turn.evidence.dayStart < turn.evidence.dayEnd,
                           turn.evidence.fingerprint.count == 64,
+                          turn.runProvenance?.isValid != false,
+                          turn.runProvenance.map { $0.domains.isSubset(of:(turn.notebookPermissions ?? .init()).allowedDomains) } != false,
+                          (turn.evidenceRefs?.count ?? 0) <= 5,
+                          turn.evidenceRefs?.allSatisfy(\.isValid) != false,
+                          Set((turn.evidenceRefs ?? []).map(\.number)).count == (turn.evidenceRefs?.count ?? 0),
+                          (turn.evidenceRefs ?? []).allSatisfy({ ref in
+                              ref.domain == .timeline || ref.domain == .conversation || (turn.notebookPermissions ?? .init()).allowedDomains.contains(ref.domain)
+                          }),
+                          (turn.evidenceRefs ?? []).allSatisfy({ ref in !turn.sources.contains { $0.number == ref.number && (ref.domain != .timeline || ref.entityID != $0.id.uuidString) } }),
                           turn.createdAt?.timeIntervalSinceReferenceDate.isFinite != false else { throw DaybookConversationFailure.load }
                 }
             }
@@ -283,13 +337,19 @@ final class DaybookConversationStore {
             question=excluded.question,text=excluded.text,generated=excluded.generated,provider=excluded.provider,
             evidence=excluded.evidence,sources=excluded.sources,scope=excluded.scope,question_references=excluded.question_references,state=excluded.state
             """, [.text(turn.id.uuidString), day, position, .text(turn.question), .text(turn.text), .integer(turn.generated ? 1 : 0), .text(turn.provider), try DaybookDatabase.json(turn.evidence), try DaybookDatabase.json(turn.sources), .text(turn.scopeDescription), try turn.questionReferenceIDs.map { try DaybookDatabase.json($0) } ?? .null, turn.state.map { .text($0.rawValue) } ?? .null, .real((turn.createdAt ?? fallbackDate).timeIntervalSinceReferenceDate)])
+        try db.execute("INSERT INTO ask_ai_turn_evidence_v2(turn_id,refs,notebook_permissions,run_provenance) VALUES (?,?,?,?) ON CONFLICT(turn_id) DO UPDATE SET refs=excluded.refs,notebook_permissions=excluded.notebook_permissions,run_provenance=excluded.run_provenance", [.text(turn.id.uuidString), try turn.evidenceRefs.map { try DaybookDatabase.json($0) } ?? .null, try turn.notebookPermissions.map { try DaybookDatabase.json($0) } ?? .null,try turn.runProvenance.map { try DaybookDatabase.json($0) } ?? .null])
     }
 
-    private static func turn(_ value: DaybookDatabase.Row) throws -> DaybookConversationTurn {
+    private static func turn(_ value: DaybookDatabase.Row, db: DaybookDatabase) throws -> DaybookConversationTurn {
         guard let id = UUID(uuidString: try value.requiredString("id")) else { throw DaybookConversationFailure.load }
         let state = value["state"]?.string.flatMap(DaybookConversationTurn.State.init(rawValue:))
         guard value["state"] == .null || state != nil else { throw DaybookConversationFailure.load }
-        let turn = DaybookConversationTurn(id: id, question: try value.requiredString("question"), text: try value.requiredString("text"), generated: value["generated"] == .integer(1), provider: try value.requiredString("provider"), evidence: try DaybookDatabase.decode(DaybookEvidenceSnapshot.self, value["evidence"]), sources: try DaybookDatabase.decode([DaybookRetrieval.Source].self, value["sources"]), scopeDescription: try value.requiredString("scope"), questionReferenceIDs: value["question_references"] == .null ? nil : try DaybookDatabase.decode([Int: UUID].self, value["question_references"]), state: state, createdAt: Date(timeIntervalSinceReferenceDate: try value.requiredDouble("created_at")))
+        var turn = DaybookConversationTurn(id: id, question: try value.requiredString("question"), text: try value.requiredString("text"), generated: value["generated"] == .integer(1), provider: try value.requiredString("provider"), evidence: try DaybookDatabase.decode(DaybookEvidenceSnapshot.self, value["evidence"]), sources: try DaybookDatabase.decode([DaybookRetrieval.Source].self, value["sources"]), scopeDescription: try value.requiredString("scope"), questionReferenceIDs: value["question_references"] == .null ? nil : try DaybookDatabase.decode([Int: UUID].self, value["question_references"]), state: state, createdAt: Date(timeIntervalSinceReferenceDate: try value.requiredDouble("created_at")))
+        if let metadata = try db.query("SELECT * FROM ask_ai_turn_evidence_v2 WHERE turn_id=?", [.text(id.uuidString)]).first {
+            turn.runProvenance = metadata["run_provenance"] == .null ? nil : try DaybookDatabase.decode(AgentRunProvenance.self,metadata["run_provenance"])
+            turn.evidenceRefs = metadata["refs"] == .null ? nil : try DaybookDatabase.decode([AgentEvidenceRef].self, metadata["refs"])
+            turn.notebookPermissions = metadata["notebook_permissions"] == .null ? nil : try DaybookDatabase.decode(AgentNotebookPermissions.self, metadata["notebook_permissions"])
+        }
         try validate(Archive(version: 1, conversations: [.init(day: turn.evidence.dayStart, updatedAt: turn.createdAt!, turns: [turn])]))
         return turn
     }
@@ -297,7 +357,7 @@ final class DaybookConversationStore {
         try db.transaction {
             try db.query("SELECT * FROM conversations ORDER BY updated_at DESC").map { row in
                 let turns = try db.query("SELECT * FROM conversation_turns WHERE day = ? ORDER BY position", [row["day"]!]).map { value -> DaybookConversationTurn in
-                    try turn(value)
+                    try turn(value, db: db)
                 }
                 return DaybookConversation(day: Date(timeIntervalSinceReferenceDate: try row.requiredDouble("day")), updatedAt: Date(timeIntervalSinceReferenceDate: try row.requiredDouble("updated_at")), turns: turns)
             }

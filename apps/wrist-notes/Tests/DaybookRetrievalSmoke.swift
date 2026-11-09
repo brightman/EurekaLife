@@ -14,6 +14,9 @@ struct DaybookRetrievalSmoke {
             return
         }
         #endif
+        #if DAYBOOK_ASSISTANT_MODEL_TESTS
+        try await notebookEntranceTests()
+        #endif
         try await citationRepairTests()
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "Asia/Shanghai")!
@@ -785,6 +788,41 @@ private func historyRetentionTests() async throws {
     let validAction = await model.validateHistoryAction(restored, records: [], allowedKinds: [.voice])
     precondition(validAction && sourceReads == 2, "valid archived citations remain usable after a current source read")
     print("History presentation: SQLite snapshots survive absent sources; redraws preserve references and permission redaction")
+}
+
+@MainActor private final class NotebookEntranceDriver:AskAIDriving {
+    var step=0;let ledger:Bool
+    init(ledger:Bool){self.ledger=ledger}
+    func start(instruction:String,content:String)throws{}
+    func rebuild()throws{}
+    func receive(call:AskAIToolCall,result:String)throws{}
+    func next(correction:String?)async throws->AskAIDriverReply {
+        step += 1
+        return step == 1 ? .init(text:"",calls:[.init(id:"entrance",name:ledger ? "aggregateLedger" : "readNotebookItem",arguments:Data((ledger ? "{}" : #"{"type":"ideas","id":"idea"}"#).utf8))]) : .init(text:"已读取记事本 [1]",calls:[])
+    }
+}
+@MainActor private func notebookEntranceTests() async throws {
+    let dir=FileManager.default.temporaryDirectory.appendingPathComponent("notebook-entrance-"+UUID().uuidString)
+    try FileManager.default.createDirectory(at:dir,withIntermediateDirectories:true);defer{try? FileManager.default.removeItem(at:dir)}
+    let url=dir.appendingPathComponent("db.sqlite"),db=try DaybookDatabase(url:url)
+    try db.execute("CREATE TABLE flash_assets(id TEXT PRIMARY KEY,source_id TEXT,kind TEXT,captured_at REAL,revision INTEGER,revoked INTEGER,ready INTEGER,currency TEXT,direction TEXT,amount_minor INTEGER,payload BLOB)")
+    try db.execute("INSERT INTO flash_assets VALUES('idea','gone','idea',0,1,0,1,NULL,NULL,NULL,?)",[.blob(Data(#"{"title":"想法","text":"保存的想法"}"#.utf8))])
+    try db.execute("INSERT INTO flash_assets VALUES('expense','gone','expense',0,1,0,1,'CNY','expense',100,?)",[.blob(Data(#"{"title":"餐饮","text":"保存的账目","date":"2026-11-01"}"#.utf8))])
+    let suite="notebook-entrance-"+UUID().uuidString,defaults=UserDefaults(suiteName:suite)!;defer{defaults.removePersistentDomain(forName:suite)}
+    let settings=AppSettings(defaults:defaults,secrets:DaybookTestSecrets()),permissions=AgentNotebookPermissions(allowIdeas:true,allowLedger:true)
+    for question in ["有哪些想法？","这个月花了多少钱？","找找可用资料","今天录音多少条"] {
+        let store=DaybookConversationStore(url:dir.appendingPathComponent("unused-\(UUID()).json"),database:db),model=DaybookAssistantModel(store:store)
+        var started=false
+        model.testNotebookReaderFactory={p,s in AskAINotebookReader(databaseURL:url,permissions:p,scope:s)}
+        model.testRuntimeSetup={engine in started=true;engine.testDriver=NotebookEntranceDriver(ledger:question.contains("钱"))}
+        model.synchronize(records:[],selectedDate:.now,allowedKinds:[.voice],configuration:settings.ai,configurationRevision:settings.aiRevision,notebookPermissions:permissions)
+        precondition(model.ask(question,records:[],selectedDate:.now,allowedKinds:[.voice],settings:settings))
+        for _ in 0..<300 { if model.turns.last?.completionState == .completed {break};try await Task.sleep(nanoseconds:5_000_000) }
+        precondition(model.turns.last?.completionState == .completed,"app-model entrance must finish without a live provider")
+        if question == "今天录音多少条" { precondition(!started,"unrelated deterministic record count stays direct") }
+        else {precondition(started && model.turns.last?.text.contains("已读取记事本") == true,"notebook-only wording must reach actual Runtime and Reader")}
+    }
+    print("Notebook entrance: exact idea/money wording, permitted discovery and deterministic count passed")
 }
 
 private final class DaybookTestSecrets: SecretStore {

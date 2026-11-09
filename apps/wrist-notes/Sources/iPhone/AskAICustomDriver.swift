@@ -30,10 +30,14 @@ private final class AskAINoRedirect: NSObject, URLSessionTaskDelegate {
     private var initial: [[String: Any]] = []
     private var instruction = ""
     private var pending = Set<String>()
+    private let definitions: [[String: Any]]
+    private let outputTokens: Int
     private let check: @MainActor () async throws -> Void
     init(configuration: AIConfiguration, apiKey: String, session: URLSession? = nil,
+         toolDefinitions: [[String: Any]]? = nil, outputTokens: Int = 512,
          check: @escaping @MainActor () async throws -> Void = {}) throws {
         self.configuration = try configuration.validated(apiKey: apiKey)
+        definitions = toolDefinitions ?? AskAIReadTools.toolDefinitions; self.outputTokens = max(128, min(2048, outputTokens))
         key = apiKey.trimmingCharacters(in: .whitespacesAndNewlines); self.check = check
         if let session { self.session = session }
         else {
@@ -49,7 +53,7 @@ private final class AskAINoRedirect: NSObject, URLSessionTaskDelegate {
     }
     func rebuild() throws { messages = initial; pending = [] }
     private var toolSchemas: [[String: Any]] {
-        AskAIReadTools.toolDefinitions.map { definition in
+        definitions.map { definition in
             if configuration.apiProtocol == .openai { return ["type":"function", "function":definition] }
             return ["name":definition["name"]!,"description":definition["description"]!,"input_schema":definition["parameters"]!]
         }
@@ -77,7 +81,8 @@ private final class AskAINoRedirect: NSObject, URLSessionTaskDelegate {
     func next(correction: String?) async throws -> AskAIDriverReply {
         guard pending.isEmpty else { throw AIServiceError.invalidResponse }
         if let correction { messages.append(["role":"user","content":correction]) }
-        var body: [String:Any] = ["model":configuration.model,"max_tokens":512,"tools":toolSchemas]
+        var body: [String:Any] = ["model":configuration.model,"max_tokens":outputTokens]
+        if !definitions.isEmpty { body["tools"] = toolSchemas }
         if configuration.apiProtocol == .openai { body["messages"] = [["role":"system","content":instruction]] + messages }
         else { body["system"] = instruction; body["messages"] = messages }
         let json = try await request(body)

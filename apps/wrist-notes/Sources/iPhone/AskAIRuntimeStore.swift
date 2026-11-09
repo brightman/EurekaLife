@@ -219,6 +219,7 @@ final class AskAIRuntimeStore: @unchecked Sendable {
                 guard run["turn_id"] == .text(turn.id.uuidString),
                       let row = try db.query("SELECT day,state,question FROM conversation_turns WHERE id = ?", [.text(turn.id.uuidString)]).first,
                       row["state"] != .text("redacted"), row["question"] == .text(turn.question) else { throw Failure.staleAttempt }
+                guard try Self.dependenciesCurrent(AskAIMemoryBlock.dependencies(turns:[turn]),db:db), try self.provenanceCurrent(turn.runProvenance,db:db) else { throw Failure.staleAttempt }
                 try self.conversationStore.saveTurn(turn, day: Date(timeIntervalSinceReferenceDate: try row.requiredDouble("day")))
                 // Only source identities are retained; the answer itself remains in the authoritative turn.
                 try db.execute("UPDATE ask_ai_runs SET state = 'completed',ended_at = ?,result_payload = ? WHERE id = ?", [.real(Date.now.timeIntervalSinceReferenceDate), try DaybookDatabase.json(turn.sources.map(\.id)), .text(runID.uuidString)])
@@ -318,4 +319,160 @@ final class AskAIRuntimeStore: @unchecked Sendable {
             try db.transaction { try DaybookConversationStore.invalidateRuntimeCaches(db) }
         }
     }
+    struct HistoryPage: Sendable {
+        let turns: [DaybookConversationTurn]
+        let cursor: DaybookConversationStore.Cursor?
+        let hasMore: Bool
+    }
+    struct OriginalTurnPage: Sendable {
+        let id: UUID
+        let day: Date
+        let createdAt: Date?
+        let question: String
+        let answer: String
+        let offset: Int
+        let nextOffset: Int?
+        let evidenceRefs: [AgentEvidenceRef]
+        let disclosurePolicy: AgentDisclosurePolicy
+        var runProvenance: AgentRunProvenance? = nil
+    }
+    private static func allows(_ turn: DaybookConversationTurn, scope: AgentQueryScope) -> Bool {
+        guard turn.completionState == .completed,
+              scope.domains.contains(.conversation), turn.evidence.allowedKinds.isSubset(of: scope.allowedKinds),
+              turn.runProvenance?.permits(scope) != false,
+              (turn.evidenceRefs ?? []).allSatisfy({ scope.domains.contains($0.domain) && $0.sourceKinds.isSubset(of: scope.allowedKinds) }),
+              scope.destination == .localOnly || turn.disclosurePolicy == .allowedRemote else { return false }
+        if let dates = scope.dateRange, let created = turn.createdAt, !dates.contains(created) { return false }
+        return true
+    }
+    /// Original SQL-backed history search, including answers; no recent-40 cut-off.
+    func searchConversationHistory(query: String, scope: AgentQueryScope, before cursor: DaybookConversationStore.Cursor? = nil, limit: Int = 10) async throws -> HistoryPage {
+        guard query.count <= 300 else { throw Failure.invalidMetadata }
+        return try await perform { db in
+            let count = max(1, min(limit, 10))
+            let escaped = query.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "%", with: "\\%").replacingOccurrences(of: "_", with: "\\_")
+            var values: [DaybookDatabase.Value] = [.text("%" + escaped + "%"), .text("%" + escaped + "%")]
+            var sql = "SELECT id,created_at FROM conversation_turns WHERE COALESCE(state,'completed')='completed' AND (question LIKE ? ESCAPE '\\' OR text LIKE ? ESCAPE '\\')"
+            if let cursor { sql += " AND (created_at,id) < (?,?)"; values += [.real(cursor.createdAt), .text(cursor.id)] }
+            sql += " ORDER BY created_at DESC,id DESC LIMIT 101"
+            let rows = try db.query(sql, values)
+            var found: [DaybookConversationTurn] = []
+            var last: DaybookConversationStore.Cursor?
+            var consumed = 0
+            for row in rows.prefix(100) {
+                if found.count >= count { break }
+                consumed += 1
+                let id = try row.requiredString("id")
+                last = .init(createdAt: try row.requiredDouble("created_at"), id: id)
+                guard let uuid = UUID(uuidString: id), let turn = try self.conversationStore.runtimeTurn(id: uuid), Self.allows(turn, scope: scope) else { continue }
+                found.append(turn)
+            }
+            return HistoryPage(turns: found, cursor: last, hasMore: consumed < rows.count)
+        }
+    }
+    /// Exact original answer characters, including numbered list punctuation. The cursor is a character offset.
+    func readConversationTurn(id: UUID, scope: AgentQueryScope, offset: Int = 0, limit: Int = 2000) async throws -> OriginalTurnPage? {
+        guard offset >= 0 else { throw Failure.invalidMetadata }
+        return try await perform { db in
+            guard let turn = try self.conversationStore.runtimeTurn(id: id), Self.allows(turn, scope: scope),
+                  let row = try db.query("SELECT day FROM conversation_turns WHERE id=?", [.text(id.uuidString)]).first else { return nil }
+            let count = max(1, min(limit, 4000))
+            let text = String(turn.text.dropFirst(offset).prefix(count))
+            let next = offset + text.count
+            return .init(id: id, day: Date(timeIntervalSinceReferenceDate: try row.requiredDouble("day")), createdAt: turn.createdAt, question: turn.question, answer: text, offset: offset, nextOffset: next < turn.text.count ? next : nil, evidenceRefs: turn.evidenceRefs ?? [], disclosurePolicy: turn.disclosurePolicy,runProvenance:AgentRunProvenance.consulting(turn))
+        }
+    }
+    func saveMemoryBlock(_ block: AskAIMemoryBlock, expectedGeneration: Int64, publicationFence: AskAIPublicationFence? = nil, sessionKey: String = "assistant-default") async throws {
+        guard block.version == "ask-ai-memory-v2", !block.coveredTurnDigests.isEmpty, block.coveredTurnDigests.count <= 12,
+              block.context.count <= 12000, block.model.utf8.count <= 300 else { throw Failure.invalidMetadata }
+        try Self.bounded([sessionKey, block.permissionDigest, block.inputDigest])
+        try await perform { db in
+            try (publicationFence ?? AskAIPublicationFence()).withLease { try db.transaction {
+                if let existing = try db.query("SELECT status FROM ask_ai_memory_blocks WHERE id=?", [.text(block.id.uuidString)]).first,
+                   existing["status"] != .text("valid") { throw Failure.staleAttempt }
+                var originalTurns: [DaybookConversationTurn] = []
+                for (id, digest) in block.coveredTurnDigests {
+                    guard let uuid = UUID(uuidString: id), let turn = try self.conversationStore.runtimeTurn(id: uuid), AskAIMemoryBlock.turnDigest(turn) == digest,
+                          block.disclosurePolicy == .localOnly || turn.disclosurePolicy == .allowedRemote else { throw Failure.staleAttempt }
+                    try Self.validateCacheWrite(db, anchor: uuid, expectedGeneration: expectedGeneration)
+                    originalTurns.append(turn)
+                }
+                let dependencies = AskAIMemoryBlock.dependencies(turns: originalTurns)
+                guard dependencies == (block.entityDependencies ?? []), try Self.dependenciesCurrent(dependencies, db: db) else { throw Failure.staleAttempt }
+                try db.execute("INSERT INTO ask_ai_memory_blocks(id,session_key,summary_json,permission_digest,input_digest,status) VALUES (?,?,?,?,?,'valid') ON CONFLICT(id) DO UPDATE SET summary_json=excluded.summary_json,permission_digest=excluded.permission_digest,input_digest=excluded.input_digest,status='valid'", [.text(block.id.uuidString), .text(sessionKey), try DaybookDatabase.json(block), .text(block.permissionDigest), .text(block.inputDigest)])
+                try db.execute("DELETE FROM ask_ai_memory_dependencies WHERE block_id=?", [.text(block.id.uuidString)])
+                for (id, digest) in block.coveredTurnDigests {
+                    try db.execute("INSERT INTO ask_ai_memory_dependencies(block_id,dependency_key,turn_id,content_digest) VALUES (?,?,?,?)", [.text(block.id.uuidString), .text("turn:" + id), .text(id), .text(digest)])
+                }
+                try db.execute("INSERT INTO ask_ai_memory_dependencies(block_id,dependency_key,permission_digest) VALUES (?,?,?)", [.text(block.id.uuidString), .text("permissions"), .text(block.permissionDigest)])
+                for dependency in dependencies {
+                    // Include revision so differing historical revisions cannot overwrite each other.
+                    let key = "entity:" + AskAIMemoryBlock.digest([dependency.domain.rawValue, dependency.entityID, dependency.revision].map { "\($0.utf8.count):\($0)" }.joined())
+                    try db.execute("INSERT INTO ask_ai_memory_dependencies(block_id,dependency_key,domain,entity_id,revision) VALUES (?,?,?,?,?)", [.text(block.id.uuidString), .text(key), .text(dependency.domain.rawValue), .text(dependency.entityID), .text(dependency.revision)])
+                }
+            } }
+        }
+    }
+    private func provenanceCurrent(_ provenance:AgentRunProvenance?,db:DaybookDatabase) throws -> Bool {
+        guard let provenance else { return true }
+        guard provenance.isValid,try Self.dependenciesCurrent(provenance.dependencies,db:db) else { return false }
+        for (id,digest) in provenance.historyTurnDigests {
+            guard let id=UUID(uuidString:id),let turn=try conversationStore.runtimeTurn(id:id),turn.completionState == .completed,AskAIMemoryBlock.turnDigest(turn) == digest else { return false }
+        }
+        return true
+    }
+    func validateProvenance(_ provenance:AgentRunProvenance,scope:AgentQueryScope) async throws -> Bool {
+        guard provenance.permits(scope) else { return false }
+        return try await perform { db in try self.provenanceCurrent(provenance,db:db) }
+    }
+    private static func dependenciesCurrent(_ dependencies: [AgentEvidenceDependency], db: DaybookDatabase) throws -> Bool {
+        for dependency in dependencies {
+            if let current = try db.query("SELECT revision FROM ask_ai_memory_entity_revisions WHERE domain=? AND entity_id=?", [.text(dependency.domain.rawValue), .text(dependency.entityID)]).first {
+                // NULL is an explicit deletion, not an unknown revision.
+                guard current["revision"] == .text(dependency.revision) else { return false }
+            }
+        }
+        return true
+    }
+    /// Synchronous hook for a notebook repository's existing short SQLite mutation transaction.
+    /// Edit/delete and fence should commit together; an aborted transaction leaves both unchanged.
+    static func recordMemoryDependencyChange(_ db: DaybookDatabase, domain: AgentEvidenceDomain, entityID: String, currentRevision: String?) throws {
+        guard !entityID.isEmpty, entityID.utf8.count <= 512, !entityID.contains("\0"),
+              currentRevision.map({ !$0.isEmpty && $0.utf8.count <= 512 && !$0.contains("\0") }) ?? true else { throw Failure.invalidMetadata }
+        try db.execute("INSERT INTO ask_ai_memory_entity_revisions(domain,entity_id,revision) VALUES (?,?,?) ON CONFLICT(domain,entity_id) DO UPDATE SET revision=excluded.revision", [.text(domain.rawValue), .text(entityID), currentRevision.map(DaybookDatabase.Value.text) ?? .null])
+        try db.execute("UPDATE ask_ai_memory_blocks SET status='invalid' WHERE id IN (SELECT block_id FROM ask_ai_memory_dependencies WHERE domain=? AND entity_id=? AND (? IS NULL OR revision != ?))", [.text(domain.rawValue), .text(entityID), currentRevision.map(DaybookDatabase.Value.text) ?? .null, currentRevision.map(DaybookDatabase.Value.text) ?? .null])
+    }
+    /// Await before publishing summaries when applying ordered mutation/outbox events.
+    /// NULL revision records deletion. The durable fence survives reopen and cache clearing.
+    func invalidateMemoryDependency(domain: AgentEvidenceDomain, entityID: String, currentRevision: String?) async throws {
+        try await perform { db in
+            try db.transaction { try Self.recordMemoryDependencyChange(db, domain: domain, entityID: entityID, currentRevision: currentRevision) }
+        }
+    }
+    /// No timeline date/source fingerprint dependency: blocks use their own content and permission dependencies.
+    func loadMemoryBlocks(permissionDigest: String, destination: AgentDisclosurePolicy = .localOnly, limit: Int = 3, sessionKey: String = "assistant-default") async throws -> [AskAIMemoryBlock] {
+        try await perform { db in
+            try db.transaction {
+            let rows = try db.query("SELECT * FROM ask_ai_memory_blocks WHERE session_key=? AND status='valid' AND permission_digest=? ORDER BY rowid DESC LIMIT ?", [.text(sessionKey), .text(permissionDigest), .integer(Int64(max(1, min(limit, 12))))])
+            var result: [AskAIMemoryBlock] = []
+            for row in rows {
+                var block = try DaybookDatabase.decode(AskAIMemoryBlock.self, row["summary_json"])
+                var valid = block.version == "ask-ai-memory-v2"
+                var originalTurns: [DaybookConversationTurn] = []
+                for (id, digest) in block.coveredTurnDigests {
+                    guard let uuid = UUID(uuidString: id), let turn = try self.conversationStore.runtimeTurn(id: uuid), turn.completionState == .completed, AskAIMemoryBlock.turnDigest(turn) == digest else { valid = false; break }
+                    originalTurns.append(turn)
+                }
+                block.runProvenance = originalTurns.reduce(into:AgentRunProvenance()) { $0.merge(.consulting($1)) }
+                let dependencies = AskAIMemoryBlock.dependencies(turns: originalTurns)
+                valid = valid && dependencies == (block.entityDependencies ?? [])
+                if valid { valid = try Self.dependenciesCurrent(dependencies, db: db) }
+                if !valid { try db.execute("UPDATE ask_ai_memory_blocks SET status='invalid' WHERE id=?", [.text(block.id.uuidString)]); continue }
+                if destination == .localOnly || block.disclosurePolicy == .allowedRemote { result.append(block) }
+            }
+            return result
+            }
+        }
+    }
+
 }

@@ -1,6 +1,6 @@
 # EurekaLife 文档总索引
 
-> 整理日期：2026-10-31；更新：2026-11-08。面向产品、开发、测试与交接；链接指向原文，保留现有文件位置。
+> 整理日期：2026-10-31；更新：2026-11-09。面向产品、开发、测试与交接；链接指向原文，保留现有文件位置。
 
 ## 当前品牌（2026-11-08）
 
@@ -122,9 +122,13 @@ App 对外统一为 EurekaLife，历史文档保留当时名称。构建 16 已�
 
 同一文档有明确的多日更新时会在多天出现；示例录音日期、测试数据日期及文件修改时间不作为变更日期。未标注日期的文档集中列于末尾。
 
+### 2026-11-09
+
+- **Ask AI 历史与记事本** · 完整问答压缩、灵感／记账／人物／地点只读查询、精确统计、类型化引用、跨轮权限继承和按模型窗口装载能力。专项回归、复审和完整模拟器构建通过，未安装或发布；既有独立脚本限制另记。见 [实现](ask-ai-session-orchestration.md#memory-notebook-agent-20261108)、[Prompt](ai-prompts.md)、[SQLite](local-data-schema.md)、[验证](../verification/ask-ai-runtime-2026-11-01.md#memory-notebook-20261109)。
+
 ### 2026-11-08
 
-- **Ask AI 第二期设计（待评审）** · 历史完整问答／分块摘要、记事本四类只读工具、精确统计与类型化引用，按具体模型窗口加载／卸载能力。用户已确认查询、统计、关联分析和建议范围；未修改生产代码。见 [设计](ask-ai-session-orchestration.md#memory-notebook-agent-20261108)。
+- **Ask AI 第二期设计获批** · 历史完整问答／分块摘要、记事本四类只读工具、精确统计与类型化引用，按具体模型窗口加载／卸载能力。后续实现见 11 月 9 日记录。见 [设计](ask-ai-session-orchestration.md#memory-notebook-agent-20261108)。
 
 - **记事本原型同步** · 灵感底部合并、编辑／删除，账目修改／删除，人物资料＋内容片段详情，地点日期下钻与九种类型。见 [产品规则](../prototype/flash-assets-design.md#notebook-management-20261108)、[SQLite 规则](local-data-schema.md#记事本管理与派生查询2026-11-08)、[验证边界](../verification/flash-assets-prototype/README.md#notebook-management-20261108)。
 

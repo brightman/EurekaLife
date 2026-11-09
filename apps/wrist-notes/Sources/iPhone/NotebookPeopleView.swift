@@ -282,7 +282,7 @@ private struct NotebookPersonForm:View {
         }
     }
 }
-private struct NotebookPersonDetail:View {
+struct NotebookPersonDetail:View {
     @State var person:NotebookPerson
     let onOpenSource:(UUID)->Void
     let onUpdated:(NotebookPerson)->Void

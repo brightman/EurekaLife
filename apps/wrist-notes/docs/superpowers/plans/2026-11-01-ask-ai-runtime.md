@@ -85,3 +85,23 @@ Files: `prototype/daybook-ai.js`, `prototype/daybook-ai.css`, `prototype/ai-date
 ## 收尾结果与边界
 
 通过存储/上下文、只读工具、完整对话、语义索引和模型协议合成测试；HTML 浏览器交互通过；最终 iOS Simulator 构建通过。未实际调用 Apple/云端模型、未安装真机、未提交或推送。首期采用问题意图记忆、运行快照只读工具、最多 5 样本指标小计和相同输入无工具 Transcript 缓存；全量语义历史摘要、独立 Reader/Speaker SQL 下推、流式输出等仍按主要设计的后续范围处理。复审发现的缓存复活、索引投影竞态、末次发送复核、原生累计预算、排队发布和文本回退输出限额均已修复并加入对应验证。
+
+## Phase 2 — approved 2026-11-08
+
+User approved history compression, notebook read/aggregate/analysis/advice tools, and LLM-specific budgets; request “更新代码”. Design section 14 governs phase 2 and supersedes phase-1 question-only memory and fixed custom 4K limits. No notebook write tools. Work from a current-source worktree, preserve the original dirty tree, copy back only reviewed task changes with baseline checks. No commit, push, device reset or live-account model calls.
+
+### Task 6: Shared contracts, context budget and durable history
+- [x] Typed string-ID evidence / scope / permissions; additive compatible turn evidence sidecar.
+- [x] Model window policy (unknown 4K, application cap32K), full recent Q+A, structured independently derived memory blocks and every-turn version dependencies.
+- [x] Database original history search/read; atomic publication, cache generation and revocation.
+- [x] Synthetic storage/context tests and review.
+
+### Task 7: Notebook read capabilities
+- [x] Four-domain SQL reader with paging, counts, revision validation and provenance filtering.
+- [x] Exact ledger totals, real speaker overlap and excerpts, distinct place days and coverage.
+- [x] Bounded lookup/index behavior; no business writes. Synthetic reader/tool tests and review.
+
+### Task 8: End-to-end orchestration, UI and acceptance
+- [x] Dynamic tool schemas/output budgets for Apple and custom drivers; shared loop limits and one bounded compaction request with existing consent.
+- [x] Allow notebook/history-only questions; typed citations persist/reopen/navigate, four opt-in settings and revocation.
+- [x] Targeted regression, SDK/Pod consistency, complete simulator build, review, documentation/index updates and safe copy-back.

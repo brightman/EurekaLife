@@ -258,3 +258,65 @@ xcodebuild -workspace apps/wrist-notes/WristNotes.xcworkspace \
 13:57 最终包重新原位安装、启动均 exit 0；版本 1.0.2 (10)，`BuiltAt=2026-11-02T05:56:52Z`。包含后台保存竞态修复；Face ID 仍待本人完成，未操作 Watch。
 
 最终安装后只读快照：quick_check=ok，17 条 conversation_turns 与本次安装前逐字段一致，历史记录完整保留。
+## 2026-11-08 第二期开发基线
+
+The user approved history compression, read-only notebook tools and model-aware context budgets. Implementation uses an isolated snapshot at `/private/tmp/eurekalife-ask-phase2-20261108`; copy-back requires baseline hash comparison. No app data reset, live-account model request, commit, push or release.
+
+- Baseline `test_ask_ai_drivers.sh` and `test_ask_ai_read_tools.sh` passed.
+- Configurable schema/output tests first failed against the old driver API. After implementation, OpenAI and Anthropic synthetic requests verify the selected tool schema only, a 1024-token output budget, and no `tools` field for no-tool summary requests. Existing driver/runtime regressions passed.
+- `python3 scripts/verify_ble_pod.py`: 79 checksums and 3 XCFrameworks passed.
+- `ruby Tests/BuildFeaturesSmoke.rb`: 4 tests, 112 assertions passed.
+- 后续整合、编译与设备边界记录于下方。
+
+<a id="memory-notebook-20261109"></a>
+
+## 2026-11-09：历史压缩、记事本与动态预算
+
+代码在隔离工作区实施，原目录的未提交内容按文件基线保护；合并前再次比较哈希。使用合成记录、临时 SQLite 与脚本化模型，不读取用户数据库、Keychain 或录音，不调用真实账号模型，不下载模型文件。
+
+### 已执行的专项验证
+
+- `test_ask_ai_runtime.sh`：完整原问答、旧格式兼容、结构化摘要、所有原轮次依赖、Set 稳定摘要、删除／重答／墓碑失效、迟到缓存不能恢复已撤销内容。
+- `test_ask_ai_notebook.sh`：完整账目整数统计、跨月／多币种、待处理与无日期项目、整数溢出、分页、增删改失效；人物字符串 ID、真实发言交集与间隙；地点近 30 天覆盖、20 个样本计一天、来源删除和分页；两种数据库初始化顺序、延迟出现的业务表、增量 FTS 与 47 项匹配的完整计数。
+- `test_ask_ai_read_tools.sh`：混合引用编号、工具启用范围、55 轮完整历史检索、原答案编号段落及引用来源。
+- `test_ask_ai_drivers.sh`：脚本化 4K／16K／32K／未知窗口 loop、动态 schema／输出预留、成功答案与引用持久化、工具协议回退、压缩成功／格式错误／子超时、调用配对和共有额度；SQL 发布事务前再次复核版本，拒绝竞争中的旧答案。
+- `test_conversations.sh`：原历史分页、重答 ID／日期保持、失败重答保留旧成功答案、权限清理与后台生命周期。
+- 人物／地点现有 smoke suites：精确 ID 详情读取与删除后的不可用行为；`LifeSourceModelSmoke` 覆盖四个独立开关的默认关闭与持久化。
+- `python3 scripts/verify_ble_pod.py`：79 个校验和、3 个 XCFramework 通过；`ruby Tests/BuildFeaturesSmoke.rb`：4 tests、112 assertions 通过。依赖未改变，Xcode 与生成脚本按项补充新源文件。
+
+以上初轮专项均通过。独立整合评审随后发现六个需修复的边界：跨历史的权限继承、文本回退筛选范围、空时间轴问题路由、压缩后重置活动时限、裁剪后分页游标不符、远端统计引用本机重读。修复和最终复验结果在下文追加，不能以初轮通过替代。
+
+### 编译及验收边界
+
+首轮完整 iOS Simulator 构建通过（Xcode 27.2，iOS 26.3）。过程中发现原生 Tool API 的 availability 标注和引用页 catch 变量遮蔽，均修复后重建成功；最终修复后的编译另记。
+
+未安装或重置模拟器／真机 App，未做原生视觉验收或真实 Apple Intelligence／自定义服务推理；没有签名发布、TestFlight 上传、Git 提交或推送。合成回答只证明控制流程和数据边界，不能代表实际模型回答质量。
+
+### 最终修复与复验
+
+六项整合问题已修复并通过针对性复审，无遗留的重要问题：
+
+| 边界 | 最终回归 |
+| --- | --- |
+| 跨轮权限继承 | 账目 A → 历史工具 B → 自动历史＋当前灵感引用 C；重开后撤销账目权限，A/B/C 均清理；仅本机来源不能经 B/C 进入云端 |
+| 无工具协议筛选 | 不同月份、分类、收支并存时，文本回退只取得要求的本月餐饮支出；无法识别分类时停止，不扩大范围 |
+| App 问答入口 | 无时间轴时，“有哪些想法？”“这个月花了多少钱？”和一般发现问题进入获准记事本工具；普通项目问题与确定性记录计数保留 |
+| 共有活动预算 | 压缩与回答各延迟 80ms、合计超过 120ms 时终止；原重置逻辑已先复现失败 |
+| 连续原文分页 | 经实际 Runtime 回调连续读取长问答和灵感正文，按返回游标拼接后与完整原文一致，包含较后的第二点 |
+| 引用重开 | 远端账目、人物发言、地点引用保存／重读后可在本机打开，保持原获准子集；真实修改或撤销权限仍拒绝旧引用 |
+
+最终 `test_ask_ai_drivers.sh`、`test_conversations.sh`、`test_ask_ai_notebook.sh`、`test_ask_ai_read_tools.sh`、`test_ask_ai_runtime.sh` 均 exit 0。依赖继承使用兼容的 `ask-ai-run-provenance-v1` 迁移，不更改历史正文的存储身份。查询指纹显式排序 Set；显示引用数量不会裁掉后台继承的权限与版本依据。
+
+额外核对了轻量模块边界：新辅助逻辑曾让独立 Evidence／Preferences 编译依赖整个 Context；将辅助逻辑移到 `AskAIContext.swift` 后，同一组 `CaptureMetadata + DayRecord + Evidence + Preferences` 的独立 `swiftc -typecheck` 从 exit 1 变为 exit 0。最终完整模拟器构建在此调整后再次 exit 0、`BUILD SUCCEEDED`：
+
+```sh
+xcodebuild -workspace WristNotes.xcworkspace -scheme WristNotes \
+  -configuration Debug \
+  -destination 'platform=iOS Simulator,id=D69E30DA-2FDF-478C-B714-D0AE8F58B804' \
+  -derivedDataPath /private/tmp/eurekalife-ask-phase2-build \
+  CODE_SIGN_IDENTITY=- CODE_SIGNING_ALLOWED=YES build
+```
+
+`Podfile`／`Podfile.lock` 与任务开始时相同，lock 与已安装 `Pods/Manifest.lock` 一致；四个新增 Swift 文件的 Xcode 与生成脚本成员均核对通过。新增文档链接和压缩 Prompt 与源码核对通过，任务路径 `git diff --check` 通过。
+
+**独立的既有测试问题：**补查 `test_apple_reminders.sh` 时，其第一条编译因缺少 `SpeakerContactSnapshot`／`VoiceNote`／`AudioSourceID` 源文件失败；在尚未同步本任务的原工作区执行同一脚本也得到相同失败。该脚本尚未进入新的 Evidence 编译，不属于本次回归；本任务没有扩大修改其旧依赖。此项不能写成整库全部测试通过。

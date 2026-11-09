@@ -3,7 +3,7 @@ import FoundationModels
 
 @available(iOS 26.3, macOS 26.3, *)
 @Generable private struct AskAIAppleArguments {
-    @Guide(description:"One of searchRecords, readRecord, aggregateMetrics, searchConversationHistory") var name: String
+    @Guide(description:"One of the capability names listed in the tool description") var name: String
     @Guide(description:"JSON object matching that tool's parameters") var json: String
 }
 @available(iOS 26.3, macOS 26.3, *)
@@ -24,18 +24,25 @@ private struct AskAIAppleReadTool: Tool {
     private var content = ""
     private var completed = false
     private var restored = false
-    init(execute:@escaping @MainActor @Sendable (AskAIToolCall) async throws -> String) { self.execute = execute }
-    private static var toolDescription: String {
-        let schemas = String(data:(try? JSONSerialization.data(withJSONObject:AskAIReadTools.toolDefinitions,options:.sortedKeys)) ?? Data(),encoding:.utf8) ?? ""
+    private let definitions: [[String: Any]]
+    private let budget: AskAIContextBudget
+    init(toolDefinitions: [[String: Any]]? = nil, budget: AskAIContextBudget = .init(),
+         execute:@escaping @MainActor @Sendable (AskAIToolCall) async throws -> String) {
+        self.execute = execute; definitions = toolDefinitions ?? AskAIReadTools.toolDefinitions; self.budget = budget
+    }
+    private var toolDescription: String {
+        let schemas = String(data:(try? JSONSerialization.data(withJSONObject:definitions,options:.sortedKeys)) ?? Data(),encoding:.utf8) ?? ""
         return "Call one of these read-only capabilities using name and a JSON object string matching parameters. Dates and permissions cannot expand. " + schemas
     }
+    @available(iOS 26.3, macOS 26.3, *)
+    private var nativeTools: [any Tool] { definitions.isEmpty ? [] : [AskAIAppleReadTool(description:toolDescription,execute:execute)] }
     func start(instruction:String,content:String) throws {
         self.instruction = instruction; self.content = content; completed = false; restored = false
         guard #available(iOS 26.3,macOS 26.3,*) else { throw DaybookAnswerFailure.generation }
         let model = SystemLanguageModel.default
         guard case .available = model.availability else { throw DaybookAnswerFailure.unavailable("Apple Intelligence 当前不可用。") }
         guard model.supportsLocale(Locale(identifier:"zh-CN")) else { throw DaybookAnswerFailure.unsupportedLanguage }
-        session = LanguageModelSession(model:model,tools:[AskAIAppleReadTool(description:Self.toolDescription,execute:execute)],instructions:instruction)
+        session = LanguageModelSession(model:model,tools:nativeTools,instructions:instruction)
     }
     func rebuild() throws { try start(instruction:instruction,content:content) }
     func next(correction:String?) async throws -> AskAIDriverReply {
@@ -43,7 +50,7 @@ private struct AskAIAppleReadTool: Tool {
         completed = false
         do {
             let prompt = correction ?? (restored ? "Re-answer the current question using the verified evidence above; cite at most five registered sources." : content)
-            let result = try await session.respond(to:prompt,options:GenerationOptions(maximumResponseTokens:512))
+            let result = try await session.respond(to:prompt,options:GenerationOptions(maximumResponseTokens:budget.outputReserve))
             try Task.checkCancellation(); completed = true
             return .init(text:result.content,calls:[])
         } catch is CancellationError { throw CancellationError() }
@@ -61,8 +68,8 @@ private struct AskAIAppleReadTool: Tool {
         guard #available(iOS 26.3,macOS 26.3,*), payload.count <= 64 * 1024,
               let transcript = try? JSONDecoder().decode(Transcript.self,from:payload),
               Self.stable(transcript), !transcript.contains(where: { entry in if case .toolCalls = entry { return true }; if case .toolOutput = entry { return true }; return false }),
-              AskAITokenEstimator.estimate(String(decoding:payload,as:UTF8.self) + newInput) * 5 / 4 + 64 <= 2200 else { return false }
-        session = LanguageModelSession(model:.default,tools:[AskAIAppleReadTool(description:Self.toolDescription,execute:execute)],transcript:transcript)
+              budget.fits(instruction:instruction,content:String(decoding:payload,as:UTF8.self) + newInput,tools:toolDescription) else { return false }
+        session = LanguageModelSession(model:.default,tools:nativeTools,transcript:transcript)
         restored = true; return true
     }
     func completedCheckpoint() -> Data? {

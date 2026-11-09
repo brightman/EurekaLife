@@ -20,7 +20,7 @@ struct AskAIRuntimeSmoke {
         let context = try AskAIContextBuilder.build(question: String(repeating: "中英文mix ", count: 35), history: [turn], evidence: [source], instruction: "Use current evidence only", tools: String(repeating: "schema ", count: 100))
         try check(context.estimatedInputTokens <= 2200, "mixed Chinese/English must fit total budget")
         try check(context.content.contains("CURRENT_EVIDENCE"), "current evidence must survive history trimming")
-        try check(!context.content.contains("OLD_ASSISTANT_FACT"), "assistant prose must not be recycled as factual evidence")
+        try check(context.content.contains("OLD_ASSISTANT_FACT") && context.content.contains("not current facts"), "complete original answer must survive as historical context, not current facts")
         let memory = AskAIRollingMemory.build(turns: [turn], dependencyDigest: "permissions-v1")
         try check(memory.questions == [turn.question] && memory.coveredCursor != nil, "memory includes user intent and coverage cursor")
         try check(memory == AskAIRollingMemory.build(turns: [turn], dependencyDigest: "permissions-v1"), "memory is deterministic")
@@ -109,6 +109,132 @@ struct AskAIRuntimeSmoke {
         try store.reset()
         try check(try db.query("SELECT * FROM ask_ai_runs").isEmpty, "reset cascades runs")
         try check(try db.query("SELECT * FROM ask_ai_memory").isEmpty, "reset cascades anchors")
+        // Phase 2 policy: cloud uses its configured window; the estimator margin is charged once.
+        for (window, reserve, rounds) in [(4096,512,1), (16384,1024,4), (32768,2048,4)] {
+            let policy = AskAIContextBudget.policy(window: window, isCustom: true)
+            try check(policy.initial.windowTokens == window && policy.working.outputReserve == reserve && policy.recentRoundCount == rounds, "model-aware window policy")
+            try check(policy.working.inputLimit + reserve + 128 <= window, "working budget preserves output and continuation reserve")
+        }
+        try check(AskAIContextBudget.policy(window: nil, isCustom: true).working.windowTokens == 4096, "unknown model is conservative")
+        try check(AskAIContextBudget.policy(window: 128000, isCustom: false).working.windowTokens == 4096, "Apple window stays conservative")
+        try check(AskAIContextBudget.policy(window: 128000, isCustom: true).working.windowTokens == 32768, "application cap")
+        let raw = 64 + AskAITokenEstimator.estimate("mixed 中文")
+        try check(AskAIContextBudget().estimatedInput(instruction: "", content: "mixed 中文") == raw + (raw + 3) / 4, "25 percent once")
+        try check(AgentNotebookPermissions().allowedDomains == [.timeline,.conversation], "new notebook permissions default off")
+        var originals: [DaybookConversationTurn] = []
+        for index in 0..<55 {
+            let t = DaybookConversationTurn(id: UUID(), question: "original question \(index)", text: index == 0 ? "UNIQUE_OLD_ANSWER_SEARCH" : "1. first \(index)\n2. exact original second \(index)\n3. third", generated: true, provider: "fixture", evidence: evidence, sources: [], scopeDescription: "", state: .completed, createdAt: day.addingTimeInterval(Double(index)))
+            try store.saveTurn(t, day: day); originals.append(t)
+        }
+        let scope = AgentQueryScope(domains: [.timeline,.conversation,.people,.ledger], allowedKinds: [.voice])
+        let allHistoryPage = try await runtime.searchConversationHistory(query: "original", scope: scope)
+        try check(allHistoryPage.turns.count == 10 && allHistoryPage.hasMore, "history search pages at ten")
+        let secondHistoryPage = try await runtime.searchConversationHistory(query: "original", scope: scope, before: allHistoryPage.cursor)
+        try check(Set(secondHistoryPage.turns.map(\.id)).isDisjoint(with: allHistoryPage.turns.map(\.id)), "history cursor does not repeat IDs")
+        let ancient = try await runtime.searchConversationHistory(query: "UNIQUE_OLD_ANSWER_SEARCH", scope: scope)
+        try check(ancient.turns.map(\.id) == [originals[0].id], "answer search finds original beyond forty recent turns")
+        let originalPage = try await runtime.readConversationTurn(id: originals[54].id, scope: scope, offset: 0, limit: 4000)
+        try check(originalPage?.answer == originals[54].text && originalPage?.answer.contains("2. exact original second 54") == true, "read returns exact numbered original answer")
+        let partial = try await runtime.readConversationTurn(id: originals[54].id, scope: scope, offset: 0, limit: 12)
+        let remainder = try await runtime.readConversationTurn(id: originals[54].id, scope: scope, offset: partial!.nextOffset!, limit: 4000)
+        try check(partial!.answer + remainder!.answer == originals[54].text, "character cursor reconstructs original exactly")
+        let largeContext = try AskAIContextBuilder.build(question: "expand point 2", history: Array(originals.suffix(4)), evidence: [], instruction: "context", budget: AskAIContextBudget.policy(window: 16384, isCustom: true).initial)
+        try check(largeContext.historyTurnIDs.count == 4 && largeContext.content.contains("2. exact original second 54"), "large model includes four complete original Q+A")
+        let legacyTurnData = try JSONEncoder().encode(originals[0])
+        let decodedLegacyTurn = try JSONDecoder().decode(DaybookConversationTurn.self, from: legacyTurnData)
+        try check(decodedLegacyTurn.evidenceRefs == nil && decodedLegacyTurn.notebookPermissions == nil, "v1 turn archive decodes without new metadata")
+        let legacyMemoryData = try JSONEncoder().encode(memory)
+        try check(try JSONDecoder().decode(AskAIRollingMemory.self, from: legacyMemoryData) == memory, "v1 rolling memory payload remains compatible")
+        let generation2 = try await runtime.cacheGeneration()
+        let candidate = AskAIMemoryBlock.candidate(turns: originals, permissionDigest: "stable-permissions", budget: AskAIContextBudget.policy(window: 32768, isCustom: true).working)!
+        try check(candidate.turns.count == 12 && candidate.context.contains("HISTORICAL AI"), "bounded summary selects original Q+A, not previous summaries")
+        let summary = AskAIMemorySummary(topics: [], explicitDecisions: [], corrections: [], unresolved: [.init(text: "Original question remains unresolved", turnIDs: [originals[1].id])], aiProposals: [], entityRefs: [])
+        let block = try AskAIMemoryBlock.parse(JSONEncoder().encode(summary), candidate: candidate, model: "synthetic")
+        try await runtime.saveMemoryBlock(block, expectedGeneration: generation2)
+        let reopenedBlocks = try await reopened.loadMemoryBlocks(permissionDigest: "stable-permissions")
+        try check(reopenedBlocks == [block] && block.disclosurePolicy == .localOnly, "block survives reopen with local-only propagation")
+        let badSummary = AskAIMemorySummary(topics: [.init(text: "unsupported", turnIDs: [UUID()])], explicitDecisions: [], corrections: [], unresolved: [], aiProposals: [], entityRefs: [])
+        do { _ = try AskAIMemoryBlock.parse(JSONEncoder().encode(badSummary), candidate: candidate, model: "synthetic"); throw TestFailure(message: "foreign turn summary accepted") } catch AskAIMemoryBlock.Failure.invalidSummary { }
+        let middle = originals[4]
+        try store.saveTurn(.init(id: middle.id, question: middle.question, text: "corrected original answer", generated: true, provider: "fixture", evidence: evidence, sources: [], scopeDescription: "", state: .completed, createdAt: middle.createdAt), day: day)
+        let invalidated = try await runtime.loadMemoryBlocks(permissionDigest: "stable-permissions")
+        try check(invalidated.isEmpty, "reanswer of middle covered turn invalidates block while last anchor exists")
+        let currentOriginals = try await runtime.runtimeHistory(limit: 100)
+        let candidate2 = AskAIMemoryBlock.candidate(turns: currentOriginals, permissionDigest: "stable-permissions", budget: AskAIContextBudget.policy(window: 32768, isCustom: true).working)!
+        let block2 = try AskAIMemoryBlock.parse(JSONEncoder().encode(summary), candidate: candidate2, model: "synthetic")
+        try await runtime.saveMemoryBlock(block2, expectedGeneration: generation2)
+        try db.execute("DELETE FROM conversation_turns WHERE id=?", [.text(originals[5].id.uuidString)])
+        let deletedBlock = try await runtime.loadMemoryBlocks(permissionDigest: "stable-permissions")
+        try check(deletedBlock.isEmpty, "delete of middle covered turn invalidates block")
+        var typed = originals[54]
+        typed.evidenceRefs = [
+            .init(domain: .people, entityID: "manual:person-1", number: 2, title: "Person", snippet: "profile", revision: "r1", disclosurePolicy: .allowedRemote),
+            .init(domain: .places, entityID: "grid-v1:cell", number: 7, title: "Place", snippet: "visit", revision: "r2", disclosurePolicy: .localOnly),
+            .init(domain: .people, entityID: "ios:contact-2", number: 9, title: "Contact", snippet: "profile", revision: "r3", disclosurePolicy: .allowedRemote)]
+        typed.notebookPermissions = .init(allowIdeas: false, allowLedger: false, allowPeople: true, allowPlaces: true)
+        let typedRun = try await runtime.startAttempt(turnID: typed.id, provider: "fixture", model: "fixture", configRevision: "2")
+        try await runtime.completeAttempt(runID: typedRun.id, turn: typed)
+        let loadedTyped = try await reopened.runtimeTurn(id: typed.id)
+        try check(loadedTyped?.turn.evidenceRefs == typed.evidenceRefs && loadedTyped?.turn.notebookPermissions == typed.notebookPermissions, "typed sidecar and original turn publish atomically and reopen")
+        try check(try store.loadPage().turns.last?.evidenceRefs?.map(\.number) == [2,7,9], "UI page preserves mixed numeric citations")
+        let deniedRemote = try await runtime.readConversationTurn(id: typed.id, scope: .init(domains: Set(AgentEvidenceDomain.allCases), allowedKinds: [.voice], destination: .allowedRemote))
+        try check(deniedRemote == nil, "local-only history cannot be read for remote destination")
+        try store.redactDisallowed([.voice], notebookPermissions: .init())
+        try check(try store.runtimeTurn(id: typed.id)?.completionState == .redacted, "notebook revoke removes history answer and typed refs")
+        try check(try db.query("SELECT * FROM ask_ai_turn_evidence_v2 WHERE turn_id=?", [.text(typed.id.uuidString)]).isEmpty, "revocation removes typed sidecar")
+        do { try await runtime.saveMemoryBlock(block2, expectedGeneration: generation2); throw TestFailure(message: "late revoked block restored") } catch AskAIRuntimeStore.Failure.staleAttempt { }
+        let beforeResetGeneration = try await runtime.cacheGeneration()
+        try store.reset()
+        let afterResetGeneration = try await runtime.cacheGeneration()
+        try check(afterResetGeneration > beforeResetGeneration, "reset invalidates late cache write generation")
+
+        // Review regressions: canonical nested sets and complete, durably fenced entity dependencies.
+        let multiEvidence = DaybookEvidenceSnapshot(records: [], dayStart: day, dayEnd: day.addingTimeInterval(86400), allowedKinds: [.voice,.image,.location])
+        var multiTurn = DaybookConversationTurn(id: UUID(), question: "What did the person suggest?", text: "Historical person proposal", generated: true, provider: "fixture", evidence: multiEvidence, sources: [], scopeDescription: "", state: .completed, createdAt: day)
+        multiTurn.notebookPermissions = .init(allowPeople: true)
+        multiTurn.evidenceRefs = [.init(domain: .people, entityID: "manual:canonical", number: 3, title: "Person", snippet: "Original source", revision: "r1", dependencies: [.init(domain: .ideas, entityID: "source-parent", revision: "parent-r1")], sourceKinds: [.image,.voice,.location])]
+        let canonicalDigest = AskAIMemoryBlock.turnDigest(multiTurn)
+        for _ in 0..<64 {
+            let roundTripped = try JSONDecoder().decode(DaybookConversationTurn.self, from: JSONEncoder().encode(multiTurn))
+            try check(roundTripped == multiTurn && AskAIMemoryBlock.turnDigest(roundTripped) == canonicalDigest, "equal multi-kind decoded turns have canonical stable digests")
+        }
+        try store.saveTurn(multiTurn, day: day)
+        let reviewGeneration = try await runtime.cacheGeneration()
+        let reviewBudget = AskAIContextBudget.policy(window: 32768, isCustom: true).working
+        let omittedRefsSummary = AskAIMemorySummary(topics: [.init(text: "Historical person proposal", turnIDs: [multiTurn.id])], explicitDecisions: [], corrections: [], unresolved: [], aiProposals: [], entityRefs: [])
+        let multiCandidate = AskAIMemoryBlock.candidate(turns: [multiTurn], permissionDigest: "review", budget: reviewBudget)!
+        let omittedRefsBlock = try AskAIMemoryBlock.parse(JSONEncoder().encode(omittedRefsSummary), candidate: multiCandidate, model: "synthetic")
+        try await runtime.saveMemoryBlock(omittedRefsBlock, expectedGeneration: reviewGeneration)
+        let reviewReopened = AskAIRuntimeStore(conversationStore: DaybookConversationStore(url: legacy, database: try DaybookDatabase(url: db.url)))
+        let multiReopened = try await reviewReopened.loadMemoryBlocks(permissionDigest: "review")
+        try check(multiReopened == [omittedRefsBlock], "multi-kind turn memory survives DB decode and reopened store")
+        do {
+            try db.transaction {
+                try AskAIRuntimeStore.recordMemoryDependencyChange(db, domain: .ideas, entityID: "source-parent", currentRevision: "parent-r2")
+                throw TestFailure(message: "synthetic notebook transaction rollback")
+            }
+        } catch is TestFailure { }
+        let afterMutationRollback = try await reviewReopened.loadMemoryBlocks(permissionDigest: "review")
+        try check(afterMutationRollback == [omittedRefsBlock], "notebook transaction rollback also rolls back durable fence and invalidation")
+        try await runtime.invalidateMemoryDependency(domain: .ideas, entityID: "source-parent", currentRevision: "parent-r2")
+        let afterOmittedDependencyMutation = try await reviewReopened.loadMemoryBlocks(permissionDigest: "review")
+        try check(afterOmittedDependencyMutation.isEmpty, "all original source dependencies invalidate despite omitted model entity refs")
+        do { try await reviewReopened.saveMemoryBlock(omittedRefsBlock, expectedGeneration: reviewGeneration); throw TestFailure(message: "invalidated block retry resurrected stale entity revision") } catch AskAIRuntimeStore.Failure.staleAttempt { }
+        // New generated block ID still cannot publish old source revision after mutation before first save.
+        let lateBlock = try AskAIMemoryBlock.parse(JSONEncoder().encode(omittedRefsSummary), candidate: multiCandidate, model: "synthetic")
+        do { try await reviewReopened.saveMemoryBlock(lateBlock, expectedGeneration: reviewGeneration); throw TestFailure(message: "late first save bypassed durable current revision") } catch AskAIRuntimeStore.Failure.staleAttempt { }
+        // Explicitly invalidated block IDs remain invalid even if the source later matches again.
+        try await runtime.invalidateMemoryDependency(domain: .ideas, entityID: "source-parent", currentRevision: "parent-r1")
+        do { try await reviewReopened.saveMemoryBlock(omittedRefsBlock, expectedGeneration: reviewGeneration); throw TestFailure(message: "invalid block ID was resurrected after revision returned") } catch AskAIRuntimeStore.Failure.staleAttempt { }
+        // A deletion tombstone must survive reopen and fence even never-persisted candidate blocks.
+        try await runtime.invalidateMemoryDependency(domain: .people, entityID: "manual:canonical", currentRevision: nil)
+        let tombstoneReopened = AskAIRuntimeStore(conversationStore: DaybookConversationStore(url: legacy, database: try DaybookDatabase(url: db.url)))
+        do { try await tombstoneReopened.saveMemoryBlock(lateBlock, expectedGeneration: reviewGeneration); throw TestFailure(message: "late first save bypassed durable deletion tombstone") } catch AskAIRuntimeStore.Failure.staleAttempt { }
+
+        // Defense in depth: load must check durable source state even if a stale cache row says valid.
+        try db.execute("UPDATE ask_ai_memory_blocks SET status='valid' WHERE id=?", [.text(omittedRefsBlock.id.uuidString)])
+        let staleValidLoad = try await tombstoneReopened.loadMemoryBlocks(permissionDigest: "review")
+        try check(staleValidLoad.isEmpty, "load checks durable deletion even with stale valid cache status")
         print("Ask AI runtime: bounded context, deterministic memory, migration/reopen, stale attempts, atomic retry, interruption, redaction and reset passed")
     }
 }

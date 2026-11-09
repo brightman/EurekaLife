@@ -22,9 +22,12 @@ import Foundation
   try repo.replaceEvidence([evidence("a",a,at)])
   do { try repo.saveLabel(id:id,name:"stale",type:nil,expectedRevision:0);preconditionFailure("label conflict accepted") } catch NotebookPlacesError.conflict {}
   let renamed=try repo.page(now:at)
+  let exactPlace=try repo.lookup(id,now:at)
+  precondition(exactPlace?.name == "家" && exactPlace?.days == 1)
   precondition(renamed[0].id==id && renamed[0].name=="家" && renamed[0].days==1)
   try repo.replaceEvidence([])
   let empty=try repo.page(now:at);precondition(empty.isEmpty)
+  let missingPlace=try repo.lookup(id,now:at);precondition(missingPlace == nil)
   try repo.replaceEvidence([evidence("a",a,at)])
   let restored=try repo.page(now:at);precondition(restored[0].name=="家")
   // Inclusive 30 natural days: today and day -29 count, day -30 and tomorrow do not.

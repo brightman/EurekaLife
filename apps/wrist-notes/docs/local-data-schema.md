@@ -393,3 +393,19 @@ Watch 生成的传输描述不直接包含文件路径；iPhone 仅按已校验�
 - 地点 `visitDays` 以已存 day／time_zone 判断 30 日窗口，并按 day + source_id 汇总当天来源数；日期下钻按 day 过滤、50 条分页读原证据，多个采样可回看但不重复统计来源数。人工标记继续以 place_id 和 revision 保存。已有地址缓存与人工名称独立展示。
 
 验证见[本轮记录](../verification/flash-assets-prototype/README.md#notebook-management-20261108)。
+## Ask AI 第二期附属数据（2026-11-09）
+
+完整问答和业务数据继续使用原表；下列表只承担类型化引用、可失效摘要与检索投影。
+
+| 表 | 用途 |
+| --- | --- |
+| `ask_ai_turn_evidence_v2` | String ID 引用、记事本权限与可选 `run_provenance`；与成功答案同事务保存，turn 外键级联；旧 sources 保留时间轴子集 |
+| `ask_ai_memory_blocks` / `ask_ai_memory_dependencies` | 原问答独立压缩块、每个覆盖轮次、全部实体版本与权限依赖 |
+| `ask_ai_memory_entity_revisions` | 当前实体版本／删除墓碑和 notebook `$domain` 变更计数；防止旧摘要或答案迟到写入 |
+| `ask_ai_privacy_state` | 记事本权限指纹，配合缓存 generation 拒绝过期任务 |
+| `ask_ai_notebook_text` / `ask_ai_notebook_fts` | 灵感与人物的文字投影／FTS5；联系人投影排除邮箱手机号，命中复核当前版本 |
+| `ask_ai_notebook_text_outbox` / `ask_ai_notebook_text_seed` | 编辑触发增量队列与有界历史回填游标；未完成时走 SQL 关键词 |
+
+`run_provenance` 单独保存实际送入模型的历史、摘要、初始证据和工具结果所继承的数据领域、来源类型、外发限制、版本依赖与历史轮次指纹；不受最多 5 个展示引用的数量限制。字段以兼容迁移添加，旧记录缺少完整继承信息时按仅本机处理。引用查询描述保留原查询范围，重开时与当前授权相交，不把原远端统计扩大为本机全部数据。
+
+账目 SUM/COUNT 不依赖 FTS／向量。Reader 和 ConversationStore 的初始化顺序均有覆盖。原问答不被摘要替换；具体失效、权限与验证规则见[会话编排](ask-ai-session-orchestration.md#memory-notebook-agent-20261108)。

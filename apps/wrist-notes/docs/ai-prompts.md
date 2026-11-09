@@ -2,7 +2,7 @@
 id: wiselife-ai-prompts
 type: technical
 status: current
-updated: 2026-11-03
+updated: 2026-11-09
 scope: EurekaLife iPhone 标题、总结、内容分段、建议、每日回顾与 Ask AI
 ---
 
@@ -651,7 +651,7 @@ static func content(_ sources: [ActionSource]) -> String {
 
 ## 9. Ask AI、关联说话人与引用修复
 
-9.1–9.5 保留旧文本服务/Siri 等入口的提示词；新 Ask AI 运行时拼接规则见 9.6，不使用远端模型生成历史摘要。
+9.1–9.5 保留旧文本服务/Siri 等入口的提示词；9.6 保留首期运行时基线，当前完整问答压缩与记事本规则见 9.7。
 
 ### 9.1 Apple 端上基础指令
 
@@ -734,7 +734,9 @@ instruction 拼接顺序：本地／外部基础指令 → 关联说话人指令
 
 Apple 输出预算 400 tokens。部分无资料／纯统计问题由程序直接答复，不经过这组生成 Prompt。引用校验确认编号来自本次资料，不代表程序能验证每个自然语言断言都真实。
 
-### 9.6 Ask AI Runtime（iOS 26.3）
+### 9.6 Ask AI Runtime 首期模板（2026-11-01，历史基线）
+
+本节保留首期实现，当前历史压缩、动态预算与记事本工具规则见第 9.7 节。首期的“仅用户问题背景”“固定 512 输出”“没有语义摘要”不再代表第二期代码。
 
 源码：[AskAIRuntime](../Sources/iPhone/AskAIRuntime.swift)、[AskAIContextBuilder](../Sources/iPhone/AskAIContext.swift)、[Apple Tool](../Sources/iPhone/AskAIAppleDriver.swift)、[自定义工具协议](../Sources/iPhone/AskAICustomDriver.swift)。规则与限制见[主要技术说明](ask-ai-session-orchestration.md)。
 
@@ -776,6 +778,28 @@ Call capability_probe with value ok.
 探测本身不带个人资料，计入 8 次请求额度。引用纠正复用 9.4 的 `repairInstruction`，额外要求 `At most five sources, one window per record.`，最多一次。工具错误返回固定脱敏状态，不反射原始 SQLite、路径或网络错误。
 
 新工具正文在远端请求前经过新增资料预览；文本兼容路径使用同一份已经预览的运行时指令。尚无语义摘要、参数修复模型或流式事实草稿 prompt；不要把设计候选名称当成已实现模板。
+
+### 9.7 Ask AI 第二期：完整问答、压缩与记事本（2026-11-09）
+
+当前执行源为 [AskAIRuntime](../Sources/iPhone/AskAIRuntime.swift) 的 `instruction`、`summaryInstruction` 和 `compactIfNeeded`；工具定义由 [AskAIReadTools](../Sources/iPhone/AskAIReadTools.swift) 按本轮模型预算装载。
+
+回答基础指令仍复用第 9.2 节，追加以下规则；模型窗口估计、能力裁减和 speaker 范围说明由运行时按需追加：
+
+```text
+只读工具仅限获准范围；工具失败不等于无记录。引用已登记编号，最多5个来源。历史问答和摘要不是当前事实，当前事实须重读。明确区分用户决定与AI建议；只将明确存储的关系称为关系，主题相似仅属推断。不得执行记账、联系人、地点或灵感写入。金钱合计必须使用 aggregateLedger 的精确程序结果，不能推算。
+```
+
+近期上下文包含按预算保留的完整原问答、原 turn ID 与时间；历史编号会与当前引用分开，过长原答保留原文读取入口。旧记忆块只供历史背景，不能替代当前数据库事实。
+
+独立压缩请求只输入未覆盖的原始问答，不递归压缩旧摘要，不带工具。当前模型支持此调用时，一次回答至多压缩一次；原文与输出继续受现有发送确认和权限规则约束。实际压缩指令：
+
+```text
+Summarize only the supplied ORIGINAL Q+A as historical context, never current facts. Return JSON only with required arrays topics, explicitDecisions, corrections, unresolved, aiProposals, entityRefs. Each statement is {"text":"...","turnIDs":["original UUID"]}. Cite only supplied turn IDs. Separate explicit user decisions from unadopted AI proposals. Do not infer relationships or convert proposals into decisions. entityRefs must be [] unless copying an exact supplied typed ref. Keep total text under 700 characters, target 55-60% of the supplied original text, never include old numeric citation markers. Empty arrays are allowed.
+```
+
+55–60% 是提示词目标，并非硬性压缩率保证。程序校验 JSON、原轮次 ID、字数、依赖与权限；失败保留原历史。摘要最多使用 15 秒子时限，计入同一次运行的请求和活动时间预算。Apple／未知窗口按 4096 保守计算，自定义模型按配置计算并封顶 32768；输出预留随窗口为 512／1024／2048，指令、问题、历史、schema、工具结果和安全余量均计入。
+
+新能力包括原问答读取以及灵感／账目／人物／地点查询、精确统计和已存关联读取。金额由 SQLite 整数合计，提示词不能替代范围校验、权限校验或计算。没有工具协议时只提供可确定范围的有限资料，不能让模型自行把缺失数据当作完整结果。自动验证与模型效果边界见[验证记录](../verification/ask-ai-runtime-2026-11-01.md#memory-notebook-20261109)。
 
 <a id="providers"></a>
 

@@ -21,6 +21,7 @@ struct DaybookAssistantView: View {
     @StateObject private var voice = AssistantVoiceInputModel.live()
     @State private var confirmingReset = false
     @State private var confirmingClear = false
+    @State private var selectedReference: AgentEvidenceRef?
     @State private var showAISettings = false
     @State private var showTranscriptionSettings = false
     @Binding private var question: String
@@ -90,6 +91,7 @@ struct DaybookAssistantView: View {
                                     answerBody(turn)
                                     let sources = model.historySources(turn, allowedKinds: allowedKinds)
                                     sourcePills(sources, history: turn)
+                                    referencePills((turn.evidenceRefs ?? []).filter { $0.domain != .timeline })
                                     Text(turn.scopeDescription).font(.system(size: 10)).lineSpacing(6)
                                         .foregroundStyle(DaybookStyle.secondary).padding(.vertical, 12)
                                     answerActions(sources: sources, history: turn)
@@ -161,6 +163,9 @@ struct DaybookAssistantView: View {
         }
         .sheet(item: Binding(get: { model.remoteConfirmation }, set: { _ in /* View dismissal is not consent cancellation; use the explicit close button. */ })) { confirmation in
             remoteConfirmation(confirmation).interactiveDismissDisabled()
+        }
+        .sheet(item:$selectedReference) { ref in
+            AskAIReferenceView(reference:ref,permissions:model.referencePermissions,scope:model.referenceScope,readOriginal:model.originalTurnReference,onOpenRecord:onOpenRecord)
         }
         .sheet(isPresented: $showAISettings) { AISettingsView(settings: settings) }
         .sheet(isPresented: $showTranscriptionSettings) { TranscriptionSettingsView(settings: settings) }
@@ -279,6 +284,18 @@ struct DaybookAssistantView: View {
             if answer.generated {
                 Text("请结合原文核对，摘录可能不完整。").font(.system(size: 10))
                     .foregroundStyle(DaybookStyle.secondary).padding(.top, 12)
+            }
+        }
+    }
+
+    private func referencePills(_ refs: [AgentEvidenceRef]) -> some View {
+        DaybookAssistantFlowLayout(spacing:7) {
+            ForEach(refs) { ref in
+                Button { selectedReference = ref } label: {
+                    Label("[\(ref.number)] \(ref.title)",systemImage:"link")
+                        .font(.system(size:11)).lineLimit(1).padding(10)
+                        .foregroundStyle(DaybookStyle.accent).background(DaybookStyle.white,in:RoundedRectangle(cornerRadius:10))
+                }.accessibilityLabel("来源 \(ref.number)，\(ref.title)，打开原始资料")
             }
         }
     }

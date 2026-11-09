@@ -289,6 +289,7 @@ struct DaybookView: View {
                 semanticSearch.resourcesChanged(change, active: page == .library && scenePhase == .active); assistant.cancel(reason: .resourceChanged)
             }
             .onChange(of: allowedKinds) { _, _ in synchronizeAssistant() }
+            .onChange(of: preferences.notebookPermissions) { _, _ in synchronizeAssistant() }
             .onChange(of: settings.interfaceLanguage) { _, _ in synchronizeInsights(); synchronizeAddresses() }
             .onChange(of: settings.requiresRemoteAIConfirmation) { _, _ in synchronizeInsights() }
             .onChange(of: recorder.isRecording) { _, _ in synchronizeInsights() }
@@ -953,7 +954,7 @@ struct DaybookView: View {
         case .myVoice: MyVoiceEnrollmentView(profile: model.voiceProfile, recordingBlocked: recording.phase != .idle || recorder.requestingPermission)
         case .quickRecording: QuickRecordingSettingsView()
         case .aiSettings: AISettingsView(settings: settings)
-        case .aiRetrieval: AIRetrievalSettingsView()
+        case .aiRetrieval: AIRetrievalSettingsView(preferences: preferences)
         case .preferences: DaybookPreferencesView(preferences: preferences, reminders: reminders, onOpenRecord: openRecord, sourceTitle: sourceTitle)
         case .reminders: DaybookReminderListView(store: reminders, onOpenRecord: openRecord, sourceTitle: sourceTitle)
         case .reminder(let draft): DaybookReminderEditor(store: reminders, proposedTitle: draft.title, sourceID: draft.sourceID,
@@ -1274,7 +1275,7 @@ struct DaybookView: View {
     private func synchronizeAssistant(resumeSemantic: Bool = false) {
         synchronizeSemantic(resume: resumeSemantic)
         synchronizeInsights()
-        assistant.synchronize(records: records, selectedDate: selectedDate, allowedKinds: allowedKinds, configuration: settings.ai, configurationRevision: settings.aiRevision)
+        assistant.synchronize(records: records, selectedDate: selectedDate, allowedKinds: allowedKinds, configuration: settings.ai, configurationRevision: settings.aiRevision,notebookPermissions:preferences.notebookPermissions)
     }
     private func ask(_ question: String) { initialQuestion = question; assistantID = UUID(); navigate(to: .ai) }
     private var recordingStatus: String {

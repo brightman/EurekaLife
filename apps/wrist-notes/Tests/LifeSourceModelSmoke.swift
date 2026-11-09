@@ -94,6 +94,10 @@ import Foundation
         let defaults = UserDefaults(suiteName: suite)!
         defer { defaults.removePersistentDomain(forName: suite) }
         let preferences = DaybookPreferences(defaults: defaults)
+        precondition(preferences.notebookPermissions.allowedDomains == [.timeline,.conversation], "new notebook AI ranges require opt-in")
+        preferences.allowLedger = true
+        precondition(DaybookPreferences(defaults: defaults).notebookPermissions.allowedDomains == [.timeline,.conversation,.ledger], "notebook permission persists independently")
+        preferences.allowLedger = false
         precondition(!preferences.allowHealth && !preferences.allowCalendar && !preferences.allowLocation)
         preferences.allowHealth = true
         let restoredPreferences = DaybookPreferences(defaults: defaults)

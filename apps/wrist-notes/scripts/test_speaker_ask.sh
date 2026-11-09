@@ -7,6 +7,6 @@ swiftc -module-cache-path "$output/cache" \
   Sources/Shared/CaptureMetadata.swift Sources/Shared/VoiceNote.swift Sources/Shared/RecordingSession.swift \
   Sources/iPhone/AudioProcessing.swift Sources/iPhone/AudioWindowPlanner.swift Sources/iPhone/ContentSegmentation.swift \
   Sources/iPhone/DayRecord.swift Sources/iPhone/DaybookDatabase.swift \
-  Sources/iPhone/DaybookConversationStore.swift Sources/iPhone/DaybookRetrieval.swift \
+  Sources/iPhone/AskAIEvidence.swift Sources/iPhone/DaybookConversationStore.swift Sources/iPhone/DaybookRetrieval.swift \
   Tests/SpeakerAskRetrievalSmoke.swift -o "$output/speaker-ask"
 "$output/speaker-ask" "$@"

@@ -21,6 +21,10 @@ final class NotebookPeopleRepository {
     func relationships() throws -> [String] {
         try db.query("SELECT DISTINCT relationship FROM notebook_contact_relationships ORDER BY relationship").compactMap{$0["relationship"]?.string}
     }
+    /// Exact identity lookup for citation navigation; same-name contacts remain distinct.
+    func lookup(_ id: String) throws -> NotebookPerson? {
+        try db.query("SELECT c.id,c.display_name,c.organization,c.emails_json,c.phone_numbers_json,COALESCE(m.revision,0) AS revision FROM contacts c LEFT JOIN notebook_contact_metadata m ON m.contact_id=c.id WHERE c.id=?", [.text(id)]).first.map(person)
+    }
     private func person(_ row:DaybookDatabase.Row) throws -> NotebookPerson {
         let id=try row.requiredString("id")
         let relationships=try db.query("SELECT relationship FROM notebook_contact_relationships WHERE contact_id=? ORDER BY position",[.text(id)]).compactMap{$0["relationship"]?.string}

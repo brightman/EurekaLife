@@ -10,6 +10,10 @@ import Foundation
   precondition(filled.relationships == ["朋友","跑友"])
   let changed = try repo.save(id:filled.id,expectedRevision:filled.revision,name:"Updated",organization:" New studio ",email:"new@example.test",phone:"+1 202 555 0100",relationships:["同事","朋友"])
   let changedRead = try repo.page().first(where:{$0.id == filled.id})!
+  let exactRead = try repo.lookup(filled.id)
+  precondition(exactRead?.name == changedRead.name && exactRead?.revision == changedRead.revision)
+  let missingPerson = try repo.lookup("manual:missing")
+  precondition(missingPerson == nil)
   precondition(changedRead.email == "new@example.test" && changedRead.phone == "+1 202 555 0100" && changedRead.organization == "New studio")
   precondition(changed.revision == filled.revision+1 && changedRead.relationships == ["同事","朋友"])
   do { _ = try repo.save(id:filled.id,expectedRevision:filled.revision,name:"Stale",organization:nil,email:"stale@example.test",phone:"999",relationships:[]); preconditionFailure("stale five-field update accepted") } catch NotebookPeopleError.conflict {}

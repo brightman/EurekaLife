@@ -91,14 +91,19 @@ struct DaybookAnswerService: DaybookAnswering {
     /// Runtime compatibility path uses the exact instruction shown in the sending preview.
     func answerReviewed(_ prepared: DaybookRetrieval.Prepared, configuration: AIConfiguration, apiKey: String?,
                         instruction: String, isCurrent: @escaping @MainActor () -> Bool,
-                        ensureFresh: @escaping @MainActor () async throws -> Void = {}) async throws -> String {
+                        ensureFresh: @escaping @MainActor () async throws -> Void = {},
+                        sourceNumbers: Set<Int>? = nil, maximumResponseTokens: Int = 512,
+                        beforeRequest: @escaping @MainActor () async throws -> Void = {}) async throws -> String {
         try await ensureFresh()
-        let numbers = Set(prepared.sources.map(\.number))
-        let first = try await generate(prepared, configuration: configuration, apiKey: apiKey, instruction: instruction, isCurrent: isCurrent, ensureFresh: ensureFresh, maximumResponseTokens: 512)
+        let numbers = sourceNumbers ?? Set(prepared.sources.map(\.number))
+        try await beforeRequest()
+        let first = try await generate(prepared, configuration: configuration, apiKey: apiKey, instruction: instruction, isCurrent: isCurrent, ensureFresh: ensureFresh, maximumResponseTokens: maximumResponseTokens)
+        if numbers.isEmpty { return first }
         return try await DaybookAnswerCitationPolicy.validatedAnswer(first, sourceNumbers: numbers) { correction in
             try await ensureFresh()
+            try await beforeRequest()
             return try await self.generate(prepared, configuration: configuration, apiKey: apiKey,
-                                    instruction: instruction + "\n" + correction, isCurrent: isCurrent, ensureFresh: ensureFresh, maximumResponseTokens: 512)
+                                    instruction: instruction + "\n" + correction, isCurrent: isCurrent, ensureFresh: ensureFresh, maximumResponseTokens: maximumResponseTokens)
         }
     }
 

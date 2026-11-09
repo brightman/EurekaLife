@@ -2,8 +2,19 @@ import SwiftUI
 import Translation
 
 struct AIRetrievalSettingsView: View {
+    @StateObject private var preferences: DaybookPreferences
+    init(preferences: DaybookPreferences? = nil) {
+        _preferences = StateObject(wrappedValue: preferences ?? DaybookPreferences())
+    }
     var body: some View {
         SettingsPage(title: "AI 检索", subtitle: "在本机查找相关记录，管理检索语言与资源。") {
+            SettingsSection("记事本数据范围") {
+                Toggle("灵感", isOn: $preferences.allowIdeas)
+                Toggle("记账", isOn: $preferences.allowLedger)
+                Toggle("人物", isOn: $preferences.allowPeople)
+                Toggle("地点", isOn: $preferences.allowPlaces)
+                SettingsFootnote(text: "允许 Ask AI 查询、统计和关联分析。AI 不会修改记事本；关闭后，相关历史回答和派生上下文会停止使用。使用云端模型时仍遵循你的发送确认设置，仅限本机的资料不会外发。")
+            }
             DaybookSemanticSettingsView()
         }
     }

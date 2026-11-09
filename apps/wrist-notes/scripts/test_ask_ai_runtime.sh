@@ -9,5 +9,5 @@ swiftc -module-cache-path "$output/cache" \
   Sources/iPhone/AudioProcessingRepository.swift Sources/iPhone/AudioSpeakerMapping.swift Sources/iPhone/ContentEnrichmentService.swift \
   Sources/Shared/CaptureMetadata.swift Sources/Shared/VoiceNote.swift Sources/iPhone/NoteRepository.swift Sources/iPhone/DayRecord.swift \
   Sources/iPhone/DaybookDatabase.swift Sources/iPhone/DaybookConversationStore.swift Sources/iPhone/DaybookRetrieval.swift \
-  Sources/iPhone/AskAIContext.swift Sources/iPhone/AskAIRuntimeStore.swift Tests/AskAIRuntimeSmoke.swift -o "$output/runtime"
+  Sources/iPhone/AskAIEvidence.swift Sources/iPhone/AskAIContext.swift Sources/iPhone/AskAIRuntimeStore.swift Tests/AskAIRuntimeSmoke.swift -o "$output/runtime"
 "$output/runtime" "$@"

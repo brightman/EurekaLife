@@ -105,6 +105,9 @@ final class DaybookAssistantModel: ObservableObject {
     private let runtimeStore: AskAIRuntimeStore
     private let usesRuntime: Bool
     private var runtime: AskAIRuntime?
+    // Synthetic seam: production leaves both nil; no account or live model is involved in entrance fixtures.
+    var testRuntimeSetup: ((AskAIRuntime) -> Void)?
+    var testNotebookReaderFactory: ((AgentNotebookPermissions,AgentQueryScope) -> AskAINotebookReader)?
     private var runtimeRecovery: Task<Void, Error>?
     private var supplementalConsent: CheckedContinuation<Void, Error>?
     private var pendingRuntimePublication: (engine: AskAIRuntime, turn: Answer, evidence: DaybookRetrieval.Prepared)?
@@ -235,6 +238,7 @@ final class DaybookAssistantModel: ObservableObject {
     }
     private var latestRecords: [DayRecord] = []
     private var latestDate: Date?
+    private var latestNotebookPermissions = AgentNotebookPermissions()
     private var latestAllowedKinds: Set<DayRecord.Kind> = []
     private var latestConfiguration: AIConfiguration?
     private var latestConfigurationRevision: Int?
@@ -281,7 +285,9 @@ final class DaybookAssistantModel: ObservableObject {
         answer = nil; publishTurns()
     }
 
-    func synchronize(records: [DayRecord], selectedDate: Date, allowedKinds: Set<DayRecord.Kind>, configuration: AIConfiguration, configurationRevision: Int? = nil) {
+    func synchronize(records: [DayRecord], selectedDate: Date, allowedKinds: Set<DayRecord.Kind>, configuration: AIConfiguration, configurationRevision: Int? = nil, notebookPermissions: AgentNotebookPermissions? = nil) {
+        let notebookChanged = notebookPermissions.map { $0 != latestNotebookPermissions } ?? false
+        if let notebookPermissions { latestNotebookPermissions = notebookPermissions }
         let records = recordsForEvidence(records)
         let configurationChanged = latestConfiguration.map { $0 != configuration } ?? false
         let revisionChanged = configurationRevision.map { latestConfigurationRevision != nil && latestConfigurationRevision != $0 } ?? false
@@ -294,12 +300,12 @@ final class DaybookAssistantModel: ObservableObject {
                 ?? pendingEvidence.map { !isCurrent($0,records:records,allowedKinds:allowedKinds) }
                 ?? (self.latestRecords != records))
             : self.latestRecords != records)
-        let permissionsChanged = latestDate == nil || latestAllowedKinds != allowedKinds
+        let permissionsChanged = latestDate == nil || latestAllowedKinds != allowedKinds || notebookChanged
         if latestDate != nil { revokedKinds.formUnion(latestAllowedKinds.subtracting(allowedKinds)) }
         latestRecords = records; latestDate = selectedDate; latestAllowedKinds = allowedKinds
         latestConfiguration = configuration
         if let configurationRevision { latestConfigurationRevision = configurationRevision }
-        if configurationChanged || revisionChanged || sourcesChanged,
+        if configurationChanged || revisionChanged || sourcesChanged || notebookChanged,
            case .save(let turn, let day) = pendingMutation, turn.completionState == .completed {
             pendingMutation = .save(turn.replacing(text: "回答条件已变化，可重新提问。", state: .cancelled), day: day)
         }
@@ -506,18 +512,31 @@ final class DaybookAssistantModel: ObservableObject {
         return true
     }
 
-    private func present(_ evidence: DaybookRetrieval.Prepared, configuration: AIConfiguration, revision: Int, settings: AppSettings) {
+    private func present(_ input: DaybookRetrieval.Prepared, configuration: AIConfiguration, revision: Int, settings: AppSettings) {
+        let capabilities=AgentQuestionCapabilities(input.question)
+        let agentQuestion=capabilities.usesAgent(question:input.question,permissions:latestNotebookPermissions)
+        let labels:[AgentEvidenceDomain:String]=[.ideas:"灵感",.ledger:"记账",.people:"人物",.places:"地点"]
+        let requests=capabilities.domains.map { (true,latestNotebookPermissions.allowedDomains.contains($0),labels[$0] ?? "记事本") }
+        let denied = requests.filter { $0.0 && !$0.1 }.map { $0.2 }
+        if !denied.isEmpty {
+            presentReady(input.responding("“\(denied.joined(separator:"、"))”的 AI 读取范围尚未开启。请前往设置 → AI 检索开启对应记事本权限后重新提问。"),configuration:configuration,revision:revision,settings:settings)
+            return
+        }
+        let evidence = agentQuestion && input.evidence.speakerContactID == nil ? input.projecting(sources:input.sources,context:input.context,allowRuntime:true) : input
         prepared = evidence
         guard usesRuntime, evidence.directResponse == nil, let turnID = activeTurnID else {
             presentReady(evidence, configuration: configuration, revision: revision, settings: settings); return
         }
         let token = UUID(); version = token; isPending = true
         retrievalStatus = "正在整理对话上下文…"
+        let permissionSnapshot = latestNotebookPermissions
         let current: @MainActor () -> Bool = { [weak self] in
             guard let self else { return false }
-            return self.version == token && self.latestConfiguration == configuration && self.latestConfigurationRevision == revision && self.isCurrent(evidence, records: self.latestRecords, allowedKinds: self.latestAllowedKinds)
+            return self.version == token && self.latestNotebookPermissions == permissionSnapshot && self.latestConfiguration == configuration && self.latestConfigurationRevision == revision && self.isCurrent(evidence, records: self.latestRecords, allowedKinds: self.latestAllowedKinds)
         }
-        let engine = AskAIRuntime(prepared: evidence, records: latestRecords, configuration: configuration, configurationRevision: revision, turnID: turnID, store: runtimeStore,
+        let scope = AgentQueryScope(domains:permissionSnapshot.allowedDomains,allowedKinds:evidence.evidence.allowedKinds,destination:configuration.isRemote ? .allowedRemote : .localOnly)
+        let notebookReader = testNotebookReaderFactory?(permissionSnapshot,scope) ?? AskAINotebookReader(permissions:permissionSnapshot,scope:scope)
+        let engine = AskAIRuntime(prepared: evidence, records: latestRecords, configuration: configuration, configurationRevision: revision, turnID: turnID, store: runtimeStore, notebookPermissions:permissionSnapshot,notebookReader:notebookReader,queryScope:scope,
             isCurrent: current, ensureFresh: { [weak self] in
                 guard let self else { throw CancellationError() }
                 try await self.validateSourceChanges()
@@ -534,7 +553,9 @@ final class DaybookAssistantModel: ObservableObject {
                     self.retrievalStatus = "等待确认新增资料…"
                 }
             })
+        testRuntimeSetup?(engine)
         runtime = engine
+        if !engine.capabilityStatus.isEmpty { statusMessage=engine.capabilityStatus }
         task = Task { [weak self] in
             do {
                 try await self?.runtimeRecovery?.value
@@ -744,8 +765,14 @@ final class DaybookAssistantModel: ObservableObject {
 
     private func permitted(_ turn: Answer, allowedKinds: Set<DayRecord.Kind>) -> Answer {
         if turn.completionState == .redacted { return turn }
-        return turn.evidence.allowedKinds.isSubset(of: allowedKinds) && turn.evidence.allowedKinds.isDisjoint(with: revokedKinds)
+        return turn.runProvenance?.permits(.init(domains:latestNotebookPermissions.allowedDomains,allowedKinds:allowedKinds)) != false && (turn.evidenceRefs ?? []).allSatisfy { latestNotebookPermissions.allowedDomains.contains($0.domain) } && turn.evidence.allowedKinds.isSubset(of: allowedKinds) && turn.evidence.allowedKinds.isDisjoint(with: revokedKinds)
             ? turn : turn.redacted()
+    }
+
+    var referenceScope: AgentQueryScope { .init(domains:latestNotebookPermissions.allowedDomains,allowedKinds:latestAllowedKinds) }
+    var referencePermissions: AgentNotebookPermissions { latestNotebookPermissions }
+    func originalTurnReference(id: UUID, offset: Int) async throws -> AskAIRuntimeStore.OriginalTurnPage? {
+        try await runtimeStore.readConversationTurn(id:id,scope:referenceScope,offset:offset)
     }
 
     private func publishTurns() {
@@ -755,7 +782,7 @@ final class DaybookAssistantModel: ObservableObject {
 
     private func cleanupPermissions() {
         do {
-            try store.redactDisallowed(latestAllowedKinds.subtracting(revokedKinds))
+            try store.redactDisallowed(latestAllowedKinds.subtracting(revokedKinds),notebookPermissions:latestNotebookPermissions)
             savedTurns = savedTurns.map { permitted($0, allowedKinds: latestAllowedKinds) }
             privacyCleanupPending = false
             revokedKinds = []
@@ -839,7 +866,7 @@ final class DaybookAssistantModel: ObservableObject {
         task?.cancel()
         let engine = runtime
         let token = engine == nil ? UUID() : version; version = token
-        isPending = true; errorMessage = nil; statusMessage = nil
+        isPending = true; errorMessage = nil; statusMessage = engine?.capabilityStatus.isEmpty == false ? engine?.capabilityStatus : nil
         retrievalStatus = "正在整理回答…"
         let service = answerService
         let configurationRevision = latestConfigurationRevision
@@ -857,7 +884,7 @@ final class DaybookAssistantModel: ObservableObject {
                     let completed = Answer(id: id, question: result.prepared.question, text: result.text, generated: true,
                         provider: String((configuration.mode == .local ? "Apple Intelligence" : configuration.label).prefix(300)),
                         evidence: result.prepared.evidence, sources: result.sources, scopeDescription: result.prepared.scopeDescription,
-                        questionReferenceIDs: result.prepared.questionReferenceIDs, state: .completed, createdAt: draft.createdAt)
+                        questionReferenceIDs: result.prepared.questionReferenceIDs, state: .completed, createdAt: draft.createdAt,evidenceRefs:result.evidenceRefs,notebookPermissions:self.latestNotebookPermissions,runProvenance:result.runProvenance)
                     do { try await engine.publish(completed) }
                     catch is DaybookDatabase.Failure {
                         guard self.version == token else { return }
