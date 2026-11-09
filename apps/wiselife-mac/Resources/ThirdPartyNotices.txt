@@ -1,4 +1,4 @@
-WiseLife Mac Companion — Third-party notices
+EurekaLife Mac Companion — Third-party notices
 
 Model catalog: mlx-community/Qwen3-4B-4bit and mlx-community/Qwen3-1.7B-4bit.
 Model cards declare Apache-2.0; immutable revisions and hashes are in ModelCatalog.json.

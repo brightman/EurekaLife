@@ -423,7 +423,7 @@ struct VoiceNote: Codable, Identifiable, Equatable {
         titleManuallyEdited = false
         return true
     }
-    var usesLocalThoughtAI: Bool { kind == .thought && origin?.deviceKind == .ring }
+    var isRingThought: Bool { kind == .thought && origin?.deviceKind == .ring }
 
     init(id: UUID, kind: RecordingKind, capturedAt: Date, duration: TimeInterval) {
         self.id = id
@@ -485,6 +485,8 @@ struct VoiceNote: Codable, Identifiable, Equatable {
     }
 
     func speakerName(_ id: String?) -> String {
+        // Flash capture belongs to the user by definition, not by a biometric match.
+        if kind == .thought { return "我" }
         guard let id else { return "未区分" }
         if let contact = speakerContacts?[id] { return contact.displayName }
         if let name = speakerNames?[id], !name.isEmpty { return name }
@@ -493,7 +495,7 @@ struct VoiceNote: Codable, Identifiable, Equatable {
     }
 
     mutating func renameSpeaker(_ id: String, name: String) {
-        guard transcriptSegments?.contains(where: { $0.speakerID == id }) == true else { return }
+        guard kind != .thought, transcriptSegments?.contains(where: { $0.speakerID == id }) == true else { return }
         speakerContacts?[id] = nil
         let trimmed = String(name.trimmingCharacters(in: .whitespacesAndNewlines).prefix(40))
         var names = speakerNames ?? [:]
@@ -504,7 +506,7 @@ struct VoiceNote: Codable, Identifiable, Equatable {
 
     /// The opening snapshot prevents stale picker confirmations from changing a new transcript.
     func canEditSpeaker(_ id: String, expectedRevision: UUID?, expectedSegments: [TranscriptSegment]) -> Bool {
-        transcriptionState != .running && diarizationState != .running &&
+        kind != .thought && transcriptionState != .running && diarizationState != .running &&
         transcriptRevision == expectedRevision && transcriptSegments == expectedSegments &&
         expectedSegments.contains { $0.speakerID == id }
     }
@@ -533,7 +535,7 @@ struct VoiceNote: Codable, Identifiable, Equatable {
     /// An edit during inference wins, including edits that restore the original text.
     @discardableResult
     mutating func applyDiarization(_ segments: [TranscriptSegment], expectedRevision: UUID?) -> Bool {
-        guard transcriptRevision == expectedRevision else { return false }
+        guard kind != .thought, transcriptRevision == expectedRevision else { return false }
         let sameAssignments = (transcriptSegments ?? []).elementsEqual(segments) {
             $0.start == $1.start && $0.end == $1.end && $0.speakerID == $1.speakerID
         }

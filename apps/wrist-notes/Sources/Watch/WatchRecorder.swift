@@ -22,7 +22,7 @@ struct WatchTransferDiagnosticEvent: Codable, Identifiable, Equatable {
 }
 
 final class WatchRecorder: NSObject, ObservableObject, AVAudioRecorderDelegate, WCSessionDelegate {
-    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "cloud.karama.wisenote.watchkitapp", category: "WatchConnectivity")
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "cloud.karama.wiselife.watchkitapp", category: "WatchConnectivity")
     @Published private(set) var isRecording = false
     @Published private(set) var elapsed: TimeInterval = 0
     @Published private(set) var pending: [PendingRecording] = []
@@ -130,7 +130,7 @@ final class WatchRecorder: NSObject, ObservableObject, AVAudioRecorderDelegate, 
         retentionTimer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { [weak self] _ in
             self?.performRetentionMaintenance()
         }
-        recordDiagnostic("WiseLife 已启动", detail: "本机待确认 \(pendingCount) 项")
+        recordDiagnostic("EurekaLife 已启动", detail: "本机待确认 \(pendingCount) 项")
         if WCSession.isSupported() {
             WCSession.default.delegate = self
             logger.notice("Watch session activating")

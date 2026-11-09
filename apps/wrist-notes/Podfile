@@ -15,9 +15,10 @@ target 'WristNotes' do
   end
 end
 
-post_integrate do |_installer|
+post_integrate do |installer|
   app_project = Xcodeproj::Project.open(File.join(__dir__, 'WristNotes.xcodeproj'))
   WristNotesBuildFeatures.apply(app_project, enabled: ring_enabled)
+  WristNotesBuildFeatures.prepare_resource_outputs(app_project, pods_project: installer.pods_project)
   app_project.save
   WristNotesBuildFeatures.prepare_resource_scripts(__dir__)
 end

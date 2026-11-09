@@ -16,7 +16,7 @@ enum AssistantVoiceInputFailure: LocalizedError {
     case recording(String)
     var errorDescription: String? {
         switch self {
-        case .microphoneDenied: "请在系统设置中允许 WiseLife 使用麦克风。"
+        case .microphoneDenied: "请在系统设置中允许 EurekaLife 使用麦克风。"
         case .interrupted: "语音输入被中断，请重新说一次。原有文字已保留。"
         case .recording(let message): message
         }

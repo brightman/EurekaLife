@@ -1,7 +1,7 @@
 /* Marketing copy shares the prototype's language preference. Device names stay unchanged. */
 window.wiseLifeSiteCopy = [
   ['跳到产品体验','Skip to product demo','製品デモへスキップ'],
-  ['WiseLife 首页','WiseLife home','WiseLife ホーム'],
+  ['EurekaLife 首页','EurekaLife home','EurekaLife ホーム'],
   ['官网导航','Website navigation','サイトナビゲーション'],
   ['产品体验','Product','製品体験'],
   ['随身硬件','Hardware','デバイス'],
@@ -29,12 +29,12 @@ window.wiseLifeSiteCopy = [
   ['7 种触控手势','7 touch gestures','7 種類のタッチ操作'],
   ['3 种触觉反馈','3 haptic patterns','3 種類の触覚フィードバック'],
   ['探索 EurekaRing','Explore EurekaRing','EurekaRing を知る'],
-  ["已接入 WiseLife。录音汇入 iPhone，与其他记录一起回顾。", "Connected to WiseLife. Bring recordings to iPhone and revisit them with your other records.", "WiseLife に連携済み。録音を iPhone にまとめ、ほかの記録と一緒に振り返れます。"],
+  ["已接入 EurekaLife。录音汇入 iPhone，与其他记录一起回顾。", "Connected to EurekaLife. Bring recordings to iPhone and revisit them with your other records.", "EurekaLife に連携済み。録音を iPhone にまとめ、ほかの記録と一緒に振り返れます。"],
   ['你的生活。','Your life.','あなたの暮らし。'],
   ['你的数据，你的 AI。','Your data. Your AI.','あなたのデータと AI。'],
-  ['WiseLife App 不提供云端服务。你在 App 中创建的所有记录、转写、照片、总结和洞察默认保存在 iPhone 本机；Apple Watch 录音会传回配对 iPhone 后保存。', 'WiseLife has no cloud service. All records, transcripts, photos, summaries and insights you create stay on your iPhone by default; Apple Watch recordings transfer to and are saved on your paired iPhone.', 'WiseLife はクラウドサービスを提供しません。アプリで作成したすべての記録、文字起こし、写真、要約、インサイトは通常 iPhone 本体に保存されます。Apple Watch の録音はペアリングした iPhone に転送後保存されます。'],
-  ['没有 WiseLife 云端服务。','No WiseLife cloud service.','WiseLife のクラウドサービスはありません。'],
-  ['所有记录、转写、照片、总结和洞察默认保存在 iPhone 本机。Apple Watch 录音传回配对手机后保存；WiseLife 不提供云账户、云存储或云同步。','All records, transcripts, photos, summaries and insights stay on your iPhone by default. Apple Watch recordings transfer to your paired phone for storage. WiseLife provides no cloud account, storage or sync.', 'すべての記録、文字起こし、写真、要約、インサイトは通常 iPhone 本体に保存されます。Apple Watch の録音はペアリングした iPhone に転送後保存。WiseLife はクラウドアカウント、保存、同期を提供しません。'],
+  ['EurekaLife App 不提供云端服务。你在 App 中创建的所有记录、转写、照片、总结和洞察默认保存在 iPhone 本机；Apple Watch 录音会传回配对 iPhone 后保存。', 'EurekaLife has no cloud service. All records, transcripts, photos, summaries and insights you create stay on your iPhone by default; Apple Watch recordings transfer to and are saved on your paired iPhone.', 'EurekaLife はクラウドサービスを提供しません。アプリで作成したすべての記録、文字起こし、写真、要約、インサイトは通常 iPhone 本体に保存されます。Apple Watch の録音はペアリングした iPhone に転送後保存されます。'],
+  ['没有 EurekaLife 云端服务。','No EurekaLife cloud service.','EurekaLife のクラウドサービスはありません。'],
+  ['所有记录、转写、照片、总结和洞察默认保存在 iPhone 本机。Apple Watch 录音传回配对手机后保存；EurekaLife 不提供云账户、云存储或云同步。','All records, transcripts, photos, summaries and insights stay on your iPhone by default. Apple Watch recordings transfer to your paired phone for storage. EurekaLife provides no cloud account, storage or sync.', 'すべての記録、文字起こし、写真、要約、インサイトは通常 iPhone 本体に保存されます。Apple Watch の録音はペアリングした iPhone に転送後保存。EurekaLife はクラウドアカウント、保存、同期を提供しません。'],
   ['留在你的 iPhone','On your iPhone','あなたの iPhone に保存'],
   ["AI，也在手机上。", "AI on your phone, too.", "AI もスマートフォンの中に。"],
   ['用系统语音模型或 Whisper 转写，以可用的端上模型生成总结。下载模型后，本地处理无需 API Key。','Transcribe with system speech models or Whisper. Summarize with available on-device AI. Once downloaded, local models need no API key.','システム音声モデルや Whisper で文字起こし、対応する端末内 AI で要約。モデルのダウンロード後は API キー不要です。'],
@@ -57,7 +57,7 @@ window.wiseLifeSiteCopy = [
   ['选中的内容','Selected content','選んだ内容'],
   ['你配置的 AI 服务','Your AI service','設定した AI サービス'],
   ['结果保存回本机','Results saved locally','結果を端末に保存'],
-  ['WiseLife 不提供云端服务。只有你主动选择外部 AI 并确认发送时，选中的文字才会直接发送给该服务商；原始录音、照片和笔记仍保存在本机。', 'WiseLife has no cloud service. Only text you select and confirm is sent directly to your chosen AI provider; original recordings, photos and notes stay on your device.', 'WiseLife はクラウドサービスを提供しません。自分で外部 AI を選び送信を確認した場合のみ、選択した文章が提供元に直接送られます。元の録音、写真、ノートは端末に保存されます。'],
+  ['EurekaLife 不提供云端服务。只有你主动选择外部 AI 并确认发送时，选中的文字才会直接发送给该服务商；原始录音、照片和笔记仍保存在本机。', 'EurekaLife has no cloud service. Only text you select and confirm is sent directly to your chosen AI provider; original recordings, photos and notes stay on your device.', 'EurekaLife はクラウドサービスを提供しません。自分で外部 AI を選び送信を確認した場合のみ、選択した文章が提供元に直接送られます。元の録音、写真、ノートは端末に保存されます。'],
   ['在原型中查看模型设置','Explore model settings in the demo','デモでモデル設定を見る'],
   ['把值得记住的，留给自己。','Keep what matters. Make it yours.','大切な記憶を、自分の手元に。']
 ];

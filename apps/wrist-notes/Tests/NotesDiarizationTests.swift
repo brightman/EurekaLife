@@ -3,13 +3,13 @@ import XCTest
 @testable import WiseLife
 
 @MainActor final class NotesDiarizationTests: XCTestCase {
-    private func fixture() throws -> (NoteRepository, VoiceNote, AppSettings) {
+    private func fixture(kind: RecordingKind = .long, duration: Double = 3) throws -> (NoteRepository, VoiceNote, AppSettings) {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         let repository = try NoteRepository(root: root)
         addTeardownBlock { try? FileManager.default.removeItem(at: root) }
         let audio = root.appendingPathComponent("input.m4a")
         try Data([1, 2]).write(to: audio)
-        var note = try repository.importRecording(id: UUID(), from: audio, kind: .long, capturedAt: .now, duration: 3)
+        var note = try repository.importRecording(id: UUID(), from: audio, kind: kind, capturedAt: .now, duration: duration)
         note.transcript = "previous"; note.transcriptionState = .ready
         try repository.update(id: note.id) { $0 = note }
         let suite = "SpeakerTests.\(UUID())"
@@ -26,6 +26,48 @@ import XCTest
     }
     private func failWrites(_ database: DaybookDatabase) throws {
         try database.execute("CREATE TRIGGER block_note_updates BEFORE UPDATE ON voice_notes BEGIN SELECT RAISE(ABORT,'synthetic write failure'); END")
+    }
+
+    func testThoughtTranscriptionAndManualRetryNeverAnalyzeSpeakers() async throws {
+        for duration in [3.0, 3_600.0] {
+            let (repository, note, settings) = try fixture(kind: .thought, duration: duration)
+            let output = output
+            var calls = 0
+            let model = NotesModel(repository: repository, settings: settings, connectWatch: false,
+                generateTitleLocally: { _ in nil }, transcribeWithSegments: { _, _ in output },
+                diarizeWithIdentity: { _, pieces, _ in calls += 1; return .init(segments: pieces) })
+            await model.transcribe(note.id)
+            await model.identifySpeakers(note.id)
+            XCTAssertEqual(calls, 0, "Thoughts must skip both diarization and voice identity inference")
+            XCTAssertEqual(repository.notes[0].transcriptSegments, output.segments)
+            XCTAssertEqual(repository.notes[0].transcriptionState, .ready)
+            XCTAssertNil(repository.notes[0].diarizationState)
+            XCTAssertEqual(model.note(note.id)?.speakerName(nil), "我")
+        }
+    }
+
+    func testHistoricalThoughtRetryClearsObsoleteSpeakerStatusWithoutChangingTranscript() async throws {
+        for state in [ProcessingState.running, .failed, .unavailable, .ready] {
+            let (repository, note, settings) = try fixture(kind: .thought)
+            let output = output
+            try repository.update(id: note.id) {
+                $0.applyTranscription(output)
+                $0.diarizationState = state
+                $0.diarizationMessage = "Old failure"
+                $0.voiceIdentityMessage = "Old identity failure"
+            }
+            var calls = 0
+            let model = NotesModel(repository: repository, settings: settings, connectWatch: false,
+                generateTitleLocally: { _ in nil },
+                diarizeWithIdentity: { _, pieces, _ in calls += 1; return .init(segments: pieces) })
+            await model.identifySpeakers(note.id)
+            await Task.yield() // Also let the persisted .running recovery task execute.
+            XCTAssertEqual(calls, 0)
+            XCTAssertEqual(repository.notes[0].transcriptSegments, output.segments)
+            XCTAssertNil(repository.notes[0].diarizationState)
+            XCTAssertNil(repository.notes[0].diarizationMessage)
+            XCTAssertNil(repository.notes[0].voiceIdentityMessage)
+        }
     }
 
     func testTranscriptionPersistsBeforeDiarizationAndFailureCanRetry() async throws {

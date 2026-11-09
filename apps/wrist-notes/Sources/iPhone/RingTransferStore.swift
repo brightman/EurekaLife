@@ -12,6 +12,12 @@ struct RingTransferJob: Codable, Identifiable, Equatable {
     var recordingKind: RecordingKind { file.kind == .flashIdea ? .thought : .long }
     var stage: RingTransferStage = .queued
     var error: String?
+    var recordingTimeZoneID: String?
+}
+
+struct RingClockContext: Codable {
+    var synchronizedAt: Date
+    var timeZoneID: String
 }
 
 struct RingPersistentState: Codable {
@@ -21,6 +27,8 @@ struct RingPersistentState: Codable {
     var lastSync: [String: Date] = [:]
     // If a format reply is lost, require explicit reconciliation instead of replaying it.
     var uncertainFormatDeviceID: String?
+    // Optional for journals written before recording-timezone tracking was added.
+    var clocks: [String: RingClockContext]?
 }
 
 /// A local recovery journal, independent of the recording library. Saved jobs are kept
@@ -52,16 +60,34 @@ final class RingTransferStore {
         state = revised
     }
 
+    func recordClockSync(deviceID: String, at date: Date, timeZoneID: String) throws {
+        try update { state in
+            var clocks = state.clocks ?? [:]
+            clocks[deviceID] = RingClockContext(synchronizedAt: date, timeZoneID: timeZoneID)
+            state.clocks = clocks
+        }
+    }
+
     @discardableResult func enqueue(_ files: [BRRecorderFile], deviceID: String, now: Date = .now) throws -> [RingTransferJob] {
         guard files.allSatisfy(\.hasSafeName) else { throw BRRecorderFailure.invalidAudio("设备录音文件名无效。") }
         try update { state in
             let generation = state.generations[deviceID] ?? UUID()
             state.generations[deviceID] = generation
             for file in files {
-                // File size/duration can be filled in later; name and recording timestamp identify a recording.
+                // Only infer the device clock zone for recordings made after a confirmed
+                // sync. Older offline files retain an unknown zone; never use receipt time.
+                let clock = state.clocks?[deviceID]
+                let zone: String?
+                if let recorded = file.recordedAt, let clock,
+                   recorded >= clock.synchronizedAt, recorded <= now,
+                   clock.timeZoneID == TimeZone.current.identifier {
+                    zone = clock.timeZoneID
+                } else { zone = nil }
+                // The device filename identifies a recording within a format generation.
+                // Live completion and the file list can report different timestamps (one
+                // second apart on hardware); timestamps, size and duration are metadata.
                 if let index = state.jobs.firstIndex(where: {
                     $0.deviceID == deviceID && $0.generation == generation && $0.file.name == file.name
-                        && ($0.file.recordedAt == file.recordedAt || $0.file.recordedAt == nil || file.recordedAt == nil)
                 }) {
                     if state.jobs[index].stage != .saved {
                         let previous = state.jobs[index].file
@@ -69,11 +95,12 @@ final class RingTransferStore {
                             recordedAt: file.recordedAt ?? previous.recordedAt, expectedDuration: file.expectedDuration ?? previous.expectedDuration,
                             kind: file.kind == .flashIdea || previous.kind == .flashIdea ? .flashIdea : .recording)
                         state.jobs[index].capturedAt = state.jobs[index].file.recordedAt ?? state.jobs[index].capturedAt
+                        if state.jobs[index].recordingTimeZoneID == nil { state.jobs[index].recordingTimeZoneID = zone }
                     }
                     continue
                 }
                 state.jobs.append(RingTransferJob(id: UUID(), deviceID: deviceID, generation: generation,
-                    file: file, capturedAt: file.recordedAt ?? now))
+                    file: file, capturedAt: file.recordedAt ?? now, recordingTimeZoneID: zone))
             }
         }
         return pending(deviceID: deviceID)
@@ -105,12 +132,11 @@ final class RingTransferStore {
     func stageFlashAudio(_ file: BRRecorderFile, from source: URL, deviceID: String) throws {
         guard file.kind == .flashIdea else { throw BRRecorderFailure.invalidAudio("闪念文件类型无效。") }
         let jobs = try enqueue([file], deviceID: deviceID)
-        guard let job = jobs.first(where: { $0.file.name == file.name &&
-            ($0.file.recordedAt == file.recordedAt || $0.file.recordedAt == nil || file.recordedAt == nil) }) else { return }
+        guard let job = jobs.first(where: { $0.file.name == file.name }) else { return }
         let directory = try directory(job.id)
         let raw = directory.appendingPathComponent("recording.opus")
         guard !FileManager.default.fileExists(atPath: raw.path),
-              !FileManager.default.fileExists(atPath: directory.appendingPathComponent("recording.m4a").path) else { return }
+              !FileManager.default.fileExists(atPath: directory.appendingPathComponent("recording.complete.m4a").path) else { return }
         let temporary = directory.appendingPathComponent("flash.download")
         try? FileManager.default.removeItem(at: temporary)
         try FileManager.default.copyItem(at: source, to: temporary)

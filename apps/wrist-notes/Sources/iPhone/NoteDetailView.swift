@@ -197,10 +197,10 @@ struct NoteDetailView: View {
                     save()
                     Task { await model.transcribe(id) }
                 }
-                .disabled(note.transcriptionState == .running || note.diarizationState == .running)
+                .disabled(note.transcriptionState == .running || (note.kind != .thought && note.diarizationState == .running))
             }
             .font(.system(size: 13, weight: .medium))
-            if note.diarizationState == .ready, !(note.transcriptSegments ?? []).isEmpty, !editingWholeTranscript,
+            if note.kind == .thought || note.diarizationState == .ready, !(note.transcriptSegments ?? []).isEmpty, !editingWholeTranscript,
                transcript == note.transcript {
                 SpeakerTranscriptView(note: note, editable: true)
                     .padding(16).background(NotesStyle.card, in: RoundedRectangle(cornerRadius: 17))
@@ -227,8 +227,10 @@ struct NoteDetailView: View {
                 .padding(10).background(NotesStyle.card, in: RoundedRectangle(cornerRadius: 17))
                 .overlay(RoundedRectangle(cornerRadius: 17).stroke(NotesStyle.border, lineWidth: 1))
                 if editingWholeTranscript {
-                    Text("保存整段修改后会移除原有说话人标记；逐段编辑可以保留标记。")
-                        .font(.caption).foregroundStyle(.secondary)
+                    if note.kind != .thought {
+                        Text("保存整段修改后会移除原有说话人标记；逐段编辑可以保留标记。")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
                     Button("完成整段编辑") { if save() { editingWholeTranscript = false } }.font(.caption)
                 }
             }

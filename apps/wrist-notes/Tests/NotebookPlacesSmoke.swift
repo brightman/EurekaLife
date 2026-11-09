@@ -10,6 +10,11 @@ import Foundation
    .init(id:key,sourceID:UUID(),sourceKind:"photo",capturedAt:date,timeZoneIdentifier:zone,location:point)
   }
   try repo.replaceEvidence([evidence("a",a,at),evidence("b",b,at),evidence("c",a,at),evidence("d",a,at.addingTimeInterval(-86400))])
+  let days=try repo.visitDays(placeID:NotebookPlaceGrid.id(a),now:at)
+  precondition(days.count == 2 && days[0].sourceCount == 2 && days[1].sourceCount == 1)
+  let oneDay=try repo.visits(placeID:NotebookPlaceGrid.id(a),day:days[0].day,now:at,limit:1,offset:1)
+  precondition(oneDay.count == 1 && oneDay[0].day == days[0].day)
+  precondition(["餐厅","咖啡馆","公园","健身房"].allSatisfy(NotebookPlaceGrid.types.contains))
   let places=try repo.page(now:at)
   precondition(places.count==2 && places[0].days==2)
   let id=NotebookPlaceGrid.id(a)
@@ -74,6 +79,7 @@ import Foundation
   let sessions=try repo.page(now:at),sessionVisits=try repo.visits(placeID:id,now:at)
   precondition(sessions[0].name=="采样位置缓存地址")
   precondition(sessions[0].days==1 && sessionVisits.count==3 && sessionVisits.allSatisfy{$0.sourceID==session})
+  let sessionDays=try repo.visitDays(placeID:id,now:at);precondition(sessionDays.count == 1 && sessionDays[0].sourceCount == 1)
   let separatePoint=CaptureLocation(latitude:1.6,longitude:103.8,accuracy:5,measuredAt:at,source:.phoneRecording)!
   let separateSample=RecordingLocationSample(sessionID:session,sessionOffset:0,requestedAt:at,location:separatePoint,sourceDevice:"fixture")
   try db.execute("INSERT INTO recording_location_samples(id,session_id,session_offset,requested_at,payload) VALUES(?,?,0,?,?)",[.text(separateSample.id.uuidString),.text(session.uuidString),.real(at.timeIntervalSinceReferenceDate),try DaybookDatabase.json(separateSample)])

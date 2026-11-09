@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "EBD457350296330A077B9C6D"
-               BuildableName = "WiseLife.app"
+               BuildableName = "EurekaLife.app"
                BlueprintName = "WristNotes"
                ReferencedContainer = "container:WristNotes.xcodeproj">
             </BuildableReference>
@@ -45,7 +45,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "EBD457350296330A077B9C6D"
-            BuildableName = "WiseLife.app"
+            BuildableName = "EurekaLife.app"
             BlueprintName = "WristNotes"
             ReferencedContainer = "container:WristNotes.xcodeproj">
          </BuildableReference>
@@ -78,7 +78,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "EBD457350296330A077B9C6D"
-            BuildableName = "WiseLife.app"
+            BuildableName = "EurekaLife.app"
             BlueprintName = "WristNotes"
             ReferencedContainer = "container:WristNotes.xcodeproj">
          </BuildableReference>
@@ -95,7 +95,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "EBD457350296330A077B9C6D"
-            BuildableName = "WiseLife.app"
+            BuildableName = "EurekaLife.app"
             BlueprintName = "WristNotes"
             ReferencedContainer = "container:WristNotes.xcodeproj">
          </BuildableReference>

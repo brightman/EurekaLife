@@ -1,0 +1,12 @@
+{
+  "release": "20261108T132224Z-eurekalife",
+  "workspace": "/tmp/wiselife-20261108T132224Z-eurekalife",
+  "archive": "/tmp/wiselife-20261108T132224Z-eurekalife/20261108T132224Z-eurekalife.tar.gz",
+  "manifest": "/tmp/wiselife-20261108T132224Z-eurekalife/20261108T132224Z-eurekalife-SHA256SUMS",
+  "files": 244,
+  "bytes": 11178336,
+  "archiveSHA256": "ee22c02388b13d0724100e74f70fe372f06dbfd955c47460cdbd7794e88c75c3",
+  "homepageSHA256": "a57abe503ff62f43b27a6cfde6c180a52810a33a217f146fb483f96bfa8a9fcc",
+  "previousRelease": "/opt/wiselife-site/releases/20261108T131926Z-hd-v2",
+  "rollbackRelease": "/opt/wiselife-site/releases/20261031T140652Z-hd-v2"
+}

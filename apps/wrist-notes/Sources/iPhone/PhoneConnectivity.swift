@@ -20,7 +20,7 @@ struct IncomingRecording: Codable {
 }
 
 final class PhoneConnectivity: NSObject, WCSessionDelegate {
-    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "cloud.karama.wisenote", category: "WatchConnectivity")
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "cloud.karama.wiselife", category: "WatchConnectivity")
     private let inbox: URL
     private let syncDatabaseURL: URL
     private let diagnosticsURL: URL
@@ -244,7 +244,7 @@ final class PhoneConnectivity: NSObject, WCSessionDelegate {
         case unavailable, submissionFailed
         var errorDescription: String? {
             switch self {
-            case .unavailable: String(localized: "同步服务尚未准备好，请确认手表已配对并安装 WiseLife，然后刷新状态。")
+            case .unavailable: String(localized: "同步服务尚未准备好，请确认手表已配对并安装 EurekaLife，然后刷新状态。")
             case .submissionFailed: String(localized: "未能提交重试请求，请稍后重试。手表上的录音仍会保留。")
             }
         }

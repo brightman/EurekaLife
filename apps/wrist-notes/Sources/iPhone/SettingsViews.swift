@@ -77,7 +77,7 @@ struct SettingsView: View {
 
 struct AboutView: View {
     var body: some View {
-        SettingsPage(title: "关于", subtitle: "查看常见问题、隐私与服务条款，或联系 WiseLife。") {
+        SettingsPage(title: "关于", subtitle: "查看常见问题、隐私与服务条款，或联系 EurekaLife。") {
             SettingsMenuGroup("法律与支持") { SettingsAboutLinks() }
             AppReleaseInfoView()
         }
@@ -137,7 +137,7 @@ struct AISettingsView: View {
                 .opacity(localUnavailableReason == nil ? 1 : 0.45)
                 .accessibilityIdentifier("ai.settings.appleIntelligence")
                 ModelChoice(title: "连接本地 Mac 模型", badge: "局域网",
-                            description: "连接 WiseLife Mac Companion，使用 Mac 上的 LLM 生成总结、标题与问答。",
+                            description: "连接 EurekaLife Mac Companion，使用 Mac 上的 LLM 生成总结、标题与问答。",
                             selected: editor.configuration.mode == .nearbyMac) {
                     editor.selectMode(.nearbyMac)
                 }
@@ -153,7 +153,7 @@ struct AISettingsView: View {
                 }
             }
             if embedded {
-                SettingsFootnote(text: "Apple Intelligence：无需 API Key，在 iPhone 上理解文字。WiseLife 产品要求为 iOS 27.3 及以上、iPhone 15 Pro／Pro Max 或更新的支持机型；实际能力以本机系统检查为准。")
+                SettingsFootnote(text: "Apple Intelligence：无需 API Key，在 iPhone 上理解文字。EurekaLife 产品要求为 iOS 27.3 及以上、iPhone 15 Pro／Pro Max 或更新的支持机型；实际能力以本机系统检查为准。")
                     .padding(.top, 14)
                 if editor.configuration.mode == .custom { Text("Bring Your Own Model").font(.system(size: 11)).foregroundStyle(DaybookStyle.accent).padding(.top, 10) }
             }

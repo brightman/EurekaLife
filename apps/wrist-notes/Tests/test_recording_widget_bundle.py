@@ -1,6 +1,6 @@
 """Check the actual built app/extension intent contract, not source spelling.
 
-Usage: python3 Tests/test_recording_widget_bundle.py /path/to/WiseLife.app
+Usage: python3 Tests/test_recording_widget_bundle.py /path/to/EurekaLife.app
 """
 import json
 from pathlib import Path
@@ -32,7 +32,10 @@ def check(app: Path) -> None:
         assert not action["parameters"], "Lock Screen start must not require input resolution"
         assert "StopWiseLifeRecordingIntent" in item["actions"], "Existing Live Activity stop was lost"
     assert metadata[0]["actions"][name]["supportedModes"] == metadata[1]["actions"][name]["supportedModes"]
-    assert len(metadata[0]["autoShortcuts"]) == 3, "Existing recording shortcuts changed"
+    assert {shortcut["actionIdentifier"] for shortcut in metadata[0]["autoShortcuts"]} == {
+        "ToggleWiseLifeRecordingIntent", "StartWiseLifeRecordingIntent",
+        "SaveWiseLifeRecordingIntent", "AskWiseLifeRecordsIntent",
+    }, "Existing recording and Ask AI shortcuts changed"
     print("Built recording widget contract: passed")
 
 

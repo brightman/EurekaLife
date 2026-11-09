@@ -66,7 +66,51 @@ import Foundation
         try expect(try repo.assets().count == countBefore)
         try expect(try repo.batch(invalidSource.id) == nil)
         try verifyTimeline(source: source, assets: rows, actions: actions, now: recorded)
+        try verifyRetryAfterEmptyResult(repo: repo, database: db, recorded: recorded)
+        try verifySpokenCalendarCommands(recorded: recorded)
         print("FlashCapture: grounded extraction, durable dedup, edit conflicts, revocation, money and history passed")
+    }
+    static func verifyRetryAfterEmptyResult(repo: FlashCaptureRepository, database: DaybookDatabase, recorded: Date) throws {
+        let quote = "给我创建日程，明天上午10点到11点约李四吃饭。"
+        let source = ActionSource(id: UUID(), title: "闪念", quote: quote, capturedAt: recorded,
+            timeZoneID: "Asia/Shanghai", recordingKind: "thought", timeZoneKnown: true)
+        try repo.commit(.init(), source: source)
+        let json = #"{"items":[{"kind":"event","title":"约李四吃饭","quote":"给我创建日程，明天上午10点到11点约李四吃饭。","explicitCommand":true,"start":"2026-11-01T10:00:00+08:00","end":"2026-11-01T11:00:00+08:00"}]}"#
+        let extraction = try FlashCaptureParser.parse(json, source: source, now: recorded)
+        try repo.commit(extraction, source: source)
+        let result = try repo.batch(source.id)
+        precondition(result?.state == .complete)
+        let actions = try ActionRepository(database: database)
+        try expect(try actions.load().filter { $0.source?.id == source.id }.count == 1,
+            "An empty completed batch must allow explicit re-extraction to save the missed command")
+        // Each parse produces new IDs; retry must unblock a truly empty result,
+        // while a completed nonempty result must still prevent duplicate actions.
+        try repo.commit(try FlashCaptureParser.parse(json, source: source, now: recorded), source: source)
+        try expect(try actions.load().filter { $0.source?.id == source.id }.count == 1,
+            "Nonempty completed batches must still prevent duplicate execution")
+    }
+    static func verifySpokenCalendarCommands(recorded: Date) throws {
+        for command in ["给我创建个日程吧", "给我创建一个日程", "给我创建 个日程", "给我创建日程"] {
+            let quote = "\(command)，明天上午10点约李四吃饭。"
+            let source = ActionSource(id: UUID(), title: "闪念", quote: quote, capturedAt: recorded,
+                timeZoneID: "Asia/Shanghai", recordingKind: "thought", timeZoneKnown: true, device: "EurekaRing")
+            let json = String(decoding: try JSONSerialization.data(withJSONObject: ["items": [[
+                "kind": "event", "title": "约李四吃饭", "quote": quote, "explicitCommand": true,
+                "start": "2026-11-01T10:00:00+08:00", "end": "2026-11-01T11:00:00+08:00"
+            ]]]), as: UTF8.self)
+            let actions = try FlashCaptureParser.parse(json, source: source, now: recorded).actions
+            precondition(actions.count == 1, "Spoken explicit calendar command was silently discarded: \(command)")
+            precondition(actions[0].sync == .pending)
+            let incomplete = json.replacingOccurrences(of: "\"2026-11-01T11:00:00+08:00\"", with: "null")
+            let draft = try FlashCaptureParser.parse(incomplete, source: source, now: recorded).actions
+            precondition(draft.count == 1 && draft[0].start != nil && draft[0].end == nil && draft[0].sync == .failed,
+                "Missing end time must remain a visible draft, never disappear or invent a duration")
+            for prefix in ["不要", "别给我", "不需要", "他说，", "如果"] {
+                var denied = source; denied.quote = prefix + quote
+                try expect(try FlashCaptureParser.parse(json, source: denied, now: recorded).actions.isEmpty,
+                    "A shorter model quote must not bypass negation or reported speech")
+            }
+        }
     }
     static func verifyTimeline(source: ActionSource, assets: [FlashAsset], actions: [ActionItem], now: Date) throws {
         let group = FlashTimelineGroup(sourceID: source.id, assets: assets, actions: actions)

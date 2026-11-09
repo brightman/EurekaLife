@@ -77,7 +77,7 @@ private struct SigningFixture {
         let api = ChatGPTAPI(session: URLSession(configuration: configuration), now: { Date(timeIntervalSince1970: 2_000_000_000) })
         let attempt = try ChatGPTAuthorizationAttempt(callbackURL: URL(string: "http://127.0.0.1:54321/auth/callback")!, clientID: nil, hostID: "urn:uuid:fixture")
         let auth = query(try api.authorizationURL(attempt: attempt))
-        try check(auth["client_id"] == "dynamic_agent_client" && auth["agent_name_hint"] == "WiseLife", "Initial dynamic registration")
+        try check(auth["client_id"] == "dynamic_agent_client" && auth["agent_name_hint"] == "EurekaLife", "Initial dynamic registration")
         try check(auth["resource"] == "https://api.openai.com/v1" && auth["code_challenge_method"] == "S256", "Resource and PKCE")
         try check(auth["code_challenge"] == b64(Data(SHA256.hash(data: Data(attempt.verifier.utf8)))), "PKCE digest")
         try check(auth["scope"] == "openid profile email offline_access resource.invoke chatgpt.tokens.use.direct", "Complete requested scopes")

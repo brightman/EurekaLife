@@ -111,13 +111,21 @@ final class NotebookPlacesRepository {
             let row=map[id]
             let savedName=row?["name"]?.string ?? ""
             let name=savedName.isEmpty ? (fallbacks[id]?["display_label"]?.string ?? "未命名区域") : savedName
-            return NotebookPlace(id:id,name:name,type:row?["type"]?.string,days:days.count,revision:Int(row?["revision"]?.double ?? 0),coordinateHint:fallbacks[id]?["coordinate_label"]?.string)
+            return NotebookPlace(id:id,name:name,type:row?["type"]?.string,days:days.count,revision:Int(row?["revision"]?.double ?? 0),coordinateHint:fallbacks[id]?["coordinate_label"]?.string,address:fallbacks[id]?["display_label"]?.string)
         }
         let ordered=places.sorted { $0.days == $1.days ? $0.id < $1.id : $0.days > $1.days }
         return Array(ordered.dropFirst(max(0,offset)).prefix(max(1,min(100,limit))))
     }
-    func visits(placeID:String,now:Date = .now,limit:Int = 50,offset:Int = 0) throws -> [NotebookPlaceVisit] {
-        let rows=try db.query("SELECT * FROM notebook_place_evidence WHERE place_id=? ORDER BY day DESC,captured_at DESC,id",[.text(placeID)])
+    func visitDays(placeID:String,now:Date = .now) throws -> [NotebookPlaceDay] {
+        let rows=try db.query("SELECT DISTINCT day,time_zone,source_id FROM notebook_place_evidence WHERE place_id=? ORDER BY day DESC",[.text(placeID)])
+        var sources:[String:Set<String>]=[:]
+        for row in rows where recent(row,now:now) {
+            if let day=row["day"]?.string,let source=row["source_id"]?.string { sources[day,default:[]].insert(source) }
+        }
+        return sources.keys.sorted(by:>).map { .init(day:$0,sourceCount:sources[$0]!.count) }
+    }
+    func visits(placeID:String,day:String? = nil,now:Date = .now,limit:Int = 50,offset:Int = 0) throws -> [NotebookPlaceVisit] {
+        let rows=try db.query("SELECT * FROM notebook_place_evidence WHERE place_id=? AND (? IS NULL OR day=?) ORDER BY day DESC,captured_at DESC,id",[.text(placeID),day.map{.text($0)} ?? .null,day.map{.text($0)} ?? .null])
         // Keep every different-time observation; the list groups by day without inflating day counts.
         return rows.filter{recent($0,now:now)}.compactMap { row in
             guard let id=row["source_id"]?.string,let uuid=UUID(uuidString:id),let day=row["day"]?.string else { return nil }

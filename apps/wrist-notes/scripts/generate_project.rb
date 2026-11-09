@@ -56,7 +56,7 @@ watch_files = %w[WristNotesWatchApp.swift WatchContentView.swift WatchRecorder.s
                  WatchConnectivityStatus.swift WatchRecordingRetentionStore.swift RecordingButtonInteraction.swift].map { |name| watch.new_file(name) }
 
 phone_target = project.new_target(:application, 'WristNotes', :ios, '26.0')
-phone_target.product_reference.path = 'WiseLife.app'
+phone_target.product_reference.path = 'EurekaLife.app'
 shared_files.each { |file| phone_target.source_build_phase.add_file_reference(file) }
 phone_files.each { |file| phone_target.source_build_phase.add_file_reference(file) }
 if File.directory?(File.join(root, 'Sources/iPhone/Assets.xcassets'))
@@ -65,8 +65,9 @@ end
 phone_target.build_configurations.each do |configuration|
   settings = configuration.build_settings
   settings['SWIFT_VERSION'] = '5.0'
-  settings['PRODUCT_BUNDLE_IDENTIFIER'] = 'cloud.karama.wisenote'
-  settings['PRODUCT_NAME'] = 'WiseLife'
+  settings['PRODUCT_BUNDLE_IDENTIFIER'] = 'cloud.karama.wiselife'
+  settings['PRODUCT_NAME'] = 'EurekaLife'
+  settings['PRODUCT_MODULE_NAME'] = 'WiseLife'
   version = existing_app_versions.fetch(configuration.name, {})
   settings['MARKETING_VERSION'] = version.fetch('MARKETING_VERSION', '1.0.1')
   settings['CURRENT_PROJECT_VERSION'] = version.fetch('CURRENT_PROJECT_VERSION', '6')
@@ -74,8 +75,8 @@ phone_target.build_configurations.each do |configuration|
   settings['INFOPLIST_FILE'] = 'Sources/iPhone/Info.plist'
   settings['CODE_SIGN_ENTITLEMENTS'] = 'Sources/iPhone/WristNotes.entitlements'
   settings['CODE_SIGN_ENTITLEMENTS[sdk=iphonesimulator*]'] = 'Sources/iPhone/WristNotesSimulator.entitlements'
-  settings['INFOPLIST_KEY_CFBundleDisplayName'] = 'WiseLife'
-  settings['INFOPLIST_KEY_CFBundleName'] = 'WiseLife'
+  settings['INFOPLIST_KEY_CFBundleDisplayName'] = 'EurekaLife'
+  settings['INFOPLIST_KEY_CFBundleName'] = 'EurekaLife'
   settings['INFOPLIST_KEY_UIApplicationSceneManifest_Generation'] = 'YES'
   settings['INFOPLIST_KEY_UILaunchScreen_Generation'] = 'YES'
   settings['TARGETED_DEVICE_FAMILY'] = '1'
@@ -147,7 +148,7 @@ watch_target.build_configurations.each do |configuration|
   settings['MARKETING_VERSION'] = app_settings.fetch('MARKETING_VERSION')
   settings['CURRENT_PROJECT_VERSION'] = app_settings.fetch('CURRENT_PROJECT_VERSION')
   settings['SWIFT_VERSION'] = '5.0'
-  settings['PRODUCT_BUNDLE_IDENTIFIER'] = 'cloud.karama.wisenote.watchkitapp'
+  settings['PRODUCT_BUNDLE_IDENTIFIER'] = 'cloud.karama.wiselife.watchkitapp'
   settings['GENERATE_INFOPLIST_FILE'] = 'NO'
   settings['INFOPLIST_FILE'] = 'Sources/Watch/Info.plist'
   settings['TARGETED_DEVICE_FAMILY'] = '4'
@@ -178,14 +179,14 @@ recording_target.build_configurations.each do |configuration|
   settings = configuration.build_settings
   app_settings = phone_target.build_configurations.find { |item| item.name == configuration.name }.build_settings
   settings['SWIFT_VERSION'] = '5.0'
-  settings['PRODUCT_BUNDLE_IDENTIFIER'] = 'cloud.karama.wisenote.recording-activity'
+  settings['PRODUCT_BUNDLE_IDENTIFIER'] = 'cloud.karama.wiselife.recording-activity'
   settings['MARKETING_VERSION'] = app_settings['MARKETING_VERSION']
   settings['CURRENT_PROJECT_VERSION'] = app_settings['CURRENT_PROJECT_VERSION']
   settings['DEVELOPMENT_TEAM'] = app_settings['DEVELOPMENT_TEAM'] if app_settings['DEVELOPMENT_TEAM']
   settings['CODE_SIGN_STYLE'] = 'Automatic'
   settings['GENERATE_INFOPLIST_FILE'] = 'YES'
   settings['INFOPLIST_FILE'] = 'Sources/RecordingActivity/Info.plist'
-  settings['INFOPLIST_KEY_CFBundleDisplayName'] = 'WiseLife 录音'
+  settings['INFOPLIST_KEY_CFBundleDisplayName'] = 'EurekaLife 录音'
   settings['APPLICATION_EXTENSION_API_ONLY'] = 'YES'
   settings['SKIP_INSTALL'] = 'YES'
   settings['TARGETED_DEVICE_FAMILY'] = '1'
@@ -213,9 +214,9 @@ test_target.resources_build_phase.add_file_reference(tests_group.new_file('Fixtu
 test_target.add_dependency(phone_target)
 test_target.build_configurations.each do |configuration|
   configuration.build_settings['SWIFT_VERSION'] = '5.0'
-  configuration.build_settings['PRODUCT_BUNDLE_IDENTIFIER'] = 'cloud.karama.wisenote.RingIntegrationTests'
+  configuration.build_settings['PRODUCT_BUNDLE_IDENTIFIER'] = 'cloud.karama.wiselife.RingIntegrationTests'
   configuration.build_settings['GENERATE_INFOPLIST_FILE'] = 'YES'
-  configuration.build_settings['TEST_HOST'] = '$(BUILT_PRODUCTS_DIR)/WiseLife.app/WiseLife'
+  configuration.build_settings['TEST_HOST'] = '$(BUILT_PRODUCTS_DIR)/EurekaLife.app/EurekaLife'
   configuration.build_settings['BUNDLE_LOADER'] = '$(TEST_HOST)'
 end
 metadata_phase = phone_target.new_shell_script_build_phase('Write build metadata')

@@ -10,7 +10,7 @@ mkdir -p "$1"
 release_dir=$(CDPATH= cd -- "$1" && pwd)
 derived_data=${2:-"$release_dir/DerivedData"}
 source_packages=${3:-"$derived_data/SourcePackages"}
-archive_path="$release_dir/WiseLife.xcarchive"
+archive_path="$release_dir/EurekaLife.xcarchive"
 if [ -e "$archive_path" ] || [ -e "$release_dir/export" ]; then
   echo "Choose a new output directory; existing release artifacts will not be overwritten." >&2
   exit 2
@@ -21,14 +21,16 @@ source_packages=$(CDPATH= cd -- "$source_packages" && pwd)
 cd "$script_dir/.."
 
 # Exporting an unsigned archive can silently drop app-specific entitlements.
+# Keep each target's signing setting: the app/extensions use automatic signing,
+# while CocoaPods resource bundles deliberately disable it. A command-line YES
+# overrides those resource targets and incorrectly requires their own team.
 xcodebuild -workspace WristNotes.xcworkspace -scheme WristNotes \
   -configuration Release -destination 'generic/platform=iOS' \
   -archivePath "$archive_path" -derivedDataPath "$derived_data" \
   -clonedSourcePackagesDirPath "$source_packages" -disableAutomaticPackageResolution \
-  -allowProvisioningUpdates -jobs 3 IPHONEOS_DEPLOYMENT_TARGET=26.0 \
-  CODE_SIGNING_ALLOWED=YES archive
+  -allowProvisioningUpdates -jobs 3 IPHONEOS_DEPLOYMENT_TARGET=26.0 archive
 if ! python3 scripts/verify_healthkit_signing.py \
-  --app "$archive_path/Products/Applications/WiseLife.app" \
+  --app "$archive_path/Products/Applications/EurekaLife.app" \
   > "$release_dir/archive-healthkit.json"; then
   cat "$release_dir/archive-healthkit.json"
   exit 1
@@ -51,7 +53,7 @@ xcodebuild -exportArchive -archivePath "$archive_path" \
   -exportPath "$release_dir/export" -exportOptionsPlist "$release_dir/ExportOptions.plist" \
   -allowProvisioningUpdates
 if ! python3 scripts/verify_healthkit_signing.py \
-  --ipa "$release_dir/export/WiseLife.ipa" --require-distribution \
+  --ipa "$release_dir/export/EurekaLife.ipa" --require-distribution \
   > "$release_dir/ipa-healthkit.json"; then
   cat "$release_dir/ipa-healthkit.json"
   exit 1

@@ -191,13 +191,22 @@ final class AudioProcessingRepository {
         }
     }
 
+    private func requiresSpeakerAnalysis(_ sourceID: AudioSourceID) throws -> Bool {
+        guard sourceID.kind == .legacyNote else { return true }
+        let row = try db.query("SELECT kind FROM voice_notes WHERE id=?", [.text(sourceID.id.uuidString)]).first
+        return row?["kind"]?.string != RecordingKind.thought.rawValue
+    }
+
     /// Stage retries never replace a previously successful stage. Retained snapshots remain readable.
     func stages(for job: AudioProcessingJob) throws -> AudioInferenceStages {
         let row = try valid(job)
         let sourceDuration=try effectiveDuration(job.window.sourceID)
         let needsVAD = AudioInferenceStagePolicy.requiresVAD(sourceDuration:sourceDuration)
+        let needsSpeaker = try requiresSpeakerAnalysis(job.window.sourceID)
         guard row["result"] != .null, row["result"] != nil else {
-            return AudioInferenceStagePolicy.initialStages(sourceDuration:sourceDuration)
+            var stages = AudioInferenceStagePolicy.initialStages(sourceDuration:sourceDuration)
+            if !needsSpeaker { stages.remove(.speaker) }
+            return stages
         }
         let old = try DaybookDatabase.decode(AudioWindowResult.self, row["result"])
         var stages: AudioInferenceStages = []
@@ -208,6 +217,7 @@ final class AudioProcessingRepository {
             stages.formUnion(AudioInferenceStages(rawValue:try requested.requiredInt("stages")))
         }
         if !needsVAD { stages.remove(.vad) }
+        if !needsSpeaker { stages.remove(.speaker) }
         return stages
     }
 
@@ -216,6 +226,7 @@ final class AudioProcessingRepository {
             guard let source = try sourceRow(sourceID), try !isDeleted(sourceID) else { throw AudioProcessingError.deletedSource }
             let snapshot = try DaybookDatabase.decode(AudioSourceSnapshot.self,source["descriptor"])
             let needsVAD = AudioInferenceStagePolicy.requiresVAD(sourceDuration:snapshot.timelineDuration)
+            let needsSpeaker = try requiresSpeakerAnalysis(sourceID)
             // Resource availability never overrides explicit user cancellation.
             if resourceOnly && source["cancelled"]?.double == 1 { return }
             if !resourceOnly { try retry(sourceID: sourceID) }
@@ -226,9 +237,11 @@ final class AudioProcessingRepository {
                 if row["result"] != nil && row["result"] != .null {
                     let result = try DaybookDatabase.decode(AudioWindowResult.self, row["result"])
                     // A revoked running lease is resumable independently of the older snapshot.
-                    let relevantOutcomes = needsVAD ? [result.asr,result.vad,result.speaker] : [result.asr,result.speaker]
+                    var relevantOutcomes = [result.asr]
+                    if needsVAD { relevantOutcomes.append(result.vad) }
+                    if needsSpeaker { relevantOutcomes.append(result.speaker) }
                     incomplete = incomplete || relevantOutcomes.contains { resourceOnly ? $0 == .missingResource : [.missingResource,.failed,.cancelled].contains($0) }
-                    if !resourceOnly && result.speaker == .notRequested {
+                    if needsSpeaker && !resourceOnly && result.speaker == .notRequested {
                         if snapshot.complete && AudioSpeakerMapping.permitsAnalysis(sourceDuration:snapshot.ranges.last?.end) {
                             try db.execute("INSERT OR REPLACE INTO audio_processing_stage_requests(job_id,stages) VALUES (?,?)",[.text(try row.requiredString("id")),.integer(Int64(AudioInferenceStages.speaker.rawValue))])
                             incomplete = true

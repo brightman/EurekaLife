@@ -25,7 +25,7 @@ public struct TLSIdentity: @unchecked Sendable {
     }
     private static func generate(serviceID: String) throws -> Archive {
         let key = P256.Signing.PrivateKey()
-        let name = try DistinguishedName { CommonName("WiseLife Mac Companion") }
+        let name = try DistinguishedName { CommonName("EurekaLife Mac Companion") }
         let certificate = try Certificate(version: .v3,
             serialNumber: .init(bytes: Array(SHA256.hash(data: Data(try Secrets.random().utf8))).prefix(16)),
             publicKey: .init(key.publicKey), notValidBefore: Date().addingTimeInterval(-300),

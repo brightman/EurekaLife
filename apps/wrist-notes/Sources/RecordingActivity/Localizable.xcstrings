@@ -1,19 +1,19 @@
 {
   "sourceLanguage" : "zh-Hans",
   "strings" : {
-    "WiseLife 录音" : {
+    "EurekaLife 录音" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "WiseLife Recording"
+            "value" : "EurekaLife Recording"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "WiseLife 録音"
+            "value" : "EurekaLife 録音"
           }
         }
       }
@@ -103,19 +103,19 @@
         }
       }
     },
-    "录音标识无效，请在 WiseLife 中查看录音状态。" : {
+    "录音标识无效，请在 EurekaLife 中查看录音状态。" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Invalid recording ID. Check the recording status in WiseLife."
+            "value" : "Invalid recording ID. Check the recording status in EurekaLife."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "録音 ID が無効です。WiseLife で録音の状態を確認してください。"
+            "value" : "録音 ID が無効です。EurekaLife で録音の状態を確認してください。"
           }
         }
       }
@@ -137,19 +137,19 @@
         }
       }
     },
-    "请打开 WiseLife 结束并保存录音。" : {
+    "请打开 EurekaLife 结束并保存录音。" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Open WiseLife to stop and save the recording."
+            "value" : "Open EurekaLife to stop and save the recording."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "WiseLife を開いて録音を停止し、保存してください。"
+            "value" : "EurekaLife を開いて録音を停止し、保存してください。"
           }
         }
       }
@@ -177,48 +177,48 @@
         }
       }
     },
-    "在 WiseLife 开始录音，并显示录音实时活动。" : {
+    "在 EurekaLife 开始录音，并显示录音实时活动。" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Start recording in WiseLife and show the recording Live Activity."
+            "value" : "Start recording in EurekaLife and show the recording Live Activity."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "WiseLifeで録音を開始し、録音のライブアクティビティを表示します。"
+            "value" : "EurekaLifeで録音を開始し、録音のライブアクティビティを表示します。"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在 WiseLife 开始录音，并显示录音实时活动。"
+            "value" : "在 EurekaLife 开始录音，并显示录音实时活动。"
           }
         }
       }
     },
-    "请打开 WiseLife 开始录音。" : {
+    "请打开 EurekaLife 开始录音。" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Open WiseLife to start recording."
+            "value" : "Open EurekaLife to start recording."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "WiseLifeを開いて録音を開始してください。"
+            "value" : "EurekaLifeを開いて録音を開始してください。"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "请打开 WiseLife 开始录音。"
+            "value" : "请打开 EurekaLife 开始录音。"
           }
         }
       }

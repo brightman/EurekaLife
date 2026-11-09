@@ -358,7 +358,7 @@ struct DaybookView: View {
                     .background(DaybookStyle.white, in: Capsule()).overlay(Capsule().stroke(DaybookStyle.line, lineWidth: 1))
             }.accessibilityLabel("硬件状态：\(hardwareStatusLabel)")
             Spacer()
-            Text("WiseLife").font(.system(size: 15, weight: .semibold))
+            Text("EurekaLife").font(.system(size: 15, weight: .semibold))
             Spacer()
             HStack(spacing: 4) {
                 Button { navigate(to: .library, focusSearch: true) } label: { DaybookIcon("Search", size: 21).frame(width: 40, height: 40) }.accessibilityLabel("搜索记录")
@@ -918,6 +918,7 @@ struct DaybookView: View {
         case .notebookSource(let id):
             NotebookSourceView(id: id, onClose: { sheet = nil }) { kind in
                 switch kind {
+                case .segment: ContentSegmentDetailView(segmentID:id,playbackAllowed:!recorder.isRecording && !recorder.requestingPermission)
                 case .session: RecordingSessionDetailView(sessionID: id, playbackAllowed: !recorder.isRecording && !recorder.requestingPermission)
                 case .note: DaybookVoiceDetailView(id: id, playbackAllowed: !recorder.isRecording && !recorder.requestingPermission)
                 case .photo: PhotoDetailView(momentID: id, library: photos, onAskAI: {
@@ -1292,7 +1293,7 @@ struct DaybookView: View {
                 await WiseLifeRuntime.shared.prepare()
                 if command == .start, recording.phase == .idle {
                     guard await AVAudioApplication.requestRecordPermission() else {
-                        recorder.errorMessage = "请在系统设置中允许 WiseLife 使用麦克风，然后重试。"
+                        recorder.errorMessage = "请在系统设置中允许 EurekaLife 使用麦克风，然后重试。"
                         return
                     }
                 }

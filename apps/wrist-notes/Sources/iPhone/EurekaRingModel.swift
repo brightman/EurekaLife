@@ -123,7 +123,7 @@ import UIKit
             updateSnapshot()
             if needsFormatReconciliation { status = "请先核对上次格式化的结果。"; return }
             // Never change the device clock in an active recording.
-            if !isRecording { try await device.syncTime(); try checkConnection(revision) }
+            if !isRecording { try await synchronizeClock(revision) }
             try await readDeviceStatus(revision)
             if !isRecording { try await readFileList(revision) }
             status = isRecording ? "设备正在录音；结束后会同步到本机。" : "已连接，可开始录音或同步设备文件。"
@@ -153,6 +153,16 @@ import UIKit
             let capacity = try await device.storageDescription()
             try checkConnection(revision)
             storage = capacity
+        }
+    }
+
+    private func synchronizeClock(_ revision: UUID) async throws {
+        let timeZoneID = TimeZone.current.identifier
+        try await device.syncTime()
+        try checkConnection(revision)
+        if let binding, let store {
+            // Use the confirmed end of the sync, not a time before the SDK response.
+            try store.recordClockSync(deviceID: binding.device.id, at: .now, timeZoneID: timeZoneID)
         }
     }
 
@@ -188,8 +198,7 @@ import UIKit
                 readRecordingState(); syncAfterStop = !isRecording
                 status = isRecording ? "设备又开始了录音，结束后再同步。" : "录音已结束，准备同步到本机。"
             } else {
-                try await device.syncTime()
-                try checkConnection(revision)
+                try await synchronizeClock(revision)
                 try await device.startRecording()
                 try checkConnection(revision)
                 readRecordingState()
@@ -229,11 +238,14 @@ import UIKit
                 // A valid local raw copy can still be saved without the device file.
                 let directory = try store.directory(job.id)
                 let raw = directory.appendingPathComponent("recording.opus")
-                let converted = directory.appendingPathComponent("recording.m4a")
+                // Only an atomically promoted, validated conversion is reusable. The old
+                // recording.m4a may be readable even if the process died halfway through.
+                let converted = directory.appendingPathComponent("recording.complete.m4a")
                 status = "同步录音 \(index + 1)/\(jobs.count)"
                 activeProgressID = job.id; progress = nil
                 do {
-                    if !FileManager.default.fileExists(atPath: raw.path) && !FileManager.default.fileExists(atPath: converted.path) {
+                    let cachedAudio = try? validatedAudio(converted, expectedDuration: job.file.expectedDuration)
+                    if !FileManager.default.fileExists(atPath: raw.path) && cachedAudio == nil {
                         guard files.contains(where: { $0.name == job.file.name }) else {
                             throw BRRecorderFailure.sdk(code: "FILE_NO_LONGER_AVAILABLE", message: "设备上暂未找到这条录音，请刷新后重试。")
                         }
@@ -254,27 +266,33 @@ import UIKit
                     try store.setStage(job.id, .converting)
                     status = "转换录音 \(index + 1)/\(jobs.count) · 保存在本机"
                     let audio: BRNormalizedAudio
-                    if FileManager.default.fileExists(atPath: converted.path) {
-                        audio = try validatedAudio(converted)
+                    if let cachedAudio {
+                        audio = cachedAudio
                     } else {
+                        // Unique per attempt: a late cancelled SDK task must not overwrite
+                        // or delete the output of a newer connection's conversion.
+                        let temporary = directory.appendingPathComponent("conversion-\(UUID().uuidString).m4a")
+                        defer { try? FileManager.default.removeItem(at: temporary) }
                         let normalizer = normalize
                         let task = Task { [weak self] in
-                            try await normalizer(raw, converted) { [weak self] value in
+                            try await normalizer(raw, temporary) { [weak self] value in
                                 Task { @MainActor [weak self] in
                                     guard self?.connectionRevision == revision, self?.operation == .syncing, self?.activeProgressID == job.id else { return }; self?.progress = value
                                 }
                             }
                         }
                         conversionTask = task
-                        audio = try await task.value
-                        try checkConnection(revision)
+                        _ = try await task.value
+                        try checkSyncAllowed(binding, revision: revision)
                         conversionTask = nil
+                        let validated = try validatedAudio(temporary, expectedDuration: job.file.expectedDuration)
+                        if FileManager.default.fileExists(atPath: converted.path) {
+                            try FileManager.default.removeItem(at: converted)
+                        }
+                        try FileManager.default.moveItem(at: temporary, to: converted)
+                        audio = BRNormalizedAudio(url: converted, duration: validated.duration)
                     }
                     try checkSyncAllowed(binding, revision: revision)
-                    if let expected = job.file.expectedDuration, expected > 2,
-                       abs(audio.duration - expected) > max(2, expected * 0.05) {
-                        throw BRRecorderFailure.invalidAudio("转换时长与设备记录不符，请重新同步。")
-                    }
                     try save(job, audio.url, audio.duration)
                     // A crash after library save is recovered by checking the predetermined note UUID.
                     try store.setStage(job.id, .saved)
@@ -382,14 +400,21 @@ import UIKit
         } catch { if revision == connectionRevision { errorMessage = error.localizedDescription } }
     }
 
-    private func validatedAudio(_ url: URL) throws -> BRNormalizedAudio {
+    private func validatedAudio(_ url: URL, expectedDuration: Double?) throws -> BRNormalizedAudio {
         guard let file = try? AVAudioFile(forReading: url),
               file.fileFormat.sampleRate == 16_000, file.fileFormat.channelCount == 1,
               file.fileFormat.streamDescription.pointee.mFormatID == kAudioFormatMPEG4AAC,
               Double(file.length) / file.processingFormat.sampleRate > 0.1 else {
             throw BRRecorderFailure.invalidAudio("本地转换文件不完整，请重试。")
         }
-        return BRNormalizedAudio(url: url, duration: Double(file.length) / file.processingFormat.sampleRate)
+        let duration = Double(file.length) / file.processingFormat.sampleRate
+        // Allow device timestamp rounding and AAC padding, never a percentage of a
+        // multi-hour recording (5% of five hours would hide fifteen missing minutes).
+        if let expected = expectedDuration, expected.isFinite, expected > 0,
+           abs(duration - expected) > 2 {
+            throw BRRecorderFailure.invalidAudio("转换时长与设备记录不符，请重新同步。")
+        }
+        return BRNormalizedAudio(url: url, duration: duration)
     }
 
     private func checkSyncAllowed(_ expected: BRRecorderBinding, revision: UUID) throws {
@@ -454,7 +479,7 @@ import UIKit
             if ["unauthorized", "poweredOff", "unsupported"].contains(state), isConnected || transportIsConnected || isBusy {
                 resetDisconnectedState(status: "蓝牙连接不可用，请恢复后重新连接。")
             }
-            if state == "unauthorized" { stopScan(); status = "蓝牙权限未开启。"; errorMessage = "请在 iPhone 设置中允许 WiseLife 使用蓝牙。" }
+            if state == "unauthorized" { stopScan(); status = "蓝牙权限未开启。"; errorMessage = "请在 iPhone 设置中允许 EurekaLife 使用蓝牙。" }
             else if state == "poweredOff" { stopScan(); status = "请开启 iPhone 蓝牙。" }
             else if state == "unsupported" { stopScan(); status = "当前设备不支持蓝牙，请在 iPhone 真机上连接 Ring。" }
             else if state == "poweredOn", isScanning { device.scan() }

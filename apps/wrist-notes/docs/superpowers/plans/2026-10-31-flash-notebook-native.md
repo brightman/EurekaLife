@@ -81,3 +81,15 @@
 - [x] `NotebookPeople.swift`／`NotebookPeopleRepository.swift`：读取邮箱／号码，`save` 支持 `email`／`phone`；提供值更新第一项，省略参数保留原数组；其他条目、标签、头像、ID、来源及版本检查保留。新增联系人走同一保存链路。
 - [x] `NotebookPeopleView.swift`／`SpeakerContactViews.swift`：共用五字段控件，关系收起显示选择摘要，展开多选及添加自定义；回填／取消、保存期间防重复、已保存自定义选项复用，统一输入框与字号间距。
 - [x] 运行 `sh scripts/test_notebook_people.sh`、`sh scripts/test_speaker_contacts.sh` 与 iOS Simulator 构建；按实际环境记录 UI 验证范围。同步主要说明、数据规则、验证与索引。
+
+
+## 记事本原型同步（2026-11-08，用户已要求代码实现）
+
+依据当前 `prototype/notebook.html` 与共用 `notebook.js`。沿用已有 SQLite 表、修订检查和来源权限，保留工作区、录音和签名。无发布操作。
+
+- [x] 灵感：底部多选合并入口、可编辑预览、事务另存／重复保存去重／保留来源和本地 AI 限制；编辑与确认删除，支持恢复。
+- [x] 记账：详情修改／确认删除，变更立即反映在月份和各币种汇总，跨月编辑后详情不读旧快照。
+- [x] 人物：完整详情分为资料（五字段编辑）和已定稿关联内容片段；依据真实发言范围相交关联，点击回听片段。
+- [x] 地点：先展示详情，再编辑名称／九种类型；近 30 天按天去重，日期下钻到当天来源，保留时区依据。
+- [x] SQLite 回归、SwiftUI 类型检查、SDK／Pod 校验与完整 iOS 模拟器构建、独立验证模拟器安装与启动通过；更新当前说明与索引。
+- [ ] 原生点击／视觉验收：CUA 无 Simulator.app，明确保留后续验收项，详见持续验证记录。

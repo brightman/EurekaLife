@@ -52,6 +52,17 @@ struct SpeakerAskRetrievalSmoke {
         }
         let snapshot = try repository.snapshot(contactID: "kate")
         precondition(snapshot.items.count == 3, "Only the linked speaker's active transcript is eligible")
+        // Thoughts belong to self without manufacturing diarization/contact evidence.
+        for duration in [3.0, 3_600.0] {
+            var thought = VoiceNote(id: UUID(), kind: .thought, capturedAt: today, duration: duration)
+            thought.applyTranscription(.init(text: "My thought", segments: [.init(start: 0, end: 2, text: "My thought", speakerID: "old-speaker")]))
+            thought.speakerNames = ["old-speaker": "Kate Bell"]
+            try db.execute("INSERT INTO voice_notes(id,captured_at,kind,title,transcript,summary,duration,audio_filename,payload) VALUES (?,?,'thought',?,'My thought','',?,?,?)", [.text(thought.id.uuidString), .real(today.timeIntervalSinceReferenceDate), .text(thought.title), .real(duration), .text(thought.audioFilename), try DaybookDatabase.json(thought)])
+        }
+        let own = try repository.snapshot(contactID: "self")
+        precondition(own.items.count == 2 && own.items.allSatisfy { $0.speakerID == nil && $0.speakerLabel == "我" && $0.kind == .thought })
+        let contactAfterThoughts = try repository.snapshot(contactID: "kate")
+        precondition(contactAfterThoughts.items.count == 3, "Thoughts must not leak into another contact's speech")
         let prepared = try retrieval.prepareSpeaker(question: "What’s Kate Bell’s opinion in today’s recording?",
             items: snapshot.items, records: [], contactID: "kate", contactName: "Kate Bell", fingerprint: snapshot.fingerprint,
             selectedDate: yesterday, now: now)

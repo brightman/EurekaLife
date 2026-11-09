@@ -1,6 +1,6 @@
-# EurekaLife · WiseLife
+# EurekaLife
 
-WiseLife 的 iPhone／Apple Watch App 与 Mac Companion 源码仓库。
+EurekaLife 的 iPhone／Apple Watch App 与 Mac Companion 源码仓库。
 
 | 工程 | 用途 | 入口 |
 | --- | --- | --- |

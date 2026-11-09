@@ -8,7 +8,7 @@
   const actionKinds = {todo:{label:'待办',icon:'CheckCheck'},reminder:{label:'提醒',icon:'Bell'},event:{label:'日程',icon:'CalendarDays'}};
   window.createDaybookFlashAssets = ({$,esc,icon,toast,openSheet,closeSheet,showView,openRecord,getRecord,refreshRecords,showTimeline,openNotebook}) => {
     const assets = [
-      {id:'idea-people',kind:'idea',title:'让每次讨论，都能接着上次继续',content:'给 WiseLife 增加「按人回顾」，把与同一个人讨论过的内容串起来。',capture:'flash-mixed',quote:'记个想法，给 WiseLife 做一个按人回顾，把和同一个人讨论过的内容串起来。',offset:'00:00–00:16',status:'ready'},
+      {id:'idea-people',kind:'idea',title:'让每次讨论，都能接着上次继续',content:'给 EurekaLife 增加「按人回顾」，把与同一个人讨论过的内容串起来。',capture:'flash-mixed',quote:'记个想法，给 EurekaLife 做一个按人回顾，把和同一个人讨论过的内容串起来。',offset:'00:00–00:16',status:'ready'},
       {id:'expense-taxi',kind:'expense',title:'打车去见林茜',content:'打车去见林茜，支出三十八元人民币。',capture:'flash-mixed',quote:'再记一笔，今天打车去见林茜花了三十八元人民币。',offset:'00:16–00:27',amount:'38.00',currency:'CNY',date:'2026-10-19',direction:'expense',category:'交通',status:'ready'},
       {id:'idea-interview',kind:'idea',title:'先听经历，再问观点',content:'访谈时，先请对方讲最近一次真实经历，再追问当时的选择。',capture:'flash-method',quote:'记一个访谈的想法：先让对方讲最近一次真实经历，再追问当时为什么这么选。',offset:'00:00–00:18',status:'ready'},
       {id:'expense-lunch',kind:'expense',title:'今天的午餐',content:'今天午餐支出三十五元人民币。',capture:'flash-expense',quote:'记一笔，今天午餐花了三十五元人民币。',offset:'00:00–00:09',amount:'35.00',currency:'CNY',date:'2026-10-19',direction:'expense',category:'餐饮',status:'ready'},
@@ -139,7 +139,7 @@
       const completed=rows.filter(a=>a.status==='ready').length+related.filter(a=>['active','done'].includes(a.status)).length;
       const pending=rows.filter(a=>a.status==='review').length+related.filter(a=>['needsInput','failed'].includes(a.status)).length;
       const removed=assets.filter(a=>a.capture===r.id&&a.status==='ignored');
-      const description=pending?'内容已保留，补齐信息或处理权限后继续。':!completed?'整理项已撤销，原话仍保留。':related.length?'明确指令已处理，结果可以编辑或撤销。':rows.some(a=>a.kind==='expense')?'账目已留在 WiseLife，可随时核对和修改。':'想法已留在 WiseLife，随时可以补充。';
+      const description=pending?'内容已保留，补齐信息或处理权限后继续。':!completed?'整理项已撤销，原话仍保留。':related.length?'明确指令已处理，结果可以编辑或撤销。':rows.some(a=>a.kind==='expense')?'账目已留在 EurekaLife，可随时核对和修改。':'想法已留在 EurekaLife，随时可以补充。';
       return `<section class="fa-organized" aria-label="闪念整理结果"><div class="fa-organized-heading"><span class="fa-organized-icon">${icon(pending?'CircleHelp':'CheckCheck')}</span><div><strong>${pending?`${completed} 项已完成 · ${pending} 项待补充 / 处理`:`已整理 ${completed} 项`}</strong><p>${description}</p></div></div>${rows.map(resultAsset).join('')}${related.length?`<div class="fa-result-section"><h3>已识别的创建指令</h3><span>${related.length} 项</span></div>${related.map(resultAction).join('')}`:''}${removed.length?`<div class="fa-removed">${removed.map(a=>`<p><span>${esc(a.title)} · 已撤销</span><button data-fa-result-restore="${a.id}">恢复</button></p>`).join('')}</div>`:''}<div class="fa-result-footer">${icon('LockKeyhole')}原音频与全文保留，随时可回看</div><div class="fa-result-links"><button data-fa-library-kind="idea">查看我的想法 ${icon('ChevronRight')}</button><button data-fa-library-kind="expense">查看我的记账 ${icon('ChevronRight')}</button></div></section>`;
     }
     function autoActionEditor(id) {

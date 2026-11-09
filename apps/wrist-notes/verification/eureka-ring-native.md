@@ -1,5 +1,7 @@
 # EurekaRing 原生本地接入 · 2026-10-19
 
+> 后续规则更新（2026-11-06）：下方验证保留当时的本地模型约定。当前 Ring 闪念已遵循设置中的模型选择，并修复时间戳相差 1 秒导致的重复导入，见 [当前说明与验证](../docs/2026-10-20-ring-build-switch.md#2026-11-06-闪念重复导入与模型选择)。
+
 最初基于 `dev-card` 接入 `br_flutter_plugin_ble` 的原生 SDK。2026-10-20 按用户要求，在当前 `codex/vessel` 分支将依赖改为本仓库 `pods/br_flutter_plugin_ble` 中的本地二进制 Pod，来源为插件 `dev_sdk_pod` 分支。没有合并 `dev-healthdata`，没有引入 `br_app_services`。
 
 ## 页面和录音流程

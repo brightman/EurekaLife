@@ -26,7 +26,7 @@ final class FaceIDLockCoordinator: ObservableObject {
         }
         guard !settings.requiresFaceID else { return }
 
-        guard await authenticate(reason: localized("Enable Face ID for WiseLife"), requireFaceID: true) else { return }
+        guard await authenticate(reason: localized("Enable Face ID for EurekaLife"), requireFaceID: true) else { return }
         settings.requiresFaceID = true
         isLocked = false
     }
@@ -36,12 +36,12 @@ final class FaceIDLockCoordinator: ObservableObject {
         handledInitialForeground = true
         guard settings.requiresFaceID else { return }
         isLocked = true
-        _ = await authenticate(reason: localized("Unlock WiseLife"), requireFaceID: false)
+        _ = await authenticate(reason: localized("Unlock EurekaLife"), requireFaceID: false)
     }
 
     func retryUnlock() async {
         guard isLocked, !isAuthenticating else { return }
-        _ = await authenticate(reason: localized("Unlock WiseLife"), requireFaceID: false)
+        _ = await authenticate(reason: localized("Unlock EurekaLife"), requireFaceID: false)
     }
 
     private func authenticate(reason: String, requireFaceID: Bool) async -> Bool {
@@ -103,7 +103,7 @@ private struct FaceIDLockGate<Content: View>: View {
                     DaybookStyle.paper.ignoresSafeArea()
                     VStack(spacing: 12) {
                         Image(systemName: "lock.shield.fill").font(.system(size: 34)).foregroundStyle(DaybookStyle.accent)
-                        Text("WiseLife is protected").font(.system(size: 15, weight: .semibold))
+                        Text("EurekaLife is protected").font(.system(size: 15, weight: .semibold))
                     }
                 }.frame(maxWidth: .infinity, maxHeight: .infinity).zIndex(2)
             }
@@ -121,7 +121,7 @@ private struct FaceIDUnlockView: View {
     var body: some View {
         VStack(spacing: 16) {
             Image(systemName: "faceid").font(.system(size: 46, weight: .light)).foregroundStyle(DaybookStyle.accent)
-            Text("Unlock WiseLife").font(.system(size: 23, weight: .semibold))
+            Text("Unlock EurekaLife").font(.system(size: 23, weight: .semibold))
             Text("Authenticate to view your records.").font(.system(size: 13)).foregroundStyle(DaybookStyle.secondary)
             if let errorMessage = coordinator.errorMessage {
                 Text(LocalizedStringKey(errorMessage)).font(.system(size: 12)).foregroundStyle(.orange)

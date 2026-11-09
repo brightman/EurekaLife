@@ -31,7 +31,7 @@ struct WiseLifeRecordingActivity: Widget {
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    Label("WiseLife 录音", systemImage: "waveform").foregroundStyle(.red)
+                    Label("EurekaLife 录音", systemImage: "waveform").foregroundStyle(.red)
                 }
                 DynamicIslandExpandedRegion(.trailing) { elapsed(context) }
                 DynamicIslandExpandedRegion(.bottom) { stop(context) }

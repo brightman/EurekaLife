@@ -144,9 +144,14 @@ enum FlashCaptureParser {
         let sentences = transcript.components(separatedBy: CharacterSet(charactersIn: "。！？.!?\n"))
         let context = sentences.filter { !$0.isEmpty && (quote.contains($0) || $0.contains(quote.trimmingCharacters(in: CharacterSet(charactersIn: "。！？.!?\n")))) }.joined(separator: " ")
         let full = (context.isEmpty ? quote : context).lowercased()
-        let denied = ["不要", "不用", "别提醒", "别创建", "他说", "她说", "他说过", "如果", "可能", "假如", "是否", "don't", "do not", "he said", "she said", "maybe", "what if"]
-        guard !denied.contains(where: full.contains) else { return false }
-        return ["提醒我", "提醒一下我", "帮我", "给我加", "记个待办", "加个待办", "创建待办", "安排", "加入日历", "创建日程", "remind me", "add a task", "add a todo", "create a task", "schedule", "add to my calendar"].contains(where: full.contains)
+        let compact = full.filter { !$0.isWhitespace }
+        let denied = ["不要", "不用", "不需要", "别给我", "别帮我", "别提醒", "别创建", "他说", "她说", "他说过", "如果", "可能", "假如", "是否", "don't", "do not", "he said", "she said", "maybe", "what if"]
+        guard !denied.contains(where: full.contains),
+              !denied.filter({ !$0.contains(" ") }).contains(where: compact.contains) else { return false }
+        // ASR commonly inserts spaces and spoken measure words: “创建个日程” is
+        // the same command as “创建日程”, not an invitation to drop the action.
+        if compact.range(of: "创建(?:一?个)?(?:日程|待办)", options: .regularExpression) != nil { return true }
+        return ["提醒我", "提醒一下我", "帮我", "给我加", "记个待办", "加个待办", "安排", "加入日历", "remind me", "add a task", "add a todo", "create a task", "schedule", "add to my calendar"].contains(where: full.contains)
     }
     private static func date(_ value: String?) throws -> Date? {
         guard let value else { return nil }

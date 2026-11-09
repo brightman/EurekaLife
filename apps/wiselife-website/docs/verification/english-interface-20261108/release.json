@@ -1,0 +1,11 @@
+{
+  "release": "20261108T140259Z-hd-v2",
+  "workspace": "/tmp/wiselife-20261108T140259Z-hd-v2",
+  "archive": "/tmp/wiselife-20261108T140259Z-hd-v2/20261108T140259Z-hd-v2.tar.gz",
+  "manifest": "/tmp/wiselife-20261108T140259Z-hd-v2/20261108T140259Z-hd-v2-SHA256SUMS",
+  "files": 245,
+  "bytes": 11330301,
+  "archiveSHA256": "d4537931b1df7bae0e9918cd71c5ca01fd6b76d7e9920376b51601fdd6265d0b",
+  "homepageSHA256": "a57abe503ff62f43b27a6cfde6c180a52810a33a217f146fb483f96bfa8a9fcc",
+  "previousRelease": "/opt/wiselife-site/releases/20261108T132224Z-eurekalife"
+}

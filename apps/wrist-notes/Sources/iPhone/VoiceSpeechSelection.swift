@@ -21,12 +21,43 @@ enum VoiceSpeechSelection {
         }
         guard groups.flatMap({ $0 }).reduce(0, { $0 + $1.count }) >= 15 * 16_000 else { throw VoiceEnrollmentError.insufficientSpeech }
         // Sequential clusters may be one over-split voice. Keep them separate until the
-        // unchanged all-pairs embedding policy verifies consistency across every cluster.
+        // embedding policy verifies consistency across every cluster.
         return groups
     }
 
     static func ranges(turns: [SpeakerTurn], speaker: Int, sampleCount: Int) -> [Range<Int>] {
         selectedRanges(turns: turns, sampleCount: sampleCount) { $0.count == 1 && $0.contains(speaker) }
+    }
+
+    static func enrollmentWindows(samples: [Float], groups: [[Range<Int>]]) throws -> [[Float]] {
+        // WeSpeaker accepts ten seconds. Use that real context when available,
+        // rather than repeating a short phrase. Balance tails without losing a
+        // cluster or mixing different clusters into one embedding.
+        let clean = groups.map { ranges in
+            ranges.flatMap { range -> [Float] in
+                let start = max(0, range.lowerBound), end = min(samples.count, range.upperBound)
+                return start < end ? Array(samples[start..<end]) : []
+            }
+        }
+        guard !clean.isEmpty, clean.allSatisfy({ $0.count >= 32_000 }),
+              clean.reduce(0, { $0 + $1.count }) >= 240_000 else { throw VoiceEnrollmentError.insufficientSpeech }
+        var counts = clean.map { ($0.count + 159_999) / 160_000 }
+        // Preserve the existing requirement for at least three independent
+        // samples, including the minimum fifteen seconds of usable speech.
+        while counts.reduce(0, +) < 3 {
+            guard let index = clean.indices.filter({ clean[$0].count / (counts[$0] + 1) >= 32_000 })
+                .max(by: { clean[$0].count / counts[$0] < clean[$1].count / counts[$1] }) else {
+                throw VoiceEnrollmentError.insufficientSpeech
+            }
+            counts[index] += 1
+        }
+        return clean.indices.flatMap { index in
+            (0..<counts[index]).map { part in
+                let start = part * clean[index].count / counts[index]
+                let end = (part + 1) * clean[index].count / counts[index]
+                return Array(clean[index][start..<end])
+            }
+        }
     }
 
     private static func selectedRanges(turns: [SpeakerTurn], sampleCount: Int, include: (Set<Int>) -> Bool) -> [Range<Int>] {

@@ -107,8 +107,12 @@ struct FlashOrganizedView: View {
         VStack(alignment: .leading, spacing: 14) {
             if flash.processing.contains(note.id) { ProgressView("正在整理闪念…") }
             else if flash.batches[note.id]?.state == .complete {
-                Text(assets.isEmpty && commands.isEmpty ? "这次，留住原话就好。" : "已整理 \(assets.count + commands.count) 项")
+                Text(assets.isEmpty && commands.isEmpty ? "未提取到想法、账目或行动，原话已保留。" : "已整理 \(assets.count + commands.count) 项")
                     .font(.system(size: 13, weight: .semibold))
+                if assets.isEmpty && commands.isEmpty {
+                    Button("重新整理") { request() }.disabled(note.transcript.isEmpty)
+                        .font(.system(size: 13)).foregroundStyle(DaybookStyle.accent)
+                }
             } else {
                 Text(flash.batches[note.id]?.message ?? (note.transcript.isEmpty ? "等待语音转写，原音频已保存。" : "将闪念整理为想法、账目和明确指令。"))
                     .font(.system(size: 12)).foregroundStyle(DaybookStyle.secondary)

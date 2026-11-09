@@ -72,6 +72,19 @@ import Foundation
         cancelled.cancel()
         do { try await cancelled.value; throw TestFailure.failed("cancelled draft persisted") } catch is CancellationError {}
         try check(drafts.drafts().count == beforeCancel,"cancelled queued save leaves no draft")
+        // Plain merge is transactional, idempotent and never needs a model.
+        let mergeID=UUID(), mergeSeeds=[changed,seeds[1]]
+        let merged=try drafts.merge(id:mergeID,seeds:mergeSeeds,title:"合并",text:"编辑后的合并内容")
+        try check(merged.parentIdeas?.count == 2 && merged.requiresLocalAI == true,"merge keeps snapshots and local-only provenance")
+        try check(repo.asset(changed.id) == changed,"merge leaves originals untouched")
+        try check(drafts.merge(id:mergeID,seeds:mergeSeeds,title:"合并",text:"编辑后的合并内容").id == mergeID,"merge retry is idempotent")
+        try check(reopened.asset(mergeID)?.text == "编辑后的合并内容","merged content survives reopen")
+        do { _=try drafts.merge(id:UUID(),seeds:[changed,changed],title:"bad",text:"duplicate"); throw TestFailure.failed("duplicate seeds accepted") } catch is ActionFailure {}
+        do { _=try drafts.merge(id:UUID(),seeds:mergeSeeds,title:"bad",text:String(repeating:"a",count:4001)); throw TestFailure.failed("oversize merge silently accepted") } catch is ActionFailure {}
+        var deleted=changed; deleted.revoked=true; deleted=try repo.save(deleted)
+        do { _=try drafts.merge(id:UUID(),seeds:mergeSeeds,title:"bad",text:"stale"); throw TestFailure.failed("deleted seed accepted") } catch is ActionFailure {}
+        try check(repo.asset(mergeID)?.parentIdeas?.first?.text == changed.text,"deleting seed retains merged source snapshot")
+        deleted.revoked=false; _=try repo.save(deleted)
         print("Notebook ledger, migration, JSON, stale sources, local-only provenance, cancellation and durable generation smoke passed")
     }
     enum TestFailure:Error { case failed(String) }

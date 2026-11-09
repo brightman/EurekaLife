@@ -381,3 +381,15 @@ Watch 生成的传输描述不直接包含文件路径；iPhone 仅按已校验�
 - 旧版可继续读取原数组，无需清库或反向迁移。回退到旧版时邮箱／号码编辑入口可能不提供，已保存值仍在原字段中。
 
 关联：[产品规则](../prototype/flash-assets-design.md#contact-form-20261104) · [实现与验证](../verification/flash-assets-prototype/README.md#contact-form-native-20261104)。
+
+
+### 记事本管理与派生查询（2026-11-08）
+
+本轮无 schema 迁移。[产品约定](../prototype/flash-assets-design.md#notebook-management-20261108)使用既有数据：
+
+- 直接合并灵感写入 `flash_assets`，保留 `origin=manual`，以开放字符串 `source.recordingKind=merged` 标识，旧版 Codable 不因新 enum case 解析失败。`parentIdeas` 保存来源快照，`requiresLocalAI` 继承来源与派生来源的本地限制。事务内检查 2–10 个不同、未删除且 revision／内容均未变化的来源；稳定结果 UUID 防重复，发生冲突或超过正文上限整笔回滚，原条目不改写。
+- 原生记事本“删除”复用 `revoked` 标记和修订检查，支持恢复；默认列表与 SQL 金额汇总排除。原始录音、批次去重标记、独立派生灵感和父来源快照保留。该列历史 API 名不改，避免影响闪念整理与时间轴。
+- 人物片段通过 `recording_speaker_contacts`、当前配置的 active `audio_processing_jobs`、`audio_transcript_spans` 与 `content_segment_ranges` 相交查询；以 segment ID 分页（30 条）、去重。标题／摘要从已有 `content_segments.payload` 读取；开始时间为录音开始时间加片段偏移，时长为实际 ranges 时长总和，硬件标签读取已有 source descriptor。删除、非最终、无文本及非 meaningful 分类不展示；旧分类缺失兼容。点击按 UUID 在 SQLite 解析 `.segment`，不依赖首页缓存中的最近记录。
+- 地点 `visitDays` 以已存 day／time_zone 判断 30 日窗口，并按 day + source_id 汇总当天来源数；日期下钻按 day 过滤、50 条分页读原证据，多个采样可回看但不重复统计来源数。人工标记继续以 place_id 和 revision 保存。已有地址缓存与人工名称独立展示。
+
+验证见[本轮记录](../verification/flash-assets-prototype/README.md#notebook-management-20261108)。

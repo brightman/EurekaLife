@@ -26,7 +26,7 @@ private final class Harness {
 @main
 struct WatchRecordingLauncherSmoke {
     @MainActor static func main() {
-        let url = URL(string: "wiselife-watch://record")!
+        let url = URL(string: "wiselife-bizcard-watch://record")!
         // A missing foreground start is the initial red case.
         let direct = Harness()
         precondition(direct.launcher.open(url, phase: .active), "recording URL must be handled")
@@ -37,7 +37,7 @@ struct WatchRecordingLauncherSmoke {
         let normal = Harness()
         normal.launcher.setPhase(.active)
         precondition(normal.starts == 0, "normal App launch must never start recording")
-        for invalid in ["wiselife://record", "https://record", "wiselife-watch://stop", "wiselife-watch://record/extra", "wiselife-watch://record?stop=1", "wiselife-watch://record#stop", "wiselife-watch://user@record", "wiselife-watch://record:80"] {
+        for invalid in ["wiselife://record", "https://record", "wiselife-bizcard-watch://stop", "wiselife-bizcard-watch://record/extra", "wiselife-bizcard-watch://record?stop=1", "wiselife-bizcard-watch://record#stop", "wiselife-bizcard-watch://user@record", "wiselife-bizcard-watch://record:80"] {
             precondition(!normal.launcher.open(URL(string: invalid)!, phase: .active), "unexpected URL must not record: \(invalid)")
         }
         precondition(normal.starts == 0 && normal.requests == 0)

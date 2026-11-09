@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "videoDuration": 27,
+  "ocr": "Apple Vision accurate, en-US and zh-Hans; no Han characters detected",
+  "checkedScreens": [
+    "iphone-day",
+    "iphone-ai",
+    "mac-models",
+    "watch-recording",
+    "note-summary",
+    "note-transcript",
+    "ai-answer",
+    "thought-transcript"
+  ],
+  "scope": "Website sample fixtures; no native app or original standalone prototype changes."
+}

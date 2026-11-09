@@ -20,6 +20,7 @@ import Foundation
         try expect(AudioInferenceStagePolicy.initialStages(sourceDuration:1_801) == .all, "recordings beyond thirty minutes request VAD for topic processing")
         try expect(AudioInferenceStagePolicy.initialStages(sourceDuration:nil) == .all, "unknown duration keeps the existing conservative processing route")
         try shortRecordingCrossingThresholdRequestsVAD()
+        try thoughtStagesSkipSpeakers()
         let id = AudioSourceID(kind: .session, id: UUID())
         let chunk = UUID()
         func range(_ start: Double, _ duration: Double, chunkID: UUID = UUID(), gap: String? = nil) throws -> AudioSourceRange {
@@ -188,6 +189,44 @@ import Foundation
         let disguised = try AudioSourceRange(range: RecordingSourceRange(chunkID: UUID(), url: first.url, startFrame: 0, endFrame: 16000, sampleRate: 16000, sessionStartOffset: 302), contentHash: first.contentHash)
         rejects { _ = try source([first, disguised]) }
         print("AudioProcessingSmoke passed: bounded/gapped/append plans, timestamp ownership, SQLite atomic rollback/reopen, leases, versions, outcomes, cancellation and tombstones")
+    }
+
+    static func thoughtStagesSkipSpeakers() throws {
+        for duration in [3.0, 601.0, 3_600.0] {
+            let db = try DaybookDatabase(inMemory: true)
+            let id = AudioSourceID(kind: .legacyNote, id: UUID())
+            try db.execute("INSERT INTO voice_notes(id,captured_at,kind,title,transcript,summary,duration,audio_filename,payload) VALUES (?,0,'thought','','','',?,'thought.wav',?)", [.text(id.id.uuidString), .real(duration), .blob(Data())])
+            let range = try AudioSourceRange(range: .init(chunkID: id.id, url: URL(fileURLWithPath: "/synthetic/thought.wav"), startFrame: 0, endFrame: Int64(duration * 16_000), sampleRate: 16_000), contentHash: String(repeating: "a", count: 64))
+            let source = try AudioSourceSnapshot(id: id, capturedAt: .now, title: "Thought", ranges: [range], complete: true)
+            let repository = AudioProcessingRepository(database: db)
+            try repository.register(source: source, configurationKey: "thought", windows: AudioWindowPlanner.plan(source: source, configurationKey: "thought"))
+            let needsVAD = AudioInferenceStagePolicy.requiresVAD(sourceDuration: duration)
+            while let job = try repository.claimNext() {
+                let stages = try repository.stages(for: job)
+                try expect(stages.contains(.asr) && !stages.contains(.speaker), "Thought stage selection must skip speakers at every duration")
+                try expect(stages.contains(.vad) == needsVAD, "Long thought bounded ASR/VAD routing is retained")
+                let coverage = [AudioTimeRange(start: job.window.coreStart, end: job.window.coreEnd)]
+                try repository.commit(job: job, result: .init(spans: [.init(start: job.window.coreStart, end: job.window.coreStart + 1, text: "my idea")], activities: [], asr: .success, vad: needsVAD ? .success : .notRequested, speaker: .notRequested, asrCoverage: coverage, vadCoverage: needsVAD ? coverage : []))
+            }
+            let retained = try repository.spans(sourceID: id)
+            try repository.retryIncompleteStages(sourceID: id)
+            try expect(try repository.claimNext() == nil, "Intentional thought speaker skip must not enqueue retries")
+
+            // Old failed speaker jobs and explicit requests must not restart model inference.
+            let first = try db.query("SELECT id,result FROM audio_processing_jobs ORDER BY core_start LIMIT 1")[0]
+            let previous = try DaybookDatabase.decode(AudioWindowResult.self, first["result"])
+            let failed = AudioWindowResult(spans: [], activities: [], asr: .success, vad: previous.vad, speaker: .missingResource, asrCoverage: previous.asrCoverage, vadCoverage: previous.vadCoverage)
+            try db.execute("UPDATE audio_processing_jobs SET state='missingResource',result=? WHERE id=?", [try DaybookDatabase.json(failed), .text(try first.requiredString("id"))])
+            try db.execute("INSERT INTO audio_processing_stage_requests(job_id,stages) VALUES (?,?)", [.text(try first.requiredString("id")), .integer(Int64(AudioInferenceStages.speaker.rawValue))])
+            try repository.retryIncompleteStages(sourceID: id, resourceOnly: true)
+            let retry = try repository.claimNext()!
+            try expect(try repository.stages(for: retry).isEmpty, "Historical thought retry must preserve ASR without requesting speaker models")
+            let skipped = AudioWindowResult(spans: [], activities: [], asr: .notRequested, vad: .notRequested, speaker: .notRequested, asrCoverage: [], vadCoverage: [])
+            try repository.commit(job: retry, delta: .init(result: skipped, speakerSpanUpdates: []))
+            try repository.retryIncompleteStages(sourceID: id)
+            try expect(try repository.claimNext() == nil, "Historical thought retry must settle, not loop")
+            try expect(try repository.spans(sourceID: id) == retained, "Speaker skip preserves successful ASR and timestamps")
+        }
     }
 
     static func captureDeviceCompatibility() throws {

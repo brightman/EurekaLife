@@ -17,7 +17,7 @@ struct StopWiseLifeRecordingIntent: AudioRecordingIntent, LiveActivityIntent {
     func perform() async throws -> some IntentResult {
         guard let id = UUID(uuidString: sessionID) else {
             throw NSError(domain: "WiseLife.Recording.Intent", code: 1,
-                          userInfo: [NSLocalizedDescriptionKey: "录音标识无效，请在 WiseLife 中查看录音状态。"])
+                          userInfo: [NSLocalizedDescriptionKey: "录音标识无效，请在 EurekaLife 中查看录音状态。"])
         }
 #if WISELIFE_RECORDING_WIDGET
         // The system resolves this shared intent in the containing app. If routing
@@ -32,7 +32,7 @@ struct StopWiseLifeRecordingIntent: AudioRecordingIntent, LiveActivityIntent {
 #if WISELIFE_RECORDING_WIDGET
     private func requireMainAppProcess() throws {
         throw NSError(domain: "WiseLife.Recording.Intent", code: 2,
-                      userInfo: [NSLocalizedDescriptionKey: "请打开 WiseLife 结束并保存录音。"])
+                      userInfo: [NSLocalizedDescriptionKey: "请打开 EurekaLife 结束并保存录音。"])
     }
 #endif
 }

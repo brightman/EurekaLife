@@ -8,7 +8,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "WiseLife"
+            "value" : "EurekaLife"
           }
         }
       }
@@ -20,7 +20,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "WiseLife"
+            "value" : "EurekaLife"
           }
         }
       }
@@ -44,7 +44,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "在你启用后读取日程作为本机生活记录的背景；仅在你主动确认行动关联后，创建、更新或删除 WiseLife 关联的日程。不会修改其他日程。"
+            "value" : "在你启用后读取日程作为本机生活记录的背景；仅在你主动确认行动关联后，创建、更新或删除 EurekaLife 关联的日程。不会修改其他日程。"
           }
         }
       }
@@ -68,19 +68,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Face ID is used only to unlock WiseLife when you reopen the app. Face data is handled by iOS and is never accessed or stored by WiseLife."
+            "value" : "Face ID is used only to unlock EurekaLife when you reopen the app. Face data is handled by iOS and is never accessed or stored by EurekaLife."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Face ID は、アプリを再び開いたときに WiseLife のロックを解除するためだけに使用します。顔のデータは iOS が処理し、WiseLife が取得・保存することはありません。"
+            "value" : "Face ID は、アプリを再び開いたときに EurekaLife のロックを解除するためだけに使用します。顔のデータは iOS が処理し、EurekaLife が取得・保存することはありません。"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Face ID 仅用于你重新打开 WiseLife 时验证身份。面部数据由 iOS 处理，WiseLife 不会读取或保存。"
+            "value" : "Face ID 仅用于你重新打开 EurekaLife 时验证身份。面部数据由 iOS 处理，EurekaLife 不会读取或保存。"
           }
         }
       }
@@ -104,7 +104,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "WiseLife 不会向 Apple 健康写入或修改数据；此说明仅用于解释健康数据用途。App 只读取你授权的每日步数、睡眠、体能训练及训练活动能量，用于展示每日记录。"
+            "value" : "EurekaLife 不会向 Apple 健康写入或修改数据；此说明仅用于解释健康数据用途。App 只读取你授权的每日步数、睡眠、体能训练及训练活动能量，用于展示每日记录。"
           }
         }
       }

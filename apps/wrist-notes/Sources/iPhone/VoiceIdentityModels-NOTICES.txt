@@ -1,4 +1,4 @@
-WiseLife voice identity model: WeSpeaker v2 (8-bit palettized Core ML conversion)
+EurekaLife voice identity model: WeSpeaker v2 (8-bit palettized Core ML conversion)
 
 Selected artifact: wespeaker_v2.mlmodelc, downloaded unchanged.
 Source: https://huggingface.co/FluidInference/speaker-diarization-coreml
@@ -13,11 +13,11 @@ Legal code: https://creativecommons.org/licenses/by/4.0/legalcode
 
 Fluid Inference modified the upstream checkpoint by converting it to Core ML,
 fixing input shapes, fusing the fbank frontend and palettizing weights to 8 bits.
-WiseLife makes no further changes to weights. No endorsement is implied.
+EurekaLife makes no further changes to weights. No endorsement is implied.
 This legacy artifact is covered by its upstream CC-BY-4.0 license, separately
 from the repository's scoped Community-1 license. The repository notice reports
 cosine parity >=0.997 against the upstream checkpoint on AMI ES2004a; original
-conversion scripts were not preserved. WiseLife's manifest pins each file by
+conversion scripts were not preserved. EurekaLife's manifest pins each file by
 size and SHA-256; this verifies distribution integrity, not conversion lineage.
 
 Citation:

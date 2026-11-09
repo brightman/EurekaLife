@@ -13,9 +13,9 @@ window.createDaybookSettings = function(app) {
   }
   function instructions(kind) {
     const contents = {
-      'action-button':['操作按钮','打开 iPhone 设置，选择「操作按钮」。','选择「快捷指令」→「选取快捷指令」。','选择 WiseLife 的「开始／停止录音」。'],
-      lockscreen:['锁屏小组件','长按锁屏，选择「自定」→「锁定屏幕」。','轻点「添加小组件」→ WiseLife →「快捷录音」。','轻点开始录音，通过实时活动中的「停止并保存」结束。'],
-      'live-activity':['实时活动','在系统设置中允许 WiseLife 使用实时活动。','录音时，在锁屏或灵动岛查看录音时长。','轻点「停止并保存」结束录音。锁屏操作可能需要解锁。']
+      'action-button':['操作按钮','打开 iPhone 设置，选择「操作按钮」。','选择「快捷指令」→「选取快捷指令」。','选择 EurekaLife 的「开始／停止录音」。'],
+      lockscreen:['锁屏小组件','长按锁屏，选择「自定」→「锁定屏幕」。','轻点「添加小组件」→ EurekaLife →「快捷录音」。','轻点开始录音，通过实时活动中的「停止并保存」结束。'],
+      'live-activity':['实时活动','在系统设置中允许 EurekaLife 使用实时活动。','录音时，在锁屏或灵动岛查看录音时长。','轻点「停止并保存」结束录音。锁屏操作可能需要解锁。']
     }[kind];
     openSheet(contents[0], detail(`<button class="device-back" data-settings-action="shortcuts">${icon('ChevronLeft')}<span>快捷设置</span></button><h3>${contents[0]}</h3><ol>${contents.slice(1).map(text=>`<li>${text}</li>`).join('')}</ol>`));
   }

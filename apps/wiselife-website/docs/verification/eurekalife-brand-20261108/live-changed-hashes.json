@@ -1,0 +1,392 @@
+[
+  {
+    "path": "assets/brand/app-icon.svg",
+    "status": 200,
+    "sha256": "ec608c9d0519c02e75740f2f8a323c3c50e2f551ddd03c0c0525395ef1595506"
+  },
+  {
+    "path": "compare-designs/index.html",
+    "status": 200,
+    "sha256": "1316ddd3ca16536264f77f470f2fb682b32aea636958d811262771c33b4366fe"
+  },
+  {
+    "path": "daybook-ai.css",
+    "status": 200,
+    "sha256": "61dc433f80acd0b41c9eef74eca0cb821ac3064bde214357489e0ae7a82e7ef3"
+  },
+  {
+    "path": "daybook-ai.js",
+    "status": 200,
+    "sha256": "88092fa9fd0259245f8f2f93d2904de7eba5d1269835d9f68bec38ab8b198563"
+  },
+  {
+    "path": "daybook-apple-reminders.js",
+    "status": 200,
+    "sha256": "fd32812d1ba7844bbab6f0acd0511977a9cc64a516f72afae3afc01c6f262a6c"
+  },
+  {
+    "path": "daybook-chatgpt.js",
+    "status": 200,
+    "sha256": "ca4272832102ddd083a351ce224b4ddb7a2ab9bda6e4b40cb65c92a5d1b45761"
+  },
+  {
+    "path": "daybook-flash-assets.js",
+    "status": 200,
+    "sha256": "fbd82300f317a8b3c685431039bd6ac2ba658d1c041cef62d792eb3bcbc9a739"
+  },
+  {
+    "path": "daybook-life-moments.js",
+    "status": 200,
+    "sha256": "5925e18d8aeaf21dea44562192cd012b07d1be39f08ea6641adfdfa0362c2eaa"
+  },
+  {
+    "path": "daybook-locales.js",
+    "status": 200,
+    "sha256": "6eba434ed6d43215f26cea1ddd3d5c1853744ed022c29de5af78bda6e40582da"
+  },
+  {
+    "path": "design-preview/assets/brand-monochrome.svg",
+    "status": 200,
+    "sha256": "03fae9dc0649ce22745b74a4e44b3aff5a1009418956d75f33462239b7b0b8bd"
+  },
+  {
+    "path": "design-preview/index.html",
+    "status": 200,
+    "sha256": "13256fc7bb51c4b66fd13ae63a95a49c7ba915bef412a7c430c3ea649b480711"
+  },
+  {
+    "path": "design-preview/site.js",
+    "status": 200,
+    "sha256": "e5a5ebbbe8c607e5157a108a296de25cf3440f5ced36c8c4765964bd75c918ac"
+  },
+  {
+    "path": "design-preview-v2/index.html",
+    "status": 200,
+    "sha256": "f3fa8339b319e9cb0121d3e1c43848bbeecb3f96309529ce15c2bf4c3f92d348"
+  },
+  {
+    "path": "design-preview-v2/site.js",
+    "status": 200,
+    "sha256": "9d00e22e7deed40645ca1b4418400800cc1155bbd3535f316913dcb5d9a7996e"
+  },
+  {
+    "path": "index-before-v2.html",
+    "status": 200,
+    "sha256": "6e886e1dc8284bbf4f40324abd4bffc1aa1ef0edc9c6d53e0e1d06e45240e5ab"
+  },
+  {
+    "path": "index-next.html",
+    "status": 200,
+    "sha256": "a57abe503ff62f43b27a6cfde6c180a52810a33a217f146fb483f96bfa8a9fcc"
+  },
+  {
+    "path": "index.html",
+    "status": 200,
+    "sha256": "a57abe503ff62f43b27a6cfde6c180a52810a33a217f146fb483f96bfa8a9fcc"
+  },
+  {
+    "path": "iphone-day.html",
+    "status": 200,
+    "sha256": "937ab681ac62d92128e6b8fa6be1010a5829d5b00813bb89b237277e7c6a7f4e"
+  },
+  {
+    "path": "launch-preview/demos/iphone.html",
+    "status": 200,
+    "sha256": "a8e265fa971d80b79150bbcb2144714e588323f7f42dc07372d0c53d0ac5dc2a"
+  },
+  {
+    "path": "launch-preview/demos/mac/companion.js",
+    "status": 200,
+    "sha256": "8c2b6af16994593a50734431889efb440c1a57ea0ce678c55434b1e93d1c0b63"
+  },
+  {
+    "path": "launch-preview/demos/mac/index.html",
+    "status": 200,
+    "sha256": "6fddd97bc5df04568377b052a726a44a8dbb234ca8cd091574b876a1577a959c"
+  },
+  {
+    "path": "launch-preview/demos/mac/knowledge.js",
+    "status": 200,
+    "sha256": "6b133a3dba1b035e7cc4283ac69c8a77e43dc0deb583b7f24a5343f51889f171"
+  },
+  {
+    "path": "launch-preview/demos/watch.html",
+    "status": 200,
+    "sha256": "3d420c427891b8dc04a92b8716accc60c01299c21c08d85191e5cc9e96ed6883"
+  },
+  {
+    "path": "launch-preview/index.html",
+    "status": 200,
+    "sha256": "7cd6d36bba13c3d5d97b9d24c703b8d56f7d0cad9163fe766c9bcc7a1bd4f668"
+  },
+  {
+    "path": "launch-preview/launch.js",
+    "status": 200,
+    "sha256": "e58eea3d4be73c541103e1e9ead5ecd096950af02f659dbe53bc52671121c41d"
+  },
+  {
+    "path": "privacy/index.html",
+    "status": 200,
+    "sha256": "5629bee14aae7184a60153d28f42407db7ab411df191a909032f6aa9426517e4"
+  },
+  {
+    "path": "product-demos/iphone/daybook-ai.css",
+    "status": 200,
+    "sha256": "c87d5ef5fe14ef813a1fab9a043d7f3b2a2bd6a2ea7236b78b3cdcfa859f7cda"
+  },
+  {
+    "path": "product-demos/iphone/daybook-ai.js",
+    "status": 200,
+    "sha256": "93f94856af0a1e2ecb0aab48c655c806e44fddfa610afeeb111f733e48c85e6b"
+  },
+  {
+    "path": "product-demos/iphone/daybook-apple-reminders.js",
+    "status": 200,
+    "sha256": "fd32812d1ba7844bbab6f0acd0511977a9cc64a516f72afae3afc01c6f262a6c"
+  },
+  {
+    "path": "product-demos/iphone/daybook-chatgpt.js",
+    "status": 200,
+    "sha256": "ca4272832102ddd083a351ce224b4ddb7a2ab9bda6e4b40cb65c92a5d1b45761"
+  },
+  {
+    "path": "product-demos/iphone/daybook-flash-assets.js",
+    "status": 200,
+    "sha256": "0f4bfaf952d3df84288f0080a7b4694a607bd89f8ce7028725d93ce29fd36302"
+  },
+  {
+    "path": "product-demos/iphone/daybook-life-moments.js",
+    "status": 200,
+    "sha256": "5925e18d8aeaf21dea44562192cd012b07d1be39f08ea6641adfdfa0362c2eaa"
+  },
+  {
+    "path": "product-demos/iphone/daybook-locales.js",
+    "status": 200,
+    "sha256": "bb8b1df7c46536be801bae751a1a4dfce1cf7f8e72d5a48ae8ca0550aeca91e9"
+  },
+  {
+    "path": "product-demos/iphone/daybook-settings.js",
+    "status": 200,
+    "sha256": "968f593135944063ca75114a473d130bd0398dc7f515705c7593abf984dc9542"
+  },
+  {
+    "path": "product-demos/iphone/index.html",
+    "status": 200,
+    "sha256": "63c7528e4f16fc1934fe1534ed1a27a264049f634a805af75c4b1eeb9e5cf280"
+  },
+  {
+    "path": "product-demos/iphone/privacy/index.html",
+    "status": 200,
+    "sha256": "5629bee14aae7184a60153d28f42407db7ab411df191a909032f6aa9426517e4"
+  },
+  {
+    "path": "product-demos/iphone/terms/index.html",
+    "status": 200,
+    "sha256": "7b94a0507885d4f1407f561d198a0d5315fe1280481daf6e48d1c75d6739e52f"
+  },
+  {
+    "path": "product-demos/iphone/wiselife-site-locales.js",
+    "status": 200,
+    "sha256": "df240ed08a851991013a9e085fad20128da1634437216409f3f9c5f06d282d8d"
+  },
+  {
+    "path": "product-demos/iphone/wiselife-site.css",
+    "status": 200,
+    "sha256": "b14a479a63213432bb1f7f747fad785ae12076ff1ef74e6bd7683da0a5486e98"
+  },
+  {
+    "path": "product-demos/iphone/wiselife-story-locales.js",
+    "status": 200,
+    "sha256": "76b4ff088856647dbccc3e6aaf8491607fa2df216ed03b2aaf212e9b014c3bf0"
+  },
+  {
+    "path": "product-demos/mac/companion.js",
+    "status": 200,
+    "sha256": "8c2b6af16994593a50734431889efb440c1a57ea0ce678c55434b1e93d1c0b63"
+  },
+  {
+    "path": "product-demos/mac/index.html",
+    "status": 200,
+    "sha256": "eb6e3ae1f16ee979b5deb83a1aa828bce950e17182f117bddae4e17c999b1153"
+  },
+  {
+    "path": "product-demos/mac/knowledge.js",
+    "status": 200,
+    "sha256": "6b133a3dba1b035e7cc4283ac69c8a77e43dc0deb583b7f24a5343f51889f171"
+  },
+  {
+    "path": "terms/index.html",
+    "status": 200,
+    "sha256": "7b94a0507885d4f1407f561d198a0d5315fe1280481daf6e48d1c75d6739e52f"
+  },
+  {
+    "path": "wiselife-next.js",
+    "status": 200,
+    "sha256": "242668362e483eb3d9441eabc5ec27ce979cca617b8870ec7597e7875345fd01"
+  },
+  {
+    "path": "wiselife-site-locales.js",
+    "status": 200,
+    "sha256": "df240ed08a851991013a9e085fad20128da1634437216409f3f9c5f06d282d8d"
+  },
+  {
+    "path": "wiselife-site.css",
+    "status": 200,
+    "sha256": "b14a479a63213432bb1f7f747fad785ae12076ff1ef74e6bd7683da0a5486e98"
+  },
+  {
+    "path": "wiselife-story-locales.js",
+    "status": 200,
+    "sha256": "76b4ff088856647dbccc3e6aaf8491607fa2df216ed03b2aaf212e9b014c3bf0"
+  },
+  {
+    "path": "assets/wiselife/ai-answer-next.webp",
+    "status": 200,
+    "sha256": "5d1cbcee523f72b20fa04f5c7793a533bfa492c56c167b45c004cc2919736174"
+  },
+  {
+    "path": "assets/wiselife/ai-answer.webp",
+    "status": 200,
+    "sha256": "5d1cbcee523f72b20fa04f5c7793a533bfa492c56c167b45c004cc2919736174"
+  },
+  {
+    "path": "assets/wiselife/day-overview.webp",
+    "status": 200,
+    "sha256": "82380d1cb3d6332bb6e9f975d2922fd26d168fe93ae98a17b0e905cc1623913f"
+  },
+  {
+    "path": "assets/wiselife/film-poster.webp",
+    "status": 200,
+    "sha256": "fbf2e0b97e1ee673f828de4a7250ef200789caa6d4cd8138cab16eb45deedfca"
+  },
+  {
+    "path": "assets/wiselife/hardware-connected.webp",
+    "status": 200,
+    "sha256": "cc37a086f268bed9caf290737912a6c3f435dc5c6ff9f24356c0b9c186d20517"
+  },
+  {
+    "path": "assets/wiselife/note-summary.webp",
+    "status": 200,
+    "sha256": "ac65ef70ecde58853299e3eb907b4aec1cf4c72166a75198ce34b661d20cbcdb"
+  },
+  {
+    "path": "assets/wiselife/note-transcript.webp",
+    "status": 200,
+    "sha256": "b4680eeab74e293f40c80f89eca86864d0000db4b67d01fc46496779bdf0b64a"
+  },
+  {
+    "path": "assets/wiselife/ring-connected.webp",
+    "status": 200,
+    "sha256": "a324cc1d76f0bb6f90e579da254f5b5bd5c70dbed9d8661e1c1466cba24884e2"
+  },
+  {
+    "path": "assets/wiselife/thought-transcript.webp",
+    "status": 200,
+    "sha256": "5b6fe09f5cbf7f74d5983a1ac8d246516ee9be2c188a6f3dec9b2bc6f83293ce"
+  },
+  {
+    "path": "assets/wiselife/wiselife-walkthrough.mp4",
+    "status": 200,
+    "sha256": "475b81b6bad686c09ce389874daac8eae2d8b46a2c2a2f63e5eb4c777fe22af9"
+  },
+  {
+    "path": "design-preview/assets/ecosystem-scene.webp",
+    "status": 200,
+    "sha256": "f31d22e139b8e7eb094c049a939f75b88fc5a9197274a39d637de8de03647235"
+  },
+  {
+    "path": "design-preview/assets/mac-product.webp",
+    "status": 200,
+    "sha256": "fa0d829737b145cfe42e14b358773d8df14e9653fedc9a5e0a7f88ea95c8fe5c"
+  },
+  {
+    "path": "design-preview-v2/assets/hd/iphone-ai.webp",
+    "status": 200,
+    "sha256": "c8a309a9abd6836fc891100ffbbf74828541aa7c3892d2daf66ba0bcd837bb45"
+  },
+  {
+    "path": "design-preview-v2/assets/hd/iphone-day.webp",
+    "status": 200,
+    "sha256": "3885c1a524dd23d50bc96c24396b0cfc290f62402eb4a4b78760061524bef966"
+  },
+  {
+    "path": "design-preview-v2/assets/hd/mac-knowledge.webp",
+    "status": 200,
+    "sha256": "00597d80c67a1e09711e1fc2a1dcf32751a1bf6986ac53564a211fca535839e0"
+  },
+  {
+    "path": "design-preview-v2/assets/hd/mac-models.webp",
+    "status": 200,
+    "sha256": "da6761a18009246806e9529243c30b0bbf0e197e65f4990986666dcdf6b5dc4e"
+  },
+  {
+    "path": "design-preview-v2/assets/hd/watch-recording.webp",
+    "status": 200,
+    "sha256": "976a330c8b14942bcaeae588b34abb7e3c10d2846b6d494b8380b55f50e5884d"
+  },
+  {
+    "path": "launch-preview/assets/companion.webp",
+    "status": 200,
+    "sha256": "9278769ab19dd8710a9d07c066d82972a5fcd3344d1741cab96fa968d5483569"
+  },
+  {
+    "path": "launch-preview/assets/iphone.webp",
+    "status": 200,
+    "sha256": "3878e26d23c45b54a7b81dece0674d41d227445488f42b1833b00f15f7f3f6ba"
+  },
+  {
+    "path": "launch-preview/assets/watch.webp",
+    "status": 200,
+    "sha256": "8c61a88347d768e1eed964cde8907d8b16f8c43e679be27556edf99e3e5d3c85"
+  },
+  {
+    "path": "product-demos/iphone/assets/wiselife/ai-answer-next.webp",
+    "status": 200,
+    "sha256": "5d1cbcee523f72b20fa04f5c7793a533bfa492c56c167b45c004cc2919736174"
+  },
+  {
+    "path": "product-demos/iphone/assets/wiselife/ai-answer.webp",
+    "status": 200,
+    "sha256": "5d1cbcee523f72b20fa04f5c7793a533bfa492c56c167b45c004cc2919736174"
+  },
+  {
+    "path": "product-demos/iphone/assets/wiselife/day-overview.webp",
+    "status": 200,
+    "sha256": "82380d1cb3d6332bb6e9f975d2922fd26d168fe93ae98a17b0e905cc1623913f"
+  },
+  {
+    "path": "product-demos/iphone/assets/wiselife/film-poster.webp",
+    "status": 200,
+    "sha256": "fbf2e0b97e1ee673f828de4a7250ef200789caa6d4cd8138cab16eb45deedfca"
+  },
+  {
+    "path": "product-demos/iphone/assets/wiselife/hardware-connected.webp",
+    "status": 200,
+    "sha256": "cc37a086f268bed9caf290737912a6c3f435dc5c6ff9f24356c0b9c186d20517"
+  },
+  {
+    "path": "product-demos/iphone/assets/wiselife/note-summary.webp",
+    "status": 200,
+    "sha256": "ac65ef70ecde58853299e3eb907b4aec1cf4c72166a75198ce34b661d20cbcdb"
+  },
+  {
+    "path": "product-demos/iphone/assets/wiselife/note-transcript.webp",
+    "status": 200,
+    "sha256": "b4680eeab74e293f40c80f89eca86864d0000db4b67d01fc46496779bdf0b64a"
+  },
+  {
+    "path": "product-demos/iphone/assets/wiselife/ring-connected.webp",
+    "status": 200,
+    "sha256": "a324cc1d76f0bb6f90e579da254f5b5bd5c70dbed9d8661e1c1466cba24884e2"
+  },
+  {
+    "path": "product-demos/iphone/assets/wiselife/thought-transcript.webp",
+    "status": 200,
+    "sha256": "5b6fe09f5cbf7f74d5983a1ac8d246516ee9be2c188a6f3dec9b2bc6f83293ce"
+  },
+  {
+    "path": "product-demos/iphone/assets/wiselife/wiselife-walkthrough.mp4",
+    "status": 200,
+    "sha256": "475b81b6bad686c09ce389874daac8eae2d8b46a2c2a2f63e5eb4c777fe22af9"
+  }
+]

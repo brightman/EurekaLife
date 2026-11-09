@@ -67,13 +67,13 @@ struct NotebookLedgerView: View {
     @State private var newAsset: FlashAsset?
     @State private var generationSeeds:[FlashAsset]=[]
     @State private var showGenerate=false
+    @State private var mergeAsset:FlashAsset?
     private var filterKey: String { "\(kind.rawValue)|\(month)|\(currency)|\(filter)|\(showRevoked)" }
     var body: some View {
         ScrollView {
             VStack(alignment:.leading,spacing:20) {
                 HStack {
                     if kind == .idea {
-                        Button(selecting ? "取消选择" : "选择") { selecting.toggle(); selectedIDs=[] }
                         Spacer()
                     } else {
                         Picker("月份",selection:$month) { ForEach(Array(Set(model.months+[month])).sorted(by:>),id:\.self) { Text($0).tag($0) } }
@@ -107,13 +107,7 @@ struct NotebookLedgerView: View {
                     }
                     if model.canLoadMore { Button("加载更多") { Task { await model.reload(more:true) } }.padding(.vertical,18).disabled(model.loading) }
                 }
-                if selecting {
-                    Button("让 AI 再创作 · 已选 \(selectedIDs.count) 条") {
-                        generationSeeds=model.rows.filter { selectedIDs.contains($0.id) }; showGenerate=true
-                    }.buttonStyle(DaybookPrimaryButtonStyle(wide:true)).disabled(selectedIDs.count < 2)
-                    Text("选择 2 至 10 条灵感，生成结果另存，保留原想法。").font(.system(size:12)).foregroundStyle(DaybookStyle.secondary)
-                }
-                Toggle("显示已撤销",isOn:$showRevoked).font(.system(size:13))
+                Toggle("显示已删除",isOn:$showRevoked).font(.system(size:13))
                 if kind == .idea { Text("普通长录音不会自动加入灵感。").font(.system(size:12)).foregroundStyle(DaybookStyle.secondary) }
                 if let error=model.error {
                     Text(error).font(.system(size:13)).foregroundStyle(DaybookStyle.red)
@@ -121,16 +115,52 @@ struct NotebookLedgerView: View {
                 }
             }.padding(.horizontal,24).padding(.vertical,4).padding(.bottom,24)
         }.scrollDismissesKeyboard(.interactively)
+            .safeAreaInset(edge:.bottom,spacing:0) { if kind == .idea { mergeDock } }
             .task(id:filterKey) {
                 model.kind=kind; model.month=month; model.currency=currency.isEmpty ? nil : currency
                 model.direction=FlashAsset.Direction(rawValue:filter); model.pending=filter == "pending"; model.showRevoked=showRevoked
                 selectedIDs=[]; await model.reload()
             }
             .sheet(item:$selected) { item in NotebookAssetDetail(model:model,opening:item,onOpenSource:{ id in selected=nil; onOpenSource(id) }) }
+            .sheet(item:$mergeAsset) { item in
+                NotebookAssetEditor(model:model,item:item,isNew:true,mergeSeeds:generationSeeds,onSaved:{
+                    selecting=false; selectedIDs=[]
+                })
+            }
             .sheet(item:$newAsset) { NotebookAssetEditor(model:model,item:$0,isNew:true) }
             .sheet(isPresented:$showGenerate,onDismiss:{ model.cancelGeneration() }) { NotebookGenerateView(model:model,seeds:generationSeeds) }
             .sheet(item:Binding(get:{ showGenerate ? nil : model.result },set:{ model.result=$0 })) { draft in NotebookCandidateView(model:model,draft:draft) }
             .onReceive(NotificationCenter.default.publisher(for:.notebookAssetSaved)) { _ in Task { await model.reload() } }
+    }
+    private var mergeDock:some View {
+        VStack(spacing:12) {
+            if selecting {
+                HStack {
+                    Text("已选 \(selectedIDs.count) 条灵感").font(.system(size:13))
+                    Spacer()
+                    Button("取消") { selecting=false;selectedIDs=[] }.accessibilityIdentifier("notebook.merge.cancel")
+                }
+                HStack(spacing:12) {
+                    Button("合并 \(selectedIDs.count) 条灵感") {
+                        generationSeeds=model.rows.filter { selectedIDs.contains($0.id) && !$0.revoked }
+                        var item=makeAsset();item.title="合并的灵感"
+                        item.text=generationSeeds.map(\.text).joined(separator:"\n\n")
+                        mergeAsset=item
+                    }.buttonStyle(DaybookPrimaryButtonStyle(wide:true)).accessibilityIdentifier("notebook.merge.preview")
+                    Button("AI 再创作") {
+                        generationSeeds=model.rows.filter { selectedIDs.contains($0.id) && !$0.revoked }; showGenerate=true
+                    }.font(.system(size:14,weight:.medium))
+                }.disabled(selectedIDs.count < 2)
+            } else {
+                Button { selecting=true;selectedIDs=[] } label: {
+                    Label("合并多条灵感",systemImage:"square.stack.3d.up")
+                }.buttonStyle(DaybookPrimaryButtonStyle(wide:true))
+                    .disabled(model.rows.filter{!$0.revoked}.count < 2).accessibilityIdentifier("notebook.merge.start")
+                Text("选择 2 至 10 条，合并为新灵感，保留原记录。")
+                    .font(.system(size:12)).foregroundStyle(DaybookStyle.secondary)
+            }
+        }.padding(.horizontal,24).padding(.vertical,14).background(DaybookStyle.paper)
+            .overlay(alignment:.top) { DaybookStyle.line.frame(height:0.5) }
     }
     @ViewBuilder private var ledgerSummary: some View {
         VStack(alignment:.leading,spacing:14) {
@@ -153,7 +183,7 @@ struct NotebookLedgerView: View {
                 Text("全部币种").tag("")
                 ForEach(Array(Set(model.totals.map(\.currency)+(currency.isEmpty ? [] : [currency]))).sorted(),id:\.self) { Text($0).tag($0) }
             }.font(.system(size:13))
-            Text("按账目发生月汇总，各币种分别计算；待补充与已撤销账目不计入。缺日期账目暂按录制月显示。").font(.system(size:12)).foregroundStyle(DaybookStyle.secondary)
+            Text("按账目发生月汇总，各币种分别计算；待补充与已删除账目不计入。缺日期账目暂按录制月显示。").font(.system(size:12)).foregroundStyle(DaybookStyle.secondary)
         }
     }
     private func metric(_ title:String,value:Int64,currency:String) -> some View {
@@ -165,7 +195,7 @@ struct NotebookLedgerView: View {
             VStack(alignment:.leading,spacing:8) {
                 HStack(alignment:.top) { Text(item.title).font(.system(size:16,weight:.medium)); if kind == .expense { Spacer(); Text(item.amountText).font(.system(size:15,weight:.medium)).monospacedDigit() } }
                 if kind == .idea { Text(item.text).font(.system(size:14)).lineSpacing(5).lineLimit(3).foregroundStyle(DaybookStyle.bodyText) }
-                Text(kind == .idea ? "\(RecordingFormat.date(item.source.capturedAt)) · \(item.origin == .generated ? "AI 再创作" : item.origin == .manual ? "手动记录" : "闪念")\(item.revoked ? " · 已撤销" : "")" : "\(item.date ?? "日期待补充") · \(item.category ?? "未分类") · \(item.statusTitle)")
+                Text(kind == .idea ? "\(RecordingFormat.date(item.source.capturedAt)) · \(item.source.recordingKind == "merged" ? "合并灵感" : item.origin == .generated ? "AI 再创作" : item.origin == .manual ? "手动记录" : "闪念")\(item.revoked ? " · 已删除" : "")" : "\(item.date ?? "日期待补充") · \(item.category ?? "未分类") · \(item.revoked ? "已删除" : item.statusTitle)")
                     .font(.system(size:12)).foregroundStyle(DaybookStyle.secondary)
             }.frame(maxWidth:.infinity,alignment:.leading)
         }.padding(.vertical,16).contentShape(Rectangle()).overlay(alignment:.bottom) { DaybookStyle.line.frame(height:0.5) }

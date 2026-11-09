@@ -1,0 +1,58 @@
+{
+  "status": "PASS",
+  "results": [
+    {
+      "width": 320,
+      "title": "EurekaLife · Your life. Your AI. Your privacy.",
+      "errors": [],
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "title": "EurekaLife · Your life. Your AI. Your privacy.",
+      "errors": [],
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "title": "EurekaLife · Your life. Your AI. Your privacy.",
+      "errors": [],
+      "overflow": false
+    },
+    {
+      "route": "/privacy/",
+      "title": "隐私政策 · EurekaLife",
+      "errors": []
+    },
+    {
+      "route": "/terms/",
+      "title": "服务条款 · EurekaLife",
+      "errors": []
+    },
+    {
+      "route": "/launch-preview/",
+      "title": "EurekaLife · Your life. Your AI. Your privacy.",
+      "errors": []
+    },
+    {
+      "route": "/design-preview/",
+      "title": "EurekaLife · Your personal AI",
+      "errors": []
+    },
+    {
+      "route": "/product-demos/iphone/",
+      "title": "EurekaLife · 轻松记录，每天更懂自己",
+      "errors": []
+    },
+    {
+      "route": "/product-demos/mac/#knowledge",
+      "title": "EurekaLife Mac · 产品原型",
+      "errors": []
+    },
+    {
+      "route": "/index-before-v2.html",
+      "title": "EurekaLife · 你的生活，你的个人 AI",
+      "errors": []
+    }
+  ]
+}

@@ -16,6 +16,57 @@ struct SpeakerTranscriptView: View {
     @State private var textDraft = ""
 
     var body: some View {
+        Group {
+            if note.kind == .thought {
+                thoughtTranscript
+            } else {
+                speakerSegments
+            }
+        }
+        .sheet(item: $managedSpeaker) { speaker in
+            SpeakerManagementView(note: speaker.note, speakerID: speaker.speakerID)
+        }
+        .sheet(item: $editingSegment) { segment in
+            NavigationStack {
+                VStack {
+                    TextEditor(text: $textDraft)
+                    if let error = model.errorMessage { Text(error).font(.caption).foregroundStyle(.orange) }
+                }.padding().navigationTitle("编辑这段文字")
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) { Button("取消") { editingSegment = nil } }
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("保存") {
+                                if model.editSegment(noteID: note.id, segmentID: segment.id, text: textDraft) {
+                                    editingSegment = nil
+                                }
+                            }
+                        }
+                    }
+            }
+        }
+    }
+
+    /// Word timestamps are retained for the recording, not repeated as reading rows.
+    /// The parent editor continues to offer editing of the complete thought text.
+    private var thoughtTranscript: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 9) {
+                Label("我", systemImage: "person.crop.circle")
+                    .font(.system(size: 12, weight: .semibold))
+                Spacer(minLength: 4)
+                if let first = note.transcriptSegments?.first, let last = note.transcriptSegments?.last {
+                    Text("\(RecordingFormat.timecode(first.start))–\(RecordingFormat.timecode(last.end))")
+                        .font(.system(size: 10).monospacedDigit()).foregroundStyle(.secondary)
+                }
+            }
+            Text(verbatim: note.transcript)
+                .font(.system(size: 15)).lineSpacing(7)
+                .textSelection(.enabled).frame(maxWidth: .infinity, alignment: .leading)
+                .accessibilityIdentifier("thought.transcript.body")
+        }
+    }
+
+    private var speakerSegments: some View {
         LazyVStack(alignment: .leading, spacing: 18) {
             ForEach(note.transcriptSegments ?? []) { segment in
                 VStack(alignment: .leading, spacing: 6) {
@@ -47,7 +98,7 @@ struct SpeakerTranscriptView: View {
                                 editingSegment = segment
                             } label: { Image(systemName: "pencil") }
                             .buttonStyle(.plain).accessibilityLabel("编辑这段文字")
-                            .disabled(note.transcriptionState == .running || note.diarizationState == .running)
+                            .disabled(note.transcriptionState == .running || (note.kind != .thought && note.diarizationState == .running))
                         }
                     }
                     Text(segment.text.trimmingCharacters(in: .whitespacesAndNewlines))
@@ -55,27 +106,6 @@ struct SpeakerTranscriptView: View {
                         .textSelection(.enabled).frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .accessibilityElement(children: .contain)
-            }
-        }
-        .sheet(item: $managedSpeaker) { speaker in
-            SpeakerManagementView(note: speaker.note, speakerID: speaker.speakerID)
-        }
-        .sheet(item: $editingSegment) { segment in
-            NavigationStack {
-                VStack {
-                    TextEditor(text: $textDraft)
-                    if let error = model.errorMessage { Text(error).font(.caption).foregroundStyle(.orange) }
-                }.padding().navigationTitle("编辑这段文字")
-                    .toolbar {
-                        ToolbarItem(placement: .cancellationAction) { Button("取消") { editingSegment = nil } }
-                        ToolbarItem(placement: .confirmationAction) {
-                            Button("保存") {
-                                if model.editSegment(noteID: note.id, segmentID: segment.id, text: textDraft) {
-                                    editingSegment = nil
-                                }
-                            }
-                        }
-                    }
             }
         }
     }
@@ -236,24 +266,29 @@ struct SpeakerProcessingView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            if note.diarizationState == .running {
-                ProgressView("正在本机区分说话人…").controlSize(.small)
-            } else if note.diarizationState == .ready {
-                Text("已在本机区分说话人 · 点击名称可修改")
+            if note.kind == .thought {
+                Text("闪念记为我的发言，无需说话人分析")
                     .foregroundStyle(.secondary)
-            } else if let message = note.diarizationMessage {
-                Text(message).foregroundStyle(.secondary)
-            }
-            if let message = note.voiceIdentityMessage {
-                Text(message).foregroundStyle(.secondary)
-                if note.diarizationState != .running {
-                    Button("重试识别我的声音") { Task { await model.identifySpeakers(note.id) } }.buttonStyle(.plain)
+            } else {
+                if note.diarizationState == .running {
+                    ProgressView("正在本机区分说话人…").controlSize(.small)
+                } else if note.diarizationState == .ready {
+                    Text("已在本机区分说话人 · 点击名称可修改")
+                        .foregroundStyle(.secondary)
+                } else if let message = note.diarizationMessage {
+                    Text(message).foregroundStyle(.secondary)
                 }
-            }
-            if note.diarizationState != .ready && note.diarizationState != .running,
-               note.transcriptionState == .ready, !(note.transcriptSegments ?? []).isEmpty {
-                Button("区分说话人") { Task { await model.identifySpeakers(note.id) } }
-                    .buttonStyle(.plain)
+                if let message = note.voiceIdentityMessage {
+                    Text(message).foregroundStyle(.secondary)
+                    if note.diarizationState != .running {
+                        Button("重试识别我的声音") { Task { await model.identifySpeakers(note.id) } }.buttonStyle(.plain)
+                    }
+                }
+                if note.diarizationState != .ready && note.diarizationState != .running,
+                   note.transcriptionState == .ready, !(note.transcriptSegments ?? []).isEmpty {
+                    Button("区分说话人") { Task { await model.identifySpeakers(note.id) } }
+                        .buttonStyle(.plain)
+                }
             }
         }
         .font(.system(size: 11)).lineSpacing(5)

@@ -183,7 +183,7 @@ struct DaybookAssistantView: View {
                     .frame(width: 40, height: 40)
                     .background(DaybookStyle.blueSoft, in: RoundedRectangle(cornerRadius: 15))
                 VStack(alignment: .leading, spacing: 5) {
-                    Text("WiseLife AI").font(.system(size: 18, weight: .semibold)).tracking(-0.5)
+                    Text("EurekaLife AI").font(.system(size: 18, weight: .semibold)).tracking(-0.5)
                     Text("懂你的记录，也听你说。").font(.system(size: 10)).foregroundStyle(DaybookStyle.secondary)
                 }
             }
@@ -266,7 +266,7 @@ struct DaybookAssistantView: View {
     private func answerBody(_ answer: DaybookAssistantModel.Answer) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 6) {
-                DaybookIcon("MessageCircle", size: 15); Text("WiseLife AI").font(.system(size: 10))
+                DaybookIcon("MessageCircle", size: 15); Text("EurekaLife AI").font(.system(size: 10))
                 Spacer(minLength: 0)
                 Text("\(answer.generated ? answer.provider : "本地检索")")
                     .font(.system(size: 9)).foregroundStyle(DaybookStyle.secondary).lineLimit(1)

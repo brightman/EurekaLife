@@ -12,9 +12,9 @@ root = Path(tempfile.mkdtemp(prefix="wristnotes-ui-preview-"))
 for name in ("Sources", "WristNotes.xcodeproj"):
     shutil.copytree(source / name, root / name, ignore=shutil.ignore_patterns("xcuserdata"))
 project = root / "WristNotes.xcodeproj/project.pbxproj"
-project.write_text(project.read_text().replace("cloud.karama.wisenote", "cloud.karama.wisenote.preview"))
+project.write_text(project.read_text().replace("cloud.karama.wiselife", "cloud.karama.wiselife.preview"))
 info = root / "Sources/Watch/Info.plist"
-info.write_text(info.read_text().replace("cloud.karama.wisenote", "cloud.karama.wisenote.preview"))
+info.write_text(info.read_text().replace("cloud.karama.wiselife", "cloud.karama.wiselife.preview"))
 for file in ("Sources/Watch/WatchRecorder.swift", "Sources/iPhone/PhoneConnectivity.swift"):
     path = root / file
     path.write_text(path.read_text().replace("if WCSession.isSupported() {", "if false {"))

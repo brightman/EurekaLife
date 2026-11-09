@@ -11,7 +11,7 @@ struct OnboardingUsageView: View {
                 Text("Apple Watch").tag(true)
             }.pickerStyle(.segmented)
             if watch { watchGuide } else { phoneGuide }
-            Text("图示来自 WiseLife 原生 App 模拟器截图。轻点图片可查看完整截图。")
+            Text("图示供操作参考。轻点图片可查看完整示意图。")
                 .font(.system(size: 10)).foregroundStyle(DaybookStyle.secondary)
         }
         .sheet(isPresented: Binding(get: { fullImage != nil }, set: { if !$0 { fullImage = nil } })) {
@@ -20,10 +20,10 @@ struct OnboardingUsageView: View {
                     ScrollView(.vertical) {
                         Image(fullImage ?? "").resizable().scaledToFit()
                             .frame(width: max(1, geometry.size.width - 32)).padding(16)
-                            .accessibilityLabel("WiseLife 完整模拟器截图")
+                            .accessibilityLabel("EurekaLife 完整使用示意图")
                     }
                 }.background(DaybookStyle.paper)
-                    .navigationTitle("模拟器截图").navigationBarTitleDisplayMode(.inline)
+                    .navigationTitle("使用示意图").navigationBarTitleDisplayMode(.inline)
                     .toolbar { ToolbarItem(placement: .confirmationAction) { Button("完成") { fullImage = nil } } }
             }
         }
@@ -54,21 +54,21 @@ struct OnboardingUsageView: View {
                 instruction("确认并保存", "预览图片，可补充一句话。文字识别完成后，点「保存记录」，回到「一天」查看。")
                 SettingsFootnote(text: "图片与识别文字保存在 iPhone。模拟器展示的是图片入口，实际拍摄需要在真机上完成。")
             }
-            SettingsFootnote(text: "麦克风、相机权限在首次使用时申请。若未允许，可在 iPhone「设置 → App → WiseLife」中调整。")
+            SettingsFootnote(text: "麦克风、相机权限在首次使用时申请。若未允许，可在 iPhone「设置 → App → EurekaLife」中调整。")
         }
     }
     private var watchGuide: some View {
         VStack(alignment: .leading, spacing: 20) {
-            instruction("先把 WiseLife 装到手表", "打开 iPhone 自带的 Watch App，先完成与这部 iPhone 的配对，再进入「我的手表」。")
-            instruction("找到 WiseLife，轻点「安装」", "进入 App 列表，在「可用 App」中找到 WiseLife。部分系统版本直接在「我的手表」下显示此列表。")
-            instruction("在手表上打开 WiseLife", "若已自动安装，可在「已安装在 Apple Watch 上」查看。首次录音时，允许手表的麦克风权限。")
-            SettingsFootnote(text: "没有找到 WiseLife？确认 iPhone 安装的版本包含 Watch App、手表系统兼容，并等待安装完成。阅读说明不会自动安装或配对。")
+            instruction("先把 EurekaLife 装到手表", "打开 iPhone 自带的 Watch App，先完成与这部 iPhone 的配对，再进入「我的手表」。")
+            instruction("找到 EurekaLife，轻点「安装」", "进入 App 列表，在「可用 App」中找到 EurekaLife。部分系统版本直接在「我的手表」下显示此列表。")
+            instruction("在手表上打开 EurekaLife", "若已自动安装，可在「已安装在 Apple Watch 上」查看。首次录音时，允许手表的麦克风权限。")
+            SettingsFootnote(text: "没有找到 EurekaLife？确认 iPhone 安装的版本包含 Watch App、手表系统兼容，并等待安装完成。阅读说明不会自动安装或配对。")
             Link("Apple 官方安装说明 ↗", destination: URL(string: "https://support.apple.com/zh-cn/109023")!).font(.system(size: 12))
             screenshot("watch-recorder", caption: "Apple Watch · 原生录音页面", cropped: false)
             instruction("轻点：持续录音", "点一下红色按钮开始；再次点按停止按钮，结束并保存。")
             instruction("按住：记录闪念", "按住红色按钮，震动后说话；松手保存。向上滑再松手可取消。")
             SettingsInfo(title: "先保存在手表，再同步到 iPhone", text: "让两台设备靠近，保持蓝牙与 Wi-Fi 开启。无需在同一个 Wi-Fi；系统会安排传输，可能需要等待。\n在 iPhone 首页点左上角手表状态，查看「待同步」或「最近同步」。已配对不等于文件已传完，也不代表 Watch App 已安装。")
-            SettingsFootnote(text: "可选：长按表盘 → 编辑 → 复杂功能，添加 WiseLife 录音入口。轻点入口可开始录音；已经录音时只打开 App，结束仍需点停止按钮。")
+            SettingsFootnote(text: "可选：长按表盘 → 编辑 → 复杂功能，添加 EurekaLife 录音入口。轻点入口可开始录音；已经录音时只打开 App，结束仍需点停止按钮。")
             Button("没有手表？查看 iPhone 录音与拍照") { watch = false }.font(.system(size: 12)).padding(.vertical, 8)
         }
     }

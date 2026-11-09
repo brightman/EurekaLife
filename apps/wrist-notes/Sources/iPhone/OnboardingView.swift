@@ -47,7 +47,7 @@ struct OnboardingView: View {
     private var aiReady: Bool { OnboardingReadiness.aiStep(understanding: understandingReady, retrieval: retrievalReady) }
     private var completeCount: Int { (transcription.canSave ? 1 : 0) + (aiReady ? 1 : 0) + (store.progress.dataReviewed ? 1 : 0) + (store.progress.usageReviewed ? 1 : 0) }
     private var privacy: String {
-        ai.configuration.mode == .local ? "你的数据和 AI 能力，都在你的设备上。使用端上模型时，个人记录无需上传到 WiseLife 服务器。" : "转写、检索与记录保存在本机；AI 理解使用你选择的服务，仅发送你允许的文字。数据授权不等于云端发送授权。"
+        ai.configuration.mode == .local ? "你的数据和 AI 能力，都在你的设备上。使用端上模型时，个人记录无需上传到 EurekaLife 服务器。" : "转写、检索与记录保存在本机；AI 理解使用你选择的服务，仅发送你允许的文字。数据授权不等于云端发送授权。"
     }
     private let steps: [OnboardingProgress.Page] = [.transcription, .ai, .data, .usage]
 
@@ -125,7 +125,7 @@ struct OnboardingView: View {
     @ViewBuilder private var pageContent: some View {
         switch page {
         case .welcome:
-            heading("你好，欢迎来到 WiseLife", "懂你的AI，更懂保护你的隐私", "四步开始：准备 AI、选择数据，再学会留下第一条记录。")
+            heading("你好，欢迎来到 EurekaLife", "懂你的AI，更懂保护你的隐私", "四步开始：准备 AI、选择数据，再学会留下第一条记录。")
             checklist
             SettingsInfo(title: ai.configuration.mode == .local ? "默认全端上" : "你选择的 AI 服务", text: privacy)
         case .transcription:
@@ -208,7 +208,7 @@ struct OnboardingView: View {
         case .ai: aiReady ? "下一步：数据授权" : "检查 AI 能力"
         case .data: "按当前选择继续"
         case .usage: "我知道怎么记录了"
-        case .review: completeCount == 4 ? "开始使用 WiseLife" : "继续完成设置"
+        case .review: completeCount == 4 ? "开始使用 EurekaLife" : "继续完成设置"
         }
     }
     private var aiDetail: String {

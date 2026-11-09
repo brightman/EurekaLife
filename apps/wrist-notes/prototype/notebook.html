@@ -4,16 +4,16 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#fafbfc">
-  <title>WiseLife · 记事本设计</title>
+  <title>EurekaLife · 记事本设计</title>
   <link rel="icon" href="assets/brand/favicon-32.png">
   <link rel="stylesheet" href="daybook.css">
   <link rel="stylesheet" href="daybook-theme.css">
-  <link rel="stylesheet" href="notebook.css?v=contacts-five-fields-20261104">
+  <link rel="stylesheet" href="notebook.css?v=notebook-management-20261108">
 </head>
 <body class="notebook-review">
   <main class="nb-stage">
     <aside class="nb-intro">
-      <a class="wordmark" href="iphone-day.html#product"><img src="assets/brand/app-icon.png" width="34" height="34" alt="">WiseLife</a>
+      <a class="wordmark" href="iphone-day.html#product"><img src="assets/brand/app-icon.png" width="34" height="34" alt="">EurekaLife</a>
       <p class="nb-eyebrow">NOTEBOOK / 产品设计</p>
       <h1>把随手记录，<br>变成日积月累。</h1>
       <p class="nb-lead">留下想法，理清收支。<br>记住聊过的人，发现常出现的地方。</p>
@@ -25,7 +25,7 @@
       </nav>
       <a class="nb-backlink" href="iphone-day.html#product">← 返回完整产品原型</a>
     </aside>
-    <section class="phone-shell nb-phone" aria-label="WiseLife 记事本手机原型">
+    <section class="phone-shell nb-phone" aria-label="EurekaLife 记事本手机原型">
       <div class="phone-screen">
         <div class="statusbar"><span>9:41</span><span class="dynamic-island"></span><span class="nb-system" aria-hidden="true">▮▮▮ <svg viewBox="0 0 28 14"><rect x="1" y="1" width="23" height="12" rx="3" fill="none" stroke="currentColor"/><rect x="3" y="3" width="18" height="8" rx="1" fill="currentColor"/><path d="M26 5v4" stroke="currentColor" stroke-width="2"/></svg></span></div>
         <div id="nbApp" class="nb-app">
@@ -37,6 +37,7 @@
           </header>
           <div class="nb-content" id="nbContent" role="tabpanel" tabindex="0"></div>
           <div class="nb-dock" id="nbDock" hidden></div>
+          <section id="nbPersonPage" class="nb-person-page" aria-labelledby="nbPersonTitle" hidden></section>
         </div>
         <div id="nbOverlay" class="nb-overlay" hidden>
           <section class="nb-sheet" role="dialog" aria-modal="true" aria-labelledby="nbSheetTitle" tabindex="-1">
@@ -64,6 +65,6 @@
       <a class="nb-spec-link" href="flash-assets-design.md#notebook-four-categories">查看产品设计说明 ↗</a>
     </aside>
   </main>
-  <script src="notebook.js?v=contacts-five-fields-20261104"></script>
+  <script src="notebook.js?v=notebook-management-20261108"></script>
 </body>
 </html>

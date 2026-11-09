@@ -29,6 +29,15 @@ struct NotebookPersonSource: Identifiable, Sendable {
     let needsReview:Bool
     var id:String { sourceKey+":"+speakerID }
 }
+struct NotebookPersonSegment: Identifiable, Sendable {
+    let id: UUID
+    let title: String
+    let summary: String
+    let capturedAt: Date
+    let duration: Double
+    let device: String?
+    let needsReview: Bool
+}
 enum NotebookRelationships {
     static let presets = ["家人","同事","同学","朋友","客户","路人","其他"]
     static func normalized(_ values:[String]) -> [String] {

@@ -1,0 +1,49 @@
+[
+  {
+    "url": "http://127.0.0.1:8793/apps/wrist-notes/prototype/iphone-day.html",
+    "title": "EurekaLife · iPhone 产品原型",
+    "errors": []
+  },
+  {
+    "url": "http://127.0.0.1:8793/apps/wrist-notes/prototype/notebook.html",
+    "title": "EurekaLife · 记事本设计",
+    "errors": []
+  },
+  {
+    "url": "http://127.0.0.1:8793/apps/wrist-notes/prototype/onboarding.html",
+    "title": "EurekaLife · AI 与数据准备",
+    "errors": []
+  },
+  {
+    "url": "http://127.0.0.1:8793/apps/wiselife-mac/prototype/",
+    "title": "EurekaLife Mac · 产品原型",
+    "errors": []
+  },
+  {
+    "url": "http://127.0.0.1:8792/launch-preview/",
+    "title": "EurekaLife · Your life. Your AI. Your privacy.",
+    "errors": []
+  },
+  {
+    "url": "http://127.0.0.1:8792/privacy/",
+    "title": "隐私政策 · EurekaLife",
+    "errors": []
+  },
+  {
+    "url": "http://127.0.0.1:8792/terms/",
+    "title": "服务条款 · EurekaLife",
+    "errors": []
+  },
+  {
+    "language": "zh",
+    "aiBrand": "EurekaLife"
+  },
+  {
+    "language": "en",
+    "aiBrand": "EurekaLife"
+  },
+  {
+    "language": "ja",
+    "aiBrand": "EurekaLife"
+  }
+]

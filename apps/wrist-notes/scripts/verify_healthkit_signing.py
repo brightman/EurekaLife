@@ -24,8 +24,8 @@ def run(*args):
 
 def verify(app, distribution):
     info = plistlib.loads((app / "Info.plist").read_bytes())
-    if info.get("CFBundleIdentifier") != "cloud.karama.wisenote":
-        raise ValueError("Expected the WiseLife iPhone app, not a Watch app or extension")
+    if info.get("CFBundleIdentifier") != "cloud.karama.wiselife":
+        raise ValueError("Expected the EurekaLife iPhone app, not a Watch app or extension")
     if info.get("DTPlatformName") != "iphoneos":
         raise ValueError("Expected an iPhone device build, not a Simulator build")
     run("codesign", "--verify", "--deep", "--strict", str(app))

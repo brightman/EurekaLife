@@ -37,7 +37,7 @@ precondition(
         pendingCount: 11,
         transferCount: 0,
         missingFileCount: 0
-    ) == "请先在配对 iPhone 安装并打开 WiseLife"
+    ) == "请先在配对 iPhone 安装并打开 EurekaLife"
 )
 precondition(
     WatchConnectivityStatus.message(

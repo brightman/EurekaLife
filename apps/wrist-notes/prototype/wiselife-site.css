@@ -1,4 +1,4 @@
-/* WiseLife product site: extend the existing prototype, retaining its app styles. */
+/* EurekaLife product site: extend the existing prototype, retaining its app styles. */
 :root{--site-background:#f0f3f5;--site-panel:#f9fafb;--site-button-text:#fff;--site-nav-bg:rgba(240,243,245,.94);--site-header-height:64px}
 html{scroll-behavior:smooth;scroll-padding-top:var(--site-header-height)}
 .wiselife-site{background:var(--site-background)}

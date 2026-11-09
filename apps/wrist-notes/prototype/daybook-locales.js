@@ -344,7 +344,7 @@
   "同时添加到 Apple 日历": "Appleカレンダーにも追加",
   "同时添加到 Apple 提醒事项": "Appleリマインダーにも追加",
   "这是原型内的提醒，刷新后清空，不会发送系统通知。AI 主动建议与已确认提醒分别管理。": "プロトタイプのリマインダーは再読み込みで消去され、通知は送信されません。AIの提案と確認済みリマインダーは別々に管理します。",
-  "关于": "WiseLifeについて",
+  "关于": "EurekaLifeについて",
   "版本信息": "バージョン情報",
   "版本号": "バージョン",
   "发布时间": "リリース日",
@@ -650,9 +650,9 @@
     "オフラインでも文字起こしや要約はできますか？"
   ],
   [
-    "WiseLife App 不提供云端服务；所有记录、转写、照片、总结和洞察默认保存在 iPhone 本机。支持的语音模型下载后可以离线转写；本地总结取决于设备、系统、语言及模型支持。你可以自行连接第三方 AI；只有确认后，选中的文字才会发送给该服务商。",
-    "WiseLife has no cloud service; all records, transcripts, photos, summaries and insights stay on your iPhone by default. Supported speech models work offline after download. Local summaries depend on device, OS, language and model support. You can connect a third-party AI; selected text is sent only after you confirm.",
-    "WiseLife はクラウドサービスを提供せず、すべての記録、文字起こし、写真、要約、インサイトは通常 iPhone 本体に保存されます。対応する音声モデルはダウンロード後にオフラインで利用できます。端末内要約は機種・OS・言語・モデルの対応状況によります。第三者 AI を接続できますが、確認後に選択した文章のみが送信されます。"
+    "EurekaLife App 不提供云端服务；所有记录、转写、照片、总结和洞察默认保存在 iPhone 本机。支持的语音模型下载后可以离线转写；本地总结取决于设备、系统、语言及模型支持。你可以自行连接第三方 AI；只有确认后，选中的文字才会发送给该服务商。",
+    "EurekaLife has no cloud service; all records, transcripts, photos, summaries and insights stay on your iPhone by default. Supported speech models work offline after download. Local summaries depend on device, OS, language and model support. You can connect a third-party AI; selected text is sent only after you confirm.",
+    "EurekaLife はクラウドサービスを提供せず、すべての記録、文字起こし、写真、要約、インサイトは通常 iPhone 本体に保存されます。対応する音声モデルはダウンロード後にオフラインで利用できます。端末内要約は機種・OS・言語・モデルの対応状況によります。第三者 AI を接続できますが、確認後に選択した文章のみが送信されます。"
   ],
   [
     "我的录音会上传到哪里？",
@@ -660,9 +660,9 @@
     "録音はどこに送られますか？"
   ],
   [
-    "WiseLife App 不提供云端服务，也不会把你的记录上传到 WiseLife 服务器。Apple Watch 录音会传回配对 iPhone 后保存在手机。只有你主动选择外部 AI 并确认时，选中的文字才会直接发送给你配置的服务商；录音与照片不会发送给外部 AI。",
-    "WiseLife has no cloud service and does not upload your records to WiseLife servers. Apple Watch recordings transfer to your paired iPhone for storage. Only text you select and confirm is sent to your chosen AI provider; recordings and photos are not sent to external AI.",
-    "WiseLife はクラウドサービスを提供せず、記録を WiseLife のサーバーへアップロードしません。Apple Watch の録音はペアリングした iPhone に転送後保存されます。自分で外部 AI を選び確認した場合のみ、選んだ文章が提供元へ送信されます。録音や写真は外部 AI に送信されません。"
+    "EurekaLife App 不提供云端服务，也不会把你的记录上传到 EurekaLife 服务器。Apple Watch 录音会传回配对 iPhone 后保存在手机。只有你主动选择外部 AI 并确认时，选中的文字才会直接发送给你配置的服务商；录音与照片不会发送给外部 AI。",
+    "EurekaLife has no cloud service and does not upload your records to EurekaLife servers. Apple Watch recordings transfer to your paired iPhone for storage. Only text you select and confirm is sent to your chosen AI provider; recordings and photos are not sent to external AI.",
+    "EurekaLife はクラウドサービスを提供せず、記録を EurekaLife のサーバーへアップロードしません。Apple Watch の録音はペアリングした iPhone に転送後保存されます。自分で外部 AI を選び確認した場合のみ、選んだ文章が提供元へ送信されます。録音や写真は外部 AI に送信されません。"
   ],
   [
     "AI 的回答能找到依据吗？",
@@ -680,8 +680,8 @@
     "常時録音したり、感情を自動判断したりしますか？"
   ],
   [
-    "录音由你主动开始和结束。健康与活动是可选的数据来源；WiseLife 不据单次心率或一天的记录判断情绪，也不提供健康诊断。",
-    "You start and stop recording. Health and activity are optional sources. WiseLife does not infer emotions from a single heart-rate reading or one day of records, and does not provide health diagnoses.",
+    "录音由你主动开始和结束。健康与活动是可选的数据来源；EurekaLife 不据单次心率或一天的记录判断情绪，也不提供健康诊断。",
+    "You start and stop recording. Health and activity are optional sources. EurekaLife does not infer emotions from a single heart-rate reading or one day of records, and does not provide health diagnoses.",
     "録音の開始と終了は自分で操作します。健康や活動は任意のデータソースです。単一の心拍や一日の記録から感情を判断せず、健康診断も行いません。"
   ]
 ];
@@ -742,10 +742,10 @@
     });
     document.documentElement.lang = language === 'zh-Hans' ? 'zh-CN' : language;
     document.title = document.body.classList.contains('iphone-prototype')
-      ? (language === 'en' ? 'WiseLife · iPhone Prototype' : language === 'ja' ? 'WiseLife · iPhone プロトタイプ' : 'WiseLife · iPhone 产品原型')
+      ? (language === 'en' ? 'EurekaLife · iPhone Prototype' : language === 'ja' ? 'EurekaLife · iPhone プロトタイプ' : 'EurekaLife · iPhone 产品原型')
       : document.body.classList.contains('wiselife-site')
-      ? (language === 'en' ? 'WiseLife · Capture with ease. Understand your day.' : language === 'ja' ? 'WiseLife · 気軽に記録。毎日、自分を知る。' : 'WiseLife · 轻松记录，每天更懂自己')
-      : (language === 'en' ? 'WiseLife · My Day' : language === 'ja' ? 'WiseLife · 私の一日' : 'WiseLife · 我的一天');
+      ? (language === 'en' ? 'EurekaLife · Capture with ease. Understand your day.' : language === 'ja' ? 'EurekaLife · 気軽に記録。毎日、自分を知る。' : 'EurekaLife · 轻松记录，每天更懂自己')
+      : (language === 'en' ? 'EurekaLife · My Day' : language === 'ja' ? 'EurekaLife · 私の一日' : 'EurekaLife · 我的一天');
     picker.value = language;
   };
   picker.addEventListener('change', () => {

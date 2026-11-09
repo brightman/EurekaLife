@@ -366,3 +366,53 @@ xcodebuild -workspace apps/wrist-notes/WristNotes.xcworkspace -scheme WristNotes
 ### 验收边界
 
 只完成代码、存储回归、SwiftUI typecheck 与构建；本轮未安装模拟器／真机，未进行原生点击、软键盘、VoiceOver 或深色视觉验收。当前工具文件环境中 `/Applications/Xcode.app/Contents/Developer/Applications` 不存在，未将构建成功视为 UI 验收。未修改版本号、提交、推送或上传 TestFlight。
+
+
+<a id="notebook-management-20261108"></a>
+
+## 记事本详情与管理同步（2026-11-08）
+
+范围：用户先要求人物两部分详情、账目编辑删除、灵感编辑删除与底部合并入口，随后明确按灵感／记账／人物／地点原型升级原生代码。使用 EurekaLife 当前脏工作区，保留已有改名、SDK、录音及其他任务修改。说明见[当前交互](../../prototype/flash-assets-design.md#notebook-management-20261108)及[SQLite 规则](../../docs/local-data-schema.md#记事本管理与派生查询2026-11-08)。
+
+### HTML 原型检查
+
+独立原型与 iPhone 主原型共用脚本／样式，资源版本 `notebook-management-20261108`；本轮服务端口 8789，未覆盖旧工作区的 8778 服务。通过原生 Chrome／Safari 的 CUA 操作合成数据：
+
+- 人物列表进入完整详情；上部资料和编辑，下部关联片段、实际时间／时长。五字段回填，取消不写入，保存改名后关联仍保留；打开片段摘要并返回。
+- 360 px 深色人物详情截图检查通过；主原型入口加载，共享脚本／markup 核对，未把独立入口检查夸大为主原型全部流程验收。
+- 账目 35→40，月支出 4429→4434、结余 −829→−834；删除该笔后支出 4394、结余 −794，行移除。
+- 底部合并入口；选择 0／1 条时禁用，2 条启用；预览编辑并另存后原条目和两条来源保留；编辑合并结果、删除该结果后原 5 条仍在。
+- `node --check prototype/notebook.js` 通过。原型仅为内存合成数据，不涉及真实模型、账目或录音。
+
+### 原生实现与自动检查
+
+- 灵感：SQLite 事务直接合并、来源和本地限制传播、底部 safe-area 操作区、编辑预览、删除确认与恢复。
+- 账目：详情编辑／删除，持久化后刷新汇总，跨月编辑保留最新详情；来源通过 SQLite 解析，避免因分页缓存缺失误报录音不存在。
+- 人物：整行打开完整详情，五字段编辑／取消、列表筛选与位置保留；真实已存片段查询，去重与 speaker 复核，导航到内容片段回听页。
+- 地点：先详情后编辑、九种类型、次数条、按天来源数量和日期下钻；重复采样保留证据但不重复计来源数。
+
+| 检查 | 本轮结果 |
+| --- | --- |
+| 新增存储回归首次运行 | 预期失败：缺少 `merge`、`segments`、`visitDays` API；实现后通过。 |
+| `sh scripts/test_notebook_ledger.sh` | 通过：合并保存／重开、来源快照、原记录保留、重复请求幂等、本地 AI 限制、重复／过期／已删除来源拒绝、超长拒绝，连同旧迁移／月份／币种／草稿回归。 |
+| `sh scripts/test_notebook_people.sh` | 通过：五字段、关联保留、真实区间相交、非相交排除、多 speaker 去重、非最终／无文字／低信息／inactive／已删除片段排除；含 SwiftUI typecheck。 |
+| `sh scripts/test_notebook_places.sh` | 通过：按日汇总、当天查询分页、九类型、同录音重复采样去重计数，以及时区／来源删除／名称保留回归；含 SwiftUI typecheck。 |
+| `sh scripts/test_notebook_sources.sh` | 通过：SQLite 内容片段路由及删除后缺失，连同会话／照片路由。 |
+| `sh scripts/test_flash_capture.sh` | 通过：来源、批次去重、金额、编辑冲突、历史和撤销兼容。 |
+| `sh scripts/test_speaker_contacts.sh` | 通过：联系人、说话人及本人归属三个组件。 |
+| SDK／Pod | `verify_ble_pod.py`：79 checksums、3 XCFrameworks 通过；BuildFeaturesSmoke：4 runs／112 assertions 通过；Podfile.lock 与 Pods/Manifest.lock 一致。本轮无依赖或源码成员变更，无需重新生成项目。 |
+| iOS Simulator 完整 Debug 构建 | 最终改动后 `BUILD SUCCEEDED`；包含 App、Watch 及扩展。 |
+
+构建命令（在 `apps/wrist-notes`）：
+
+```sh
+xcodebuild -workspace WristNotes.xcworkspace -scheme WristNotes -configuration Debug   -destination 'platform=iOS Simulator,id=D69E30DA-2FDF-478C-B714-D0AE8F58B804'   -derivedDataPath /private/tmp/eurekalife-notebook-20261108   CODE_SIGN_IDENTITY=- CODE_SIGNING_ALLOWED=YES build
+```
+
+### 模拟器安装与启动
+
+使用独立 `WiseLife Notebook Verification`（iOS 26.3，`D69E30DA-2FDF-478C-B714-D0AE8F58B804`）安装最终构建 `EurekaLife.app`，Bundle ID `cloud.karama.wiselife`。`simctl install` 返回 0；`simctl launch` 返回 PID 16638，后续 `launchctl list` 确认同一进程仍在运行。未卸载、擦除或重置任何模拟器／真机数据；未改动用户当前使用的 Transfer Test 模拟器。未往真实容器写入合成数据。
+
+### 验收边界
+
+CUA 分别按 bundle ID 和官方 Xcode 路径获取 Simulator 均返回 `Invalid app`，当前文件环境也无 Simulator.app；本轮无法进行原生点击／视觉／软键盘验收。浏览器原型检查、SwiftUI 编译及进程启动不能代替原生交互通过。未安装真机、未验证真实模型与片段音频回听、未修改版本号或上传 TestFlight；未提交或推送。

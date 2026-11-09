@@ -190,7 +190,7 @@ final class ChatGPTLoopback {
     private func respond(_ id: UUID, callback: URL?) {
         guard let client = clients[id] else { return }
         let status = callback == nil ? "400 Bad Request" : "200 OK"
-        let body = callback == nil ? "Request rejected." : "Sign-in received. You can return to WiseLife."
+        let body = callback == nil ? "Request rejected." : "Sign-in received. You can return to EurekaLife."
         let response = "HTTP/1.1 \(status)\r\nContent-Type: text/plain; charset=utf-8\r\nCache-Control: no-store\r\nContent-Security-Policy: default-src 'none'\r\nConnection: close\r\nContent-Length: \(body.utf8.count)\r\n\r\n\(body)"
         client.connection.send(content: Data(response.utf8), completion: .contentProcessed { [weak self] _ in
             Task { @MainActor in

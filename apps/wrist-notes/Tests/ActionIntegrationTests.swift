@@ -39,6 +39,31 @@ final class ActionFakeScheduler: DaybookReminderScheduling {
 }
 
 @MainActor final class ActionIntegrationTests: XCTestCase {
+    func testSpokenRingCalendarCommandCreatesExactlyOneSystemEvent() async throws {
+        let db = try DaybookDatabase(inMemory: true)
+        let repo = try ActionRepository(database: db), flash = try FlashCaptureRepository(database: db)
+        let source = ActionSource(id: UUID(), title: "闪念", quote: "给我创建个日程吧，明天上午10点到11点约李四吃饭。",
+            capturedAt: try XCTUnwrap(ISO8601DateFormatter().date(from: "2030-01-01T08:00:00+08:00")),
+            timeZoneID: "Asia/Shanghai", recordingKind: "thought", timeZoneKnown: true, device: "EurekaRing")
+        let json = #"{"items":[{"kind":"event","title":"约李四吃饭","quote":"给我创建个日程吧，明天上午10点到11点约李四吃饭。","explicitCommand":true,"start":"2030-01-02T10:00:00+08:00","end":"2030-01-02T11:00:00+08:00"}]}"#
+        // First extraction was empty; an explicit retry must recover without duplicates.
+        try flash.commit(.init(), source: source)
+        try flash.commit(FlashCaptureParser.parse(json, source: source, now: source.capturedAt), source: source)
+        let system = ActionFakeSystem()
+        let store = ActionStore(repository: repo, system: system)
+        await store.resumeFlashCommands()
+        let item = try XCTUnwrap(store.items.first)
+        XCTAssertEqual(item.kind, .event)
+        XCTAssertEqual(item.title, "约李四吃饭")
+        XCTAssertEqual(item.sync, .linked)
+        XCTAssertNotNil(item.link?.identifier)
+        XCTAssertEqual(item.start, ISO8601DateFormatter().date(from: "2030-01-02T10:00:00+08:00"))
+        XCTAssertEqual(item.end, ISO8601DateFormatter().date(from: "2030-01-02T11:00:00+08:00"))
+        try flash.commit(FlashCaptureParser.parse(json, source: source, now: source.capturedAt), source: source)
+        await store.resumeFlashCommands()
+        XCTAssertEqual(try repo.load().count, 1)
+        XCTAssertEqual(system.saves, 1)
+    }
     func testFlashEditingCompletedTaskKeepsCompletion() async throws {
         let repo = try ActionRepository(database: DaybookDatabase(inMemory: true))
         var task = ActionItem(kind: .todo, title: "完成的草图")

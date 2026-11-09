@@ -42,7 +42,7 @@ final class ChatGPTAPI {
             ("scope", Self.scopes), ("resource", Self.resource), ("state", attempt.state), ("nonce", attempt.nonce),
             ("code_challenge_method", "S256"), ("code_challenge", Data(SHA256.hash(data: Data(attempt.verifier.utf8))).chatGPTBase64URL)
         ]
-        if attempt.clientID == nil { values.append(("agent_name_hint", "WiseLife")) }
+        if attempt.clientID == nil { values.append(("agent_name_hint", "EurekaLife")) }
         if let hint = attempt.idTokenHint { values.append(("id_token_hint", hint)) }
         if let hint = attempt.loginHint { values.append(("login_hint", hint)) }
         components.queryItems = values.map { URLQueryItem(name: $0.0, value: $0.1) }

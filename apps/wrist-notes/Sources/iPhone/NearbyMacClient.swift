@@ -7,10 +7,10 @@ enum NearbyMacFailure: LocalizedError, Equatable {
     case invalidCode, expiredCode, unavailable, permission, certificate, pairing, modelNotReady, paused, busy, context, response
     var errorDescription: String? {
         switch self {
-        case .invalidCode: "请扫描 WiseLife Mac Companion 的配对码。"
+        case .invalidCode: "请扫描 EurekaLife Mac Companion 的配对码。"
         case .expiredCode: "配对码已过期，请在 Mac 上重新生成。"
         case .unavailable: "无法连接已配对的 Mac。请保持桌面端运行，并连接可互通的同一 Wi-Fi 后重试。"
-        case .permission: "请在 iPhone 设置中允许 WiseLife 访问本地网络，然后重试。"
+        case .permission: "请在 iPhone 设置中允许 EurekaLife 访问本地网络，然后重试。"
         case .certificate: "Mac 的安全身份与配对码不一致，未发送文字。请重新配对。"
         case .pairing: "配对无效或已撤销，请重新扫描 Mac 配对码。"
         case .modelNotReady: "Mac 模型尚未就绪，请在桌面端下载并加载模型。"
@@ -58,7 +58,7 @@ struct NearbyMacPeer: Codable, Equatable, Sendable {
 enum NearbyMacKeychain {
     private static var query: [String: Any] {
         [kSecClass as String: kSecClassGenericPassword,
-         kSecAttrService as String: (Bundle.main.bundleIdentifier ?? "cloud.karama.wisenote") + ".nearby-mac",
+         kSecAttrService as String: (Bundle.main.bundleIdentifier ?? "cloud.karama.wiselife") + ".nearby-mac",
          kSecAttrAccount as String: "paired-mac-v1"]
     }
     static func read() throws -> NearbyMacPeer? {

@@ -169,7 +169,6 @@ struct NotebookPeopleView: View {
     @State private var people:[NotebookPerson]=[]
     @State private var filters:[String]=NotebookRelationships.presets
     @State private var filter:String?
-    @State private var editing:NotebookPerson?
     @State private var adding=false
     @State private var selected:NotebookPerson?
     @State private var more=true
@@ -189,25 +188,31 @@ struct NotebookPeopleView: View {
             if let error { Text(error).foregroundStyle(DaybookStyle.red); Button("刷新") { Task { await load(reset:true) } } }
             if people.isEmpty && !loading { Text("暂无联系人，可添加本地联系人。").foregroundStyle(DaybookStyle.secondary) }
             ForEach(people) { person in
-                VStack(alignment:.leading,spacing:8) {
-                    HStack {
-                        Text(person.name).font(.headline); Spacer()
-                        Button("编辑") { editing=person }
-                    }
-                    if let organization=person.organization,!organization.isEmpty { Text(organization).font(.subheadline) }
-                    if !person.email.isEmpty { Text(person.email).font(.subheadline).foregroundStyle(DaybookStyle.secondary).textSelection(.enabled) }
-                    if !person.phone.isEmpty { Text(person.phone).font(.subheadline).foregroundStyle(DaybookStyle.secondary).textSelection(.enabled) }
-                    if !person.relationships.isEmpty { Text(person.relationships.joined(separator:" · ")).font(.caption).foregroundStyle(DaybookStyle.accent) }
-                    Button("关联录音") { selected=person }.font(.caption)
-                }.padding(.vertical,6)
+                Button { selected=person } label: {
+                    HStack(spacing:14) {
+                        Text(String(person.name.prefix(1))).font(.system(size:22,weight:.medium))
+                            .frame(width:48,height:48).background(DaybookStyle.accent.opacity(0.10),in:RoundedRectangle(cornerRadius:16))
+                        VStack(alignment:.leading,spacing:6) {
+                            Text(person.name).font(.system(size:16,weight:.medium)).foregroundStyle(DaybookStyle.ink)
+                            if let organization=person.organization,!organization.isEmpty { Text(organization).font(.system(size:13)).foregroundStyle(DaybookStyle.secondary) }
+                            if !person.relationships.isEmpty { Text(person.relationships.joined(separator:" · ")).font(.system(size:12)).foregroundStyle(DaybookStyle.accent) }
+                        }
+                        Spacer();Image(systemName:"chevron.right").font(.system(size:12)).foregroundStyle(DaybookStyle.secondary)
+                    }.padding(.vertical,8).contentShape(Rectangle())
+                }.buttonStyle(.plain).accessibilityIdentifier("notebook.person.\(person.id)")
             }
             if more { Button(loading ? "读取中…" : "加载更多") { Task { await load(reset:false) } }.disabled(loading) }
         }.scrollContentBackground(.hidden).background(DaybookStyle.paper)
             .tint(DaybookStyle.accent)
             .task(id:filter) { await load(reset:true) }
-            .sheet(isPresented:$adding) { NotebookPersonForm(person:nil) { adding=false; Task { await load(reset:true) } } }
-            .sheet(item:$editing) { person in NotebookPersonForm(person:person) { editing=nil; Task { await load(reset:true) } } }
-            .sheet(item:$selected) { person in NotebookPersonSourcesView(person:person,onOpenSource:onOpenSource) }
+            .sheet(isPresented:$adding) { NotebookPersonForm(person:nil) { _ in adding=false; Task { await load(reset:true) } } }
+            .fullScreenCover(item:$selected) { person in
+                NotebookPersonDetail(person:person,onOpenSource:{ id in selected=nil; onOpenSource(id) },onUpdated:{ saved in
+                    if let index=people.firstIndex(where:{$0.id == saved.id}) { people[index]=saved }
+                    filters=NotebookRelationships.normalized(filters+saved.relationships)
+                    if let filter,!saved.relationships.contains(filter) { people.removeAll{$0.id == saved.id} }
+                })
+            }
     }
     @MainActor private func load(reset:Bool) async {
         if loading && !reset { return }
@@ -233,7 +238,7 @@ struct NotebookPeopleView: View {
 
 private struct NotebookPersonForm:View {
     let person:NotebookPerson?
-    let onSaved:()->Void
+    let onSaved:(NotebookPerson)->Void
     @Environment(\.dismiss) private var dismiss
     @State private var name:String
     @State private var organization:String
@@ -242,7 +247,7 @@ private struct NotebookPersonForm:View {
     @State private var relationships:[String]
     @State private var saving=false
     @State private var error:String?
-    init(person:NotebookPerson?,onSaved:@escaping()->Void) {
+    init(person:NotebookPerson?,onSaved:@escaping(NotebookPerson)->Void) {
         self.person=person;self.onSaved=onSaved
         _name=State(initialValue:person?.name ?? "");_organization=State(initialValue:person?.organization ?? "")
         _email=State(initialValue:person?.email ?? "");_phone=State(initialValue:person?.phone ?? "")
@@ -255,7 +260,7 @@ private struct NotebookPersonForm:View {
                     NotebookContactFields(name:$name,organization:$organization,email:$email,phone:$phone,relationships:$relationships,
                                           hasAdditionalEmails:(person?.emails.count ?? 0)>1,hasAdditionalPhones:(person?.phoneNumbers.count ?? 0)>1)
                         .disabled(saving)
-                    Text("仅保存在 WiseLife，不修改系统通讯录。").font(.caption).foregroundStyle(DaybookStyle.secondary)
+                    Text("仅保存在 EurekaLife，不修改系统通讯录。").font(.caption).foregroundStyle(DaybookStyle.secondary)
                     if let error { Text(error).font(.subheadline).foregroundStyle(DaybookStyle.red) }
                 }.padding(24)
             }.scrollDismissesKeyboard(.interactively).background(DaybookStyle.paper)
@@ -268,8 +273,8 @@ private struct NotebookPersonForm:View {
                         let id=person?.id,revision=person?.revision,name=name,org=organization,email=email,phone=phone,relations=relationships
                         Task {
                             do {
-                                _ = try await Task.detached { try NotebookPeopleRepository(database:DaybookDatabase()).save(id:id,expectedRevision:revision,name:name,organization:org,email:email,phone:phone,relationships:relations) }.value
-                                onSaved()
+                                let saved = try await Task.detached { try NotebookPeopleRepository(database:DaybookDatabase()).save(id:id,expectedRevision:revision,name:name,organization:org,email:email,phone:phone,relationships:relations) }.value
+                                onSaved(saved)
                             } catch { self.error=error.localizedDescription; saving=false }
                         }
                     }.disabled(saving || name.trimmingCharacters(in:.whitespacesAndNewlines).isEmpty) }
@@ -277,45 +282,90 @@ private struct NotebookPersonForm:View {
         }
     }
 }
-private struct NotebookPersonSourcesView:View {
-    let person:NotebookPerson
+private struct NotebookPersonDetail:View {
+    @State var person:NotebookPerson
     let onOpenSource:(UUID)->Void
+    let onUpdated:(NotebookPerson)->Void
     @Environment(\.dismiss) private var dismiss
-    @State private var sources:[NotebookPersonSource]=[]
+    @State private var editing=false
+    @State private var segments:[NotebookPersonSegment]=[]
     @State private var more=true
     @State private var loading=false
     @State private var error:String?
     var body:some View {
         NavigationStack {
-            List {
-                if let error { Text(error).foregroundStyle(DaybookStyle.red) }
-                if sources.isEmpty && !loading { Text("暂无关联录音。解除关联或删除来源不会删除联系人。") }
-                ForEach(sources) { source in
-                    Button { dismiss(); onOpenSource(source.sourceID) } label: {
-                        VStack(alignment:.leading,spacing:5) {
-                            Text(source.capturedAt,format:.dateTime.year().month().day().hour().minute())
-                            Text(speakerLabel(source.speakerID)).font(.caption)
-                            if let start=source.start,let end=source.end { Text("发言范围 \(Int(start))–\(Int(end)) 秒").font(.caption) }
-                            if source.needsReview { Text("说话人识别已变化，请复核关联").font(.caption).foregroundStyle(DaybookStyle.red) }
+            ScrollView {
+                VStack(alignment:.leading,spacing:24) {
+                    HStack {
+                        Text("人物信息").font(.system(size:15,weight:.semibold))
+                        Spacer(); Button("编辑") { editing=true }.font(.system(size:14,weight:.medium)).accessibilityIdentifier("notebook.person.edit")
+                    }
+                    VStack(alignment:.leading,spacing:18) {
+                        HStack(alignment:.top,spacing:16) {
+                            Text(String(person.name.prefix(1))).font(.system(size:28,weight:.medium))
+                                .frame(width:64,height:64).background(DaybookStyle.accent.opacity(0.12),in:RoundedRectangle(cornerRadius:20))
+                            VStack(alignment:.leading,spacing:8) {
+                                Text(person.name).font(.system(size:24,weight:.semibold))
+                                Text(person.organization ?? "未填写公司").font(.system(size:14)).foregroundStyle(DaybookStyle.secondary)
+                                Text(person.relationships.isEmpty ? "未标记关系" : person.relationships.joined(separator:" · "))
+                                    .font(.system(size:12)).foregroundStyle(DaybookStyle.accent)
+                            }
+                        }
+                        Divider()
+                        profileField("邮箱",person.email)
+                        profileField("手机号",person.phone)
+                    }.daybookRecordingCard(padding:20)
+                    HStack {
+                        Text("关联的录音片段").font(.system(size:15,weight:.semibold)).accessibilityAddTraits(.isHeader)
+                        Spacer()
+                        if !loading { Text("\(segments.count)\(more ? "+" : "") 条").font(.system(size:12)).foregroundStyle(DaybookStyle.secondary) }
+                    }
+                    if segments.isEmpty && !loading && error == nil {
+                        Text("还没有关联的录音片段。为录音中的说话人关联此人物后，已完成整理的片段会出现在这里。")
+                            .font(.system(size:14)).foregroundStyle(DaybookStyle.secondary).padding(.vertical,20)
+                    }
+                    LazyVStack(spacing:14) {
+                        ForEach(segments) { segment in
+                            Button { onOpenSource(segment.id) } label: {
+                                VStack(alignment:.leading,spacing:12) {
+                                    HStack {
+                                        Text(segment.capturedAt,format:.dateTime.month().day().hour().minute().second())
+                                        Spacer();Text(duration(segment.duration))
+                                    }.font(.system(size:12)).foregroundStyle(DaybookStyle.secondary)
+                                    Text(segment.title).font(.system(size:17,weight:.medium)).foregroundStyle(DaybookStyle.ink)
+                                    if !segment.summary.isEmpty { Text(segment.summary).font(.system(size:14)).lineSpacing(5).lineLimit(4).foregroundStyle(DaybookStyle.bodyText) }
+                                    Label([segment.device,person.name].compactMap{$0}.joined(separator:" · "),systemImage:"waveform").font(.system(size:12)).foregroundStyle(DaybookStyle.accent)
+                                    if segment.needsReview { Text("说话人识别已变化，请复核关联").font(.system(size:12)).foregroundStyle(DaybookStyle.red) }
+                                }.frame(maxWidth:.infinity,alignment:.leading).daybookRecordingCard(padding:18)
+                            }.buttonStyle(.plain).accessibilityIdentifier("notebook.person.segment.\(segment.id)")
                         }
                     }
-                }
-                if more { Button(loading ? "读取中…" : "加载更多") { Task { await load() } }.disabled(loading) }
-            }.navigationTitle(person.name).toolbar { Button("完成") { dismiss() } }
-        }.task { await load() }
+                    if let error { Text(error).font(.system(size:13)).foregroundStyle(DaybookStyle.red) }
+                    if loading { ProgressView("正在读取片段…").frame(maxWidth:.infinity) }
+                    else if more { Button(error == nil ? "加载更多" : "重试") { Task { await load() } } }
+                }.padding(24)
+            }.background(DaybookStyle.paper).foregroundStyle(DaybookStyle.ink)
+                .navigationTitle("人物详情").navigationBarTitleDisplayMode(.inline)
+                .toolbar { ToolbarItem(placement:.cancellationAction) { Button { dismiss() } label: { Label("人物",systemImage:"chevron.left") } } }
+                .sheet(isPresented:$editing) { NotebookPersonForm(person:person) { saved in person=saved;onUpdated(saved);editing=false } }
+        }.tint(DaybookStyle.accent).task { if segments.isEmpty { await load() } }
     }
-    private func speakerLabel(_ id:String)->String {
-        let suffix=id.hasPrefix("speaker-") ? String(id.dropFirst("speaker-".count)) : ""
-        if !suffix.isEmpty,suffix.allSatisfy(\.isNumber) { return "说话人 \(suffix)" }
-        return "说话人"
+    private func profileField(_ title:String,_ value:String)->some View {
+        HStack(alignment:.top) {
+            Text(title).foregroundStyle(DaybookStyle.secondary).frame(width:56,alignment:.leading)
+            Text(value.isEmpty ? "未填写" : value).textSelection(.enabled)
+        }.font(.system(size:14))
+    }
+    private func duration(_ seconds:Double)->String {
+        let value=Int(max(0,seconds));return value < 60 ? "\(value) 秒" : "\(value/60) 分 \(value%60) 秒"
     }
     @MainActor private func load() async {
-        guard !loading else { return }; loading=true
-        let id=person.id,offset=sources.count
+        guard !loading else { return }; loading=true; defer { loading=false }
+        let id=person.id,offset=segments.count
         do {
-            let result=try await Task.detached { try NotebookPeopleRepository(database:DaybookDatabase()).sources(contactID:id,offset:offset) }.value
-            sources+=result;more=result.count==30;error=nil
+            let result=try await Task.detached { try NotebookPeopleRepository(database:DaybookDatabase()).segments(contactID:id,offset:offset) }.value
+            guard !Task.isCancelled else { return }
+            segments+=result;more=result.count==30;error=nil
         } catch { self.error=error.localizedDescription }
-        loading=false
     }
 }

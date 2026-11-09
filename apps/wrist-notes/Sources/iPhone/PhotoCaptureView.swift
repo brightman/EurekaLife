@@ -251,7 +251,7 @@ struct PhotoCaptureView: View {
         }
         guard isActive else { return }
         if allowed { capture.cameraLocation.beginCameraPreview(); showCamera = true }
-        else { capture.errorMessage = "相机权限未开启。可在系统设置中允许 WiseLife 使用相机，或从相册选择。" }
+        else { capture.errorMessage = "相机权限未开启。可在系统设置中允许 EurekaLife 使用相机，或从相册选择。" }
     }
 
     private func save() {

@@ -70,12 +70,13 @@ import Combine
         }
     }
     func process(_ opening: VoiceNote, confirmation: NotesModel.RemoteSummaryRequest? = nil, remember: Bool = false) async {
-        guard let notes, opening.kind == .thought, !processing.contains(opening.id), batches[opening.id]?.state != .complete,
+        guard let notes, opening.kind == .thought, !processing.contains(opening.id),
               let current = notes.note(opening.id), current.transcript == opening.transcript else { return }
         processing.insert(opening.id); defer { processing.remove(opening.id) }
         do {
             let repo = try open(), settings = notes.settings
             let old = try repo.batch(opening.id)
+            if old?.state == .complete, try repo.hasResults(for: opening.id) { return }
             let allowActions = try old.map { $0.state != .historical && $0.allowsAutomaticActions } ?? !repo.isHistorical(opening.capturedAt)
             let config = notes.summaryConfiguration(for: opening), revision = settings.aiRevision
             let confirmationIsCurrent = confirmation.map { $0.noteID == opening.id && $0.text == opening.transcript && $0.configuration == config && $0.revision == revision }

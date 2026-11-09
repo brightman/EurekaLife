@@ -1,0 +1,90 @@
+{
+  "status": "PASS",
+  "homepage": {
+    "status": 200,
+    "url": "https://wiselife.karama.cloud/",
+    "sha256": "a57abe503ff62f43b27a6cfde6c180a52810a33a217f146fb483f96bfa8a9fcc"
+  },
+  "verifiedPublicHashes": [
+    {
+      "path": "index.html",
+      "status": 200,
+      "sha256": "a57abe503ff62f43b27a6cfde6c180a52810a33a217f146fb483f96bfa8a9fcc",
+      "bytes": 18320
+    },
+    {
+      "path": "index-next.html",
+      "status": 200,
+      "sha256": "a57abe503ff62f43b27a6cfde6c180a52810a33a217f146fb483f96bfa8a9fcc",
+      "bytes": 18320
+    },
+    {
+      "path": "design-preview-v2/index.html",
+      "status": 200,
+      "sha256": "f3fa8339b319e9cb0121d3e1c43848bbeecb3f96309529ce15c2bf4c3f92d348",
+      "bytes": 17444
+    },
+    {
+      "path": "design-preview-v2/style.css",
+      "status": 200,
+      "sha256": "a6c210411299c11ed39fa50fcceb9c7d2bcbdb08bc381746fd01e4af39fa26c9",
+      "bytes": 32467
+    },
+    {
+      "path": "design-preview-v2/site.js",
+      "status": 200,
+      "sha256": "9d00e22e7deed40645ca1b4418400800cc1155bbd3535f316913dcb5d9a7996e",
+      "bytes": 17815
+    },
+    {
+      "path": "design-preview-v2/assets/hd/iphone-day.webp",
+      "status": 200,
+      "sha256": "ec23264aaa8efa491a13305d5ac15b445c13d5c025b12bd904999456deb2dee5",
+      "bytes": 153570
+    },
+    {
+      "path": "design-preview-v2/assets/hd/mac-models.webp",
+      "status": 200,
+      "sha256": "a87fe6c26e8362b2631d1cd97aed85cbc359ff4502545c2ae72236d86af34ab2",
+      "bytes": 265114
+    },
+    {
+      "path": "design-preview-v2/assets/hd/hero-reference.webp",
+      "status": 200,
+      "sha256": "cac7731ff281af7f080a900e7f2d65c00a45218d18e6be7b05110a7b3b06ca3b",
+      "bytes": 51698
+    },
+    {
+      "path": "design-preview-v2/assets/watch-hardware.svg",
+      "status": 200,
+      "sha256": "abcce17dc227e82dabc491ecbfd3ad962ae231111f25bf6daea4aa13cc52064c",
+      "bytes": 4152
+    },
+    {
+      "path": "assets/brand/app-icon.svg",
+      "status": 200,
+      "sha256": "ec608c9d0519c02e75740f2f8a323c3c50e2f551ddd03c0c0525395ef1595506",
+      "bytes": 2342
+    },
+    {
+      "path": "product-demos/iphone/index.html",
+      "status": 200,
+      "sha256": "3488f0d74a29b08cacf71df68f98a38f08a851f32da444c72be6e65eabf3b536",
+      "bytes": 57277
+    },
+    {
+      "path": "product-demos/mac/index.html",
+      "status": 200,
+      "sha256": "3502cb7a5c483e283b007a49c9c252c96490d2be9f78d78c173438732d50912c",
+      "bytes": 2042
+    }
+  ],
+  "videoRange": {
+    "status": 206,
+    "bytes": 1024,
+    "contentRange": "bytes 0-1023/316117"
+  },
+  "release": "20261108T140259Z-hd-v2",
+  "previousRelease": "/opt/wiselife-site/releases/20261108T132224Z-eurekalife",
+  "publicFilesVerifiedOnServer": 245
+}

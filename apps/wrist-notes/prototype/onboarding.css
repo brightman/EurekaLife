@@ -1,4 +1,4 @@
-/* First-run review uses the existing WiseLife type, colors and phone shell. */
+/* First-run review uses the existing EurekaLife type, colors and phone shell. */
 .setup-stage{display:grid;grid-template-columns:290px 430px 230px;gap:58px;align-items:center;justify-content:center;min-height:100dvh;padding:30px}
 .setup-stage .phone-shell{min-height:640px}
 @media(min-width:1191px){.setup-stage{align-items:start}.setup-review-copy{padding-top:25px}}

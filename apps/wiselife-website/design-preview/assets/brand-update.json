@@ -1,0 +1,24 @@
+{
+  "design-preview/assets/mac-product.webp": {
+    "beforeSHA256": "3301f6fd693f5b926eb182b80ada312f389f7419fc4282c80c562eaf04076cad",
+    "afterSHA256": "fa0d829737b145cfe42e14b358773d8df14e9653fedc9a5e0a7f88ea95c8fe5c",
+    "editRect": [
+      103,
+      40,
+      139,
+      50
+    ],
+    "reason": "Only the old WiseLife label in the active design crop is replaced by EurekaLife; historical reference is preserved."
+  },
+  "design-preview/assets/ecosystem-scene.webp": {
+    "beforeSHA256": "18830663a859a433422ac109c2a3e82b523d7e203a26e30cdabeedcfabc352cb",
+    "afterSHA256": "f31d22e139b8e7eb094c049a939f75b88fc5a9197274a39d637de8de03647235",
+    "editRect": [
+      653,
+      147,
+      690,
+      157
+    ],
+    "reason": "Only the old WiseLife label in the active design crop is replaced by EurekaLife; historical reference is preserved."
+  }
+}

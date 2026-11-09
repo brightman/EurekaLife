@@ -173,7 +173,7 @@ private final class PowerLease {
     private var id: IOPMAssertionID = 0
     init() {
         _ = IOPMAssertionCreateWithDescription(kIOPMAssertionTypePreventUserIdleSystemSleep as CFString,
-            "WiseLife text generation" as CFString, nil, nil, nil, 125, kIOPMAssertionTimeoutActionRelease as CFString, &id)
+            "EurekaLife text generation" as CFString, nil, nil, nil, 125, kIOPMAssertionTimeoutActionRelease as CFString, &id)
     }
     func release() { if id != 0 { IOPMAssertionRelease(id); id = 0 } }
     deinit { release() }

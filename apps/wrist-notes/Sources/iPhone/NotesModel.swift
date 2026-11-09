@@ -148,7 +148,7 @@ final class NotesModel: ObservableObject {
             if note.effectiveRecordingGroupID != nil { continue }
             let needsTranscription = note.transcriptionState == .pending || note.transcriptionState == .running
             let needsDiarization = note.transcriptionState == .ready && note.diarizationState == .running
-            let needsSummary = !handlesFlashOrganization && note.usesLocalThoughtAI && note.transcriptionState == .ready &&
+            let needsSummary = !handlesFlashOrganization && note.isRingThought && note.transcriptionState == .ready &&
                 (note.summaryState == .pending || note.summaryState == .running)
             guard needsTranscription || needsDiarization || needsSummary, queuedRecovery.insert(note.id).inserted else { continue }
             Task { [weak self] in
@@ -157,7 +157,7 @@ final class NotesModel: ObservableObject {
                 guard let current = self.repository?.notes.first(where: { $0.id == note.id }) else { return }
                 if current.transcriptionState == .pending || current.transcriptionState == .running { await self.transcribe(note.id, automatic:true) }
                 else if current.transcriptionState == .ready && current.diarizationState == .running { await self.identifySpeakers(note.id) }
-                if !self.handlesFlashOrganization, let current = self.repository?.notes.first(where: { $0.id == note.id }), current.usesLocalThoughtAI && current.transcriptionState == .ready &&
+                if !self.handlesFlashOrganization, let current = self.repository?.notes.first(where: { $0.id == note.id }), current.isRingThought && current.transcriptionState == .ready &&
                     (current.summaryState == .pending || current.summaryState == .running) { await self.summarize(note.id) }
             }
         }
@@ -190,7 +190,8 @@ final class NotesModel: ObservableObject {
 
     @discardableResult
     func renameSpeaker(noteID: UUID, speakerID: String, name: String) -> Bool {
-        guard !activeTranscriptions.contains(noteID), note(noteID)?.transcriptSegments?.contains(where: { $0.speakerID == speakerID }) == true else {
+        guard !activeTranscriptions.contains(noteID), note(noteID)?.kind != .thought,
+              note(noteID)?.transcriptSegments?.contains(where: { $0.speakerID == speakerID }) == true else {
             errorMessage = "说话人信息已更新，请处理完成后再编辑。"
             return false
         }
@@ -427,7 +428,7 @@ final class NotesModel: ObservableObject {
             }
             guard committed else { return }
             if applied { await runDiarization(id, file: file) }
-            if !handlesFlashOrganization, note(id)?.usesLocalThoughtAI == true, note(id)?.summary.isEmpty == true { await summarize(id) }
+            if !handlesFlashOrganization, note(id)?.isRingThought == true, note(id)?.summary.isEmpty == true { await summarize(id) }
         } catch {
             edit(id) {
                 $0.transcriptionState = error is TranscriptionFailure ? .unavailable : .failed
@@ -472,6 +473,13 @@ final class NotesModel: ObservableObject {
 
     private func runDiarization(_ id: UUID, file: URL) async {
         guard let snapshot = note(id) else { return }
+        if snapshot.kind == .thought {
+            // Also settle obsolete states from older versions without rewriting speech evidence.
+            if snapshot.diarizationState != nil || snapshot.diarizationMessage != nil || snapshot.voiceIdentityMessage != nil {
+                edit(id) { $0.diarizationState = nil; $0.diarizationMessage = nil; $0.voiceIdentityMessage = nil }
+            }
+            return
+        }
         guard let segments = snapshot.transcriptSegments, !segments.isEmpty else {
             edit(id) { $0.diarizationState = .unavailable; $0.diarizationMessage = SpeakerDiarizationError.missingTimestamps.localizedDescription }
             return
@@ -512,7 +520,7 @@ final class NotesModel: ObservableObject {
         _ = try repository.importRecording(id: job.id, from: fileURL, kind: job.recordingKind,
             capturedAt: job.capturedAt, duration: duration,
             origin: RecordingOrigin(device: "EurekaRing", deviceID: job.deviceID, fileName: job.file.name,
-                recordingTimeIsEstimated: job.file.recordedAt == nil, captureDevice: .ring))
+                recordingTimeIsEstimated: job.file.recordedAt == nil, timeZoneIdentifier: job.recordingTimeZoneID, captureDevice: .ring))
         refresh()
         if isNew { Task { await self.transcribe(job.id, automatic:true) } }
     }
@@ -582,8 +590,8 @@ final class NotesModel: ObservableObject {
     }
 
     func summaryConfiguration(for note: VoiceNote) -> AIConfiguration {
-        // Hardware flash ideas always stay local, even when other notes use a custom service.
-        note.usesLocalThoughtAI ? AIConfiguration() : settings.ai
+        // Recording hardware must not override the user's selected AI provider.
+        settings.ai
     }
 
     private func receive(_ metadata: IncomingRecording, audio: URL) {

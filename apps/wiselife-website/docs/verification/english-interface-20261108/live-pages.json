@@ -1,0 +1,26 @@
+{
+  "status": "PASS",
+  "results": [
+    {
+      "width": 390,
+      "errors": [],
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "errors": [],
+      "overflow": false
+    },
+    {
+      "route": "/privacy/",
+      "language": "en"
+    },
+    {
+      "route": "/terms/",
+      "language": "en"
+    },
+    {
+      "savedChinesePreference": "English website override verified"
+    }
+  ]
+}

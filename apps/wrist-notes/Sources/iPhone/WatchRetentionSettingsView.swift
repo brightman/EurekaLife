@@ -52,7 +52,7 @@ struct WatchRetentionSettingsView: View {
                         .font(.system(size: 11)).foregroundStyle(.orange)
                 }
             } else {
-                Text("请更新并打开手表上的 WiseLife，等待手表返回存储统计后设置。")
+                Text("请更新并打开手表上的 EurekaLife，等待手表返回存储统计后设置。")
                     .font(.system(size: 11)).foregroundStyle(DaybookStyle.secondary)
             }
             if let errorMessage { Text(errorMessage).font(.system(size: 11)).foregroundStyle(.red) }

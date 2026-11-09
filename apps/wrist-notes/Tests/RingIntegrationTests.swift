@@ -20,6 +20,16 @@ import BRRecorderOpus
     private func legacyFixture() throws -> URL {
         try XCTUnwrap(Bundle(for: RingIntegrationTests.self).url(forResource: "sdk-opus-16k-mono", withExtension: "bin"))
     }
+    private func repeatedOpus(seconds: Int, in root: URL) throws -> URL {
+        let second = try Data(contentsOf: legacyFixture())
+        XCTAssertEqual(second.count, 4000)
+        let url = root.appendingPathComponent("synthetic-\(seconds)s.opus")
+        XCTAssertTrue(FileManager.default.createFile(atPath: url.path, contents: nil))
+        let handle = try FileHandle(forWritingTo: url)
+        defer { try? handle.close() }
+        for _ in 0..<seconds { try handle.write(contentsOf: second) }
+        return url
+    }
     private func wave(in root: URL) throws -> URL {
         let url = root.appendingPathComponent("synthetic.caf")
         let format = AVAudioFormat(standardFormatWithSampleRate: 48_000, channels: 2)!
@@ -192,13 +202,98 @@ import BRRecorderOpus
         XCTAssertNotNil(first.errorMessage)
         XCTAssertEqual(first.pendingCount, 1)
         let id = try XCTUnwrap(try RingTransferStore(root: ringRoot).state.jobs.first?.id)
-        let restarted = EurekaRingModel(device: sdk, root: ringRoot)
+        let restarted = EurekaRingModel(device: sdk, root: ringRoot, normalize: { _, _, _ in
+            XCTFail("A completed conversion must survive a library write failure")
+            throw CancellationError()
+        })
         restarted.configure(save: saver.save, exists: saver.exists)
         await connect(restarted); await restarted.synchronize()
         XCTAssertNil(restarted.errorMessage)
         XCTAssertEqual(sdk.transfers, 1)
         XCTAssertEqual(saver.repository.notes.first?.id, id)
         XCTAssertEqual(restarted.pendingCount, 0)
+    }
+
+    func testUncommittedConversionIsRebuiltInsteadOfSavingOnlyTheBeginning() async throws {
+        // A readable m4a left by an interrupted old conversion is not a completion receipt.
+        // With no device duration, the previous recovery path silently saved just one second.
+        for hasRaw in [true, false] {
+            let root = try temporary(), ringRoot = root.appendingPathComponent("Ring")
+            let input = try repeatedOpus(seconds: 3, in: root)
+            let recording = BRRecorderFile(name: "incomplete.opus", byteCount: 12_000, recordedAt: file().recordedAt)
+            let journal = try RingTransferStore(root: ringRoot)
+            let job = try XCTUnwrap(journal.enqueue([recording], deviceID: hardware.id).first)
+            let directory = try journal.directory(job.id)
+            if hasRaw { try FileManager.default.copyItem(at: input, to: directory.appendingPathComponent("recording.opus")) }
+            _ = try await BRAudioNormalizer.normalize(input: legacyFixture(), output: directory.appendingPathComponent("recording.m4a"))
+            try journal.setStage(job.id, .converting)
+            let sdk = FakeRingDevice(input: input, files: [recording])
+            let saver = try Saver(root: root.appendingPathComponent("Library"))
+            let model = EurekaRingModel(device: sdk, root: ringRoot)
+            model.configure(save: saver.save, exists: saver.exists)
+            await connect(model); await model.synchronize()
+            XCTAssertNil(model.errorMessage)
+            let note = try XCTUnwrap(saver.repository.notes.first)
+            XCTAssertEqual(note.duration, 3, accuracy: 0.15)
+            XCTAssertEqual(sdk.transfers, hasRaw ? 0 : 1)
+            XCTAssertEqual(saver.repository.notes.count, 1)
+        }
+    }
+
+    func testDurationMismatchDoesNotGrowWithRecordingLength() async throws {
+        let root = try temporary()
+        let input = try repeatedOpus(seconds: 61, in: root)
+        // Missing three seconds used to fall inside the 5% tolerance. At five hours
+        // that same percentage would allow fifteen missing minutes.
+        let recording = BRRecorderFile(name: "missing-tail.opus", byteCount: 244_000,
+            recordedAt: file().recordedAt, expectedDuration: 64)
+        let sdk = FakeRingDevice(input: input, files: [recording])
+        let saver = try Saver(root: root.appendingPathComponent("Library"))
+        let model = EurekaRingModel(device: sdk, root: root.appendingPathComponent("Ring"))
+        model.configure(save: saver.save, exists: saver.exists)
+        await connect(model); await model.synchronize()
+        XCTAssertTrue(saver.repository.notes.isEmpty, "A shortened recording must not be marked saved")
+        XCTAssertNotNil(model.errorMessage)
+        XCTAssertEqual(model.pendingCount, 1)
+    }
+
+    func testFiveHourOpusRemainsOneRecordingWithReadableFinalWindow() async throws {
+        let root = try temporary(), library = root.appendingPathComponent("Library")
+        let input = try repeatedOpus(seconds: 18_000, in: root)
+        let recording = BRRecorderFile(name: "five-hours.opus", byteCount: 72_000_000,
+            recordedAt: file().recordedAt, expectedDuration: 18_000)
+        let sdk = FakeRingDevice(input: input, files: [recording])
+        let saver = try Saver(root: library)
+        let model = EurekaRingModel(device: sdk, root: root.appendingPathComponent("Ring"))
+        model.configure(save: saver.save, exists: saver.exists)
+        await connect(model); await model.synchronize()
+        XCTAssertNil(model.errorMessage)
+        let reopened = try NoteRepository(root: library)
+        let note = try XCTUnwrap(reopened.notes.first)
+        XCTAssertEqual(reopened.notes.count, 1)
+        XCTAssertEqual(note.duration, 18_000, accuracy: 0.15)
+        XCTAssertEqual(note.origin?.deviceKind, .ring)
+        XCTAssertNil(note.effectiveRecordingGroupID)
+        let discovery = AudioSourceDiscovery(root: library)
+        let source = try XCTUnwrap(discovery.sources(explicit: []).first)
+        XCTAssertEqual(source.ranges.count, 1)
+        let windows = try AudioWindowPlanner.plan(source: source, configurationKey: "five-hour-ring")
+        // A final fraction of an AAC packet may require one tiny tail window.
+        XCTAssertTrue((60...61).contains(windows.count))
+        XCTAssertTrue(windows.allSatisfy { $0.inputDuration <= 304.0000001 })
+        XCTAssertEqual(windows.first?.coreStart, 0)
+        let last = try XCTUnwrap(windows.last)
+        XCTAssertEqual(last.coreEnd, 18_000, accuracy: 0.15)
+        let bounded = try BoundedAudioReader(temporaryRoot: root.appendingPathComponent("PCM")).materialize(last)
+        XCTAssertLessThanOrEqual(bounded.maximumSourceBufferFrames, 4096)
+        XCTAssertLessThanOrEqual(bounded.duration, 304)
+        XCTAssertEqual(try XCTUnwrap(bounded.sourceRanges(start: 0, end: bounded.duration).last).end, 18_000, accuracy: 0.15)
+        let samples = try bounded.samples(maximumFrames: 4_864_000)
+        XCTAssertGreaterThan(samples.map { abs($0) }.max() ?? 0, 0.03, "Tail must contain decoded audio")
+        await model.synchronize()
+        XCTAssertEqual(saver.repository.notes.count, 1)
+        XCTAssertEqual(saver.attempts, 1)
+        XCTAssertEqual(sdk.transfers, 1)
     }
 
     func testCrashAfterLibrarySaveRecoversReceiptWithoutDownloadingOrSavingAgain() async throws {
@@ -400,12 +495,18 @@ import BRRecorderOpus
 
     func testDisconnectCancelsConversionAndReconnectReusesDurableRawAudio() async throws {
         let root = try temporary()
-        let sdk = FakeRingDevice(input: try legacyFixture(), files: [file()])
+        let input = try repeatedOpus(seconds: 3, in: root), partial = try legacyFixture()
+        let recording = BRRecorderFile(name: "interrupted.opus", byteCount: 12_000, recordedAt: file().recordedAt)
+        let sdk = FakeRingDevice(input: input, files: [recording])
         let saver = try Saver(root: root.appendingPathComponent("Library"))
-        var conversions = 0, cancelled = false
+        var conversions = 0, cancelled = false, partialReady = false
         let model = EurekaRingModel(device: sdk, root: root.appendingPathComponent("Ring"), normalize: { raw, converted, progress in
             conversions += 1
             if conversions == 1 {
+                // A container can already be readable when cancellation interrupts the
+                // conversion. Retry must use the raw file, not this incomplete prefix.
+                _ = try await BRAudioNormalizer.normalize(input: partial, output: converted)
+                partialReady = true
                 do { try await Task.sleep(for: .seconds(30)) }
                 catch { cancelled = true; throw error }
             }
@@ -414,7 +515,7 @@ import BRRecorderOpus
         model.configure(save: saver.save, exists: saver.exists)
         await connect(model)
         let syncing = Task { await model.synchronize() }
-        try await waitFor { conversions == 1 }
+        try await waitFor { partialReady }
         sdk.onEvent?(.connection(false))
         XCTAssertFalse(model.isBusy)
         await syncing.value
@@ -423,6 +524,7 @@ import BRRecorderOpus
         await connect(model); await model.synchronize()
         XCTAssertNil(model.errorMessage)
         XCTAssertEqual(saver.repository.notes.count, 1)
+        XCTAssertEqual(try XCTUnwrap(saver.repository.notes.first).duration, 3, accuracy: 0.15)
         XCTAssertEqual(sdk.transfers, 1)
     }
 
@@ -574,6 +676,34 @@ import BRRecorderOpus
         XCTAssertEqual(saver.attempts, 1); XCTAssertEqual(sdk.transfers, 0)
     }
 
+    func testRingRecordingTimeZoneSurvivesFailedSaveAndRelaunch() async throws {
+        let root = try temporary(), ringRoot = root.appendingPathComponent("Ring")
+        let repository = try NoteRepository(root: root.appendingPathComponent("Library"))
+        let notes = NotesModel(repository: repository, connectWatch: false, transcribe: { _, _ in "测试闪念" })
+        let sdk = FakeRingDevice(input: try legacyFixture(), files: [])
+        let first = EurekaRingModel(device: sdk, root: ringRoot)
+        first.configure(save: { _, _, _ in throw NSError(domain: "SyntheticDiskFull", code: 1) }, exists: { _ in false })
+        await connect(first)
+        let current = file("F-clock.opus", date: .now, kind: .flashIdea)
+        sdk.files = [current]
+        await first.synchronize()
+        XCTAssertNotNil(first.errorMessage)
+        let restarted = EurekaRingModel(device: sdk, root: ringRoot)
+        restarted.configure(notes: notes)
+        await connect(restarted); await restarted.synchronize()
+        XCTAssertNil(restarted.errorMessage)
+        let saved = try XCTUnwrap(notes.notes.first)
+        XCTAssertEqual(saved.origin?.timeZoneIdentifier, TimeZone.current.identifier,
+            "Known Ring clock timezone must reach flash calendar extraction after restart")
+        XCTAssertEqual(sdk.transfers, 1)
+        let reopened = try NoteRepository(root: root.appendingPathComponent("Library"))
+        XCTAssertEqual(reopened.notes.first?.origin?.timeZoneIdentifier, TimeZone.current.identifier)
+        sdk.files.append(file("F-old.opus", date: Date.now.addingTimeInterval(-86_400), kind: .flashIdea))
+        await restarted.synchronize()
+        XCTAssertNil(notes.notes.first { $0.origin?.fileName == "F-old.opus" }?.origin?.timeZoneIdentifier,
+            "Do not assign the phone's current timezone to an older offline recording")
+    }
+
     func testMissingRealtimeFlashAudioFallsBackToBLE() async throws {
         let root = try temporary()
         let flash = file("F-fallback.opus", kind: .flashIdea)
@@ -587,6 +717,45 @@ import BRRecorderOpus
         XCTAssertNil(model.errorMessage)
         XCTAssertEqual(sdk.transfers, 1)
         XCTAssertEqual(saver.repository.notes.first?.kind, .thought)
+    }
+
+    func testFlashTimestampDriftImportsOneRecordingWithoutDownloadingAgain() async throws {
+        let root = try temporary(), input = try legacyFixture()
+        let name = "F20261106-133625.opus"
+        let timestamp = Date(timeIntervalSince1970: 1_790_000_000)
+        let live = BRRecorderFile(name: name, recordedAt: timestamp.addingTimeInterval(1), kind: .flashIdea)
+        let listed = file(name, date: timestamp, kind: .flashIdea)
+        let sdk = FakeRingDevice(input: input, files: [])
+        let saver = try Saver(root: root.appendingPathComponent("Library"))
+        let ringRoot = root.appendingPathComponent("Ring")
+        let model = EurekaRingModel(device: sdk, root: ringRoot)
+        model.configure(save: saver.save, exists: saver.exists)
+        await connect(model)
+        sdk.files = [listed]
+        sdk.onEvent?(.flashIdeaEnded(file: live, audioURL: input))
+        try await waitFor { !model.isBusy && !saver.repository.notes.isEmpty }
+        XCTAssertEqual(saver.repository.notes.count, 1, "Live completion and file-list metadata identify the same recording")
+        XCTAssertEqual(saver.attempts, 1)
+        XCTAssertEqual(sdk.transfers, 0, "Validated live audio must not be downloaded again")
+        let journal = try RingTransferStore(root: ringRoot)
+        XCTAssertEqual(journal.state.jobs.count, 1)
+        XCTAssertEqual(journal.state.jobs.first?.file.byteCount, listed.byteCount)
+    }
+
+    func testSavedFlashReceiptSurvivesTimestampDriftAndRestart() throws {
+        let root = try temporary(), input = try legacyFixture()
+        let live = file("F-receipt.opus", kind: .flashIdea)
+        let store = try RingTransferStore(root: root)
+        let original = try XCTUnwrap(try store.enqueue([live], deviceID: hardware.id).first)
+        try store.setStage(original.id, .saved)
+        let reopened = try RingTransferStore(root: root)
+        let listed = file(live.name, date: try XCTUnwrap(live.recordedAt).addingTimeInterval(-1), kind: .flashIdea)
+        XCTAssertTrue(try reopened.enqueue([listed], deviceID: hardware.id).isEmpty)
+        try reopened.stageFlashAudio(listed, from: input, deviceID: hardware.id)
+        XCTAssertEqual(reopened.state.jobs.count, 1)
+        XCTAssertEqual(reopened.state.jobs.first?.id, original.id)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: root.appendingPathComponent(original.id.uuidString).path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: input.path))
     }
 
     func testFlashInterruptsTransferAndLatePreviousEndDoesNotStopNextFlash() async throws {
@@ -631,19 +800,41 @@ import BRRecorderOpus
         XCTAssertEqual(saver.repository.notes.first?.kind, .thought)
     }
 
-    private func customSettings() throws -> AppSettings {
+    private func customSettings(mode: AIConfiguration.Mode = .custom) throws -> AppSettings {
         let suite = "RingFlashTests.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         addTeardownBlock { defaults.removePersistentDomain(forName: suite) }
-        defaults.set(try JSONEncoder().encode(AIConfiguration(mode: .custom, model: "must-not-be-used", baseURL: "https://example.invalid")), forKey: "aiConfiguration")
+        defaults.set(try JSONEncoder().encode(AIConfiguration(mode: mode, model: "configured-model", baseURL: "https://example.invalid")), forKey: "aiConfiguration")
         return AppSettings(defaults: defaults, secrets: RingNoRemoteSecrets())
     }
 
-    func testFlashAutomaticallyRunsLocalAIEvenWithCustomSettingsAndPersistsResults() async throws {
+    func testFlashUsesConfiguredRemoteModelAndWaitsForSendConsent() async throws {
+        let root = try temporary()
+        let repository = try NoteRepository(root: root.appendingPathComponent("Library"))
+        let settings = try customSettings()
+        var localCalls = 0
+        let notes = NotesModel(repository: repository, settings: settings, connectWatch: false,
+            transcribe: { _, _ in "合成闪念原文" },
+            summarizeLocally: { _, _ in localCalls += 1; return "不应使用本地模型" })
+        let sdk = FakeRingDevice(input: try legacyFixture(), files: [file("F-configured.opus", kind: .flashIdea)])
+        let model = EurekaRingModel(device: sdk, root: root.appendingPathComponent("Ring"))
+        model.configure(notes: notes)
+        await connect(model); await model.synchronize()
+        try await waitFor { notes.notes.first?.transcriptionState == .ready }
+        let note = try XCTUnwrap(notes.notes.first)
+        await notes.summarize(note.id)
+        XCTAssertEqual(notes.summaryConfiguration(for: note), settings.ai)
+        XCTAssertEqual(notes.prepareRemoteSummary(note.id)?.configuration.model, "configured-model")
+        XCTAssertEqual(localCalls, 0)
+        XCTAssertTrue(notes.note(note.id)?.summary.isEmpty == true)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: repository.audioURL(for: note).path))
+    }
+
+    func testFlashUsesLocalAIWhenSelectedAndPersistsResults() async throws {
         let root = try temporary()
         let repository = try NoteRepository(root: root.appendingPathComponent("Library"))
         var asrCalls = 0, summaryCalls = 0
-        let settings = try customSettings()
+        let settings = try customSettings(mode: .local)
         let notes = NotesModel(repository: repository, settings: settings, connectWatch: false,
             transcribe: { _, _ in asrCalls += 1; return "合成测试：明天整理设计草图。" },
             summarizeLocally: { text, kind in
@@ -656,9 +847,9 @@ import BRRecorderOpus
         await connect(model); await model.synchronize()
         try await waitFor { notes.notes.first?.summaryState == .ready }
         let note = try XCTUnwrap(notes.notes.first)
-        XCTAssertTrue(note.usesLocalThoughtAI)
+        XCTAssertTrue(note.isRingThought)
         XCTAssertEqual(notes.summaryConfiguration(for: note).mode, .local)
-        XCTAssertEqual(settings.ai.mode, .custom)
+        XCTAssertEqual(settings.ai.mode, .local)
         let reloaded = try NoteRepository(root: root.appendingPathComponent("Library"))
         XCTAssertEqual(reloaded.notes.first?.transcript, note.transcript)
         XCTAssertEqual(reloaded.notes.first?.summary, "待办：明天整理设计草图。")
@@ -669,7 +860,7 @@ import BRRecorderOpus
     func testUnavailableLocalModelRetainsFlashAudioAndTranscriptWithoutRemoteFallback() async throws {
         let root = try temporary()
         let repository = try NoteRepository(root: root.appendingPathComponent("Library"))
-        let notes = NotesModel(repository: repository, settings: try customSettings(), connectWatch: false,
+        let notes = NotesModel(repository: repository, settings: try customSettings(mode: .local), connectWatch: false,
             transcribe: { _, _ in "合成闪念原文" }, summarizeLocally: { _, _ in throw SummaryFailure.unavailable })
         let sdk = FakeRingDevice(input: try legacyFixture(), files: [file("F-unavailable.opus", kind: .flashIdea)])
         let model = EurekaRingModel(device: sdk, root: root.appendingPathComponent("Ring"))
@@ -690,7 +881,7 @@ import BRRecorderOpus
         try repository.importRecording(id: id, from: audio.url, kind: .thought, capturedAt: .now, duration: audio.duration,
             origin: RecordingOrigin(device: "EurekaRing", deviceID: hardware.id, fileName: "F-resume.opus", recordingTimeIsEstimated: false))
         try repository.update(id: id) { $0.transcript = "合成恢复测试"; $0.transcriptionState = .ready; $0.summaryState = .running }
-        let notes = NotesModel(repository: repository, settings: try customSettings(), connectWatch: false,
+        let notes = NotesModel(repository: repository, settings: try customSettings(mode: .local), connectWatch: false,
             transcribe: { _, _ in XCTFail("Ready transcript must not be transcribed again"); return "" },
             summarizeLocally: { _, _ in "恢复后本地整理" })
         try await waitFor { notes.note(id)?.summaryState == .ready }

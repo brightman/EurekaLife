@@ -23,7 +23,7 @@ assert widget_info["UIDeviceFamily"] == [4]
 assert widget_info["MinimumOSVersion"] == "10.0"
 for key in ("CFBundleVersion", "CFBundleShortVersionString"):
     assert widget_info[key] == parent_info[key], f"Parent/extension mismatch: {key}"
-assert any("wiselife-watch" in item["CFBundleURLSchemes"] for item in parent_info["CFBundleURLTypes"])
+assert any("wiselife-bizcard-watch" in item["CFBundleURLSchemes"] for item in parent_info["CFBundleURLTypes"])
 assert (widget / widget_info["CFBundleExecutable"]).is_file()
 for language in ("en", "ja", "zh-Hans"):
     assert (widget / f"{language}.lproj" / "Localizable.strings").is_file()

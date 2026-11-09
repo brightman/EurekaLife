@@ -32,9 +32,9 @@ struct QuickRecordingSettingsView: View {
                         }.buttonStyle(DaybookSettingsButtonStyle(primary: true))
                     }
                     if !activitiesAllowed {
-                        SettingsFootnote(text: "请在系统设置中允许 WiseLife 的实时活动，以便通过操作按钮录音。")
+                        SettingsFootnote(text: "请在系统设置中允许 EurekaLife 的实时活动，以便通过操作按钮录音。")
                     }
-                    Button("打开 WiseLife 系统设置", action: openSettings)
+                    Button("打开 EurekaLife 系统设置", action: openSettings)
                         .buttonStyle(DaybookSettingsButtonStyle())
                 }
             } else {
@@ -66,7 +66,7 @@ struct QuickRecordingSettingsView: View {
             SettingsSection("绑定操作按钮") {
                 instruction("1", "打开 iPhone「设置」→「操作按钮」。")
                 instruction("2", "选择「快捷指令」→「选取快捷指令」。")
-                instruction("3", "选择 WiseLife 的「开始／停止录音」。")
+                instruction("3", "选择 EurekaLife 的「开始／停止录音」。")
                 Link("打开快捷指令", destination: URL(string: "shortcuts://")!)
                     .buttonStyle(DaybookSettingsButtonStyle())
                 SettingsFootnote(text: "操作按钮需要 iPhone 支持，并由你在系统设置中绑定。没有操作按钮时，也可从快捷指令运行。")
@@ -74,7 +74,7 @@ struct QuickRecordingSettingsView: View {
         case .lockScreen:
             SettingsSection("添加锁屏小组件") {
                 instruction("1", "长按锁屏，选择「自定」→「锁定屏幕」。")
-                instruction("2", "轻点「添加小组件」→ WiseLife →「快捷录音」。")
+                instruction("2", "轻点「添加小组件」→ EurekaLife →「快捷录音」。")
                 SettingsFootnote(text: "轻点麦克风开始录音；再次轻点不会停止。请通过实时活动中的「停止并保存」结束录音。首次使用需允许麦克风和实时活动；锁屏操作可能需要 Face ID 或系统解锁。")
             }
         case .liveActivity:

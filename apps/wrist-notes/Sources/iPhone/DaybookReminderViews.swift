@@ -46,7 +46,7 @@ struct DaybookReminderListView: View {
                 .disabled(!store.isAvailable || store.isBusy)
                 .padding(.top, 16)
                 DaybookNotificationStatus(store: store).padding(.top, 18)
-                SettingsFootnote(text: "未关联 Apple 的提醒使用 WiseLife 本地通知。关联后由 Apple 提醒事项负责通知；内容是否同步由所选列表的账户设置决定。")
+                SettingsFootnote(text: "未关联 Apple 的提醒使用 EurekaLife 本地通知。关联后由 Apple 提醒事项负责通知；内容是否同步由所选列表的账户设置决定。")
                     .padding(.top, 12)
             }
         }
@@ -69,7 +69,7 @@ struct DaybookReminderListView: View {
         } message: {
             Text(deletingReminder?.appleLink == nil
                  ? "已安排的通知也会取消。"
-                 : "将删除 WiseLife 待办和关联的 Apple 提醒事项。若系统删除失败，会保留待办供你重试。")
+                 : "将删除 EurekaLife 待办和关联的 Apple 提醒事项。若系统删除失败，会保留待办供你重试。")
         }
         .task { await store.refreshAuthorization() }
         .onChange(of: scenePhase) { _, phase in
@@ -236,7 +236,7 @@ struct DaybookReminderEditor: View {
             }
         }
         .interactiveDismissDisabled(submitting)
-        .confirmationDialog("改用 WiseLife 本地通知？", isPresented: $confirmUnlink, titleVisibility: .visible) {
+        .confirmationDialog("改用 EurekaLife 本地通知？", isPresented: $confirmUnlink, titleVisibility: .visible) {
             Button("删除 Apple 任务并改用本地通知", role: .destructive, action: save)
         } message: {
             Text("会先删除关联的 Apple 提醒事项，再安排本地通知。删除失败时保留关联，避免重复提醒。")
@@ -281,7 +281,7 @@ struct DaybookReminderEditor: View {
                 if let error = store.appleError {
                     Text(LocalizedStringKey(error)).font(.system(size: 11)).foregroundStyle(DaybookStyle.red)
                 }
-                SettingsFootnote(text: "关联后由 Apple 提醒事项负责通知，WiseLife 不再重复通知。添加失败时待办仍保留在“我的提醒”中，可重试或改用本地通知。")
+                SettingsFootnote(text: "关联后由 Apple 提醒事项负责通知，EurekaLife 不再重复通知。添加失败时待办仍保留在“我的提醒”中，可重试或改用本地通知。")
             }
         }
     }

@@ -86,7 +86,7 @@ private struct ManualSpeakerContactForm: View {
                 VStack(alignment:.leading,spacing:20) {
                     NotebookContactFields(name:$name,organization:$organization,email:$email,phone:$phone,relationships:$relationships)
                         .disabled(saving)
-                    Text("仅保存在 WiseLife，不修改系统通讯录。").font(.caption).foregroundStyle(DaybookStyle.secondary)
+                    Text("仅保存在 EurekaLife，不修改系统通讯录。").font(.caption).foregroundStyle(DaybookStyle.secondary)
                     if let failure { Text(failure).font(.subheadline).foregroundStyle(DaybookStyle.red) }
                 }.padding(24)
             }.scrollDismissesKeyboard(.interactively).background(DaybookStyle.paper)

@@ -35,6 +35,20 @@ import Foundation
             ], sampleCount: 35 * 16_000)
             preconditionFailure("A substantial speaker with too little clean speech must not be omitted")
         } catch VoiceEnrollmentError.insufficientSpeech { }
+        // Enrollment has enough audio to use the model's full context, preserving
+        // every clean sample and each cluster (including short final clusters).
+        let enrollmentSamples = (0..<960_000).map(Float.init)
+        let enrollmentGroups = [[0..<320_000, 400_000..<705_601], [800_000..<893_990]]
+        let enrollment = try VoiceSpeechSelection.enrollmentWindows(samples: enrollmentSamples, groups: enrollmentGroups)
+        precondition(enrollment.count == 5, "Use real ten-second enrollment context instead of repeating five seconds")
+        precondition(enrollment.flatMap { $0 } == enrollmentGroups.flatMap { $0 }.flatMap { Array(enrollmentSamples[$0]) }, "Never discard tails or introduce gaps, overlap or repeated speech")
+        precondition(enrollment.allSatisfy { (32_000...160_000).contains($0.count) })
+        precondition(enrollment.last == Array(enrollmentSamples[800_000..<893_990]), "Keep distinct clusters separate for consistency checks")
+        for groups in [[[0..<240_000]], [[0..<112_000], [160_000..<288_000]]] {
+            let minimum = try VoiceSpeechSelection.enrollmentWindows(samples: enrollmentSamples, groups: groups)
+            precondition(minimum.count == 3 && minimum.allSatisfy { $0.count >= 32_000 }, "Minimum clean speech must still provide three independent windows")
+            precondition(minimum.flatMap { $0 } == groups.flatMap { $0 }.flatMap { Array(enrollmentSamples[$0]) })
+        }
         print("Clean speech overlap, enrollment validation, clipping, windowing and short-input rejection passed")
     }
 }

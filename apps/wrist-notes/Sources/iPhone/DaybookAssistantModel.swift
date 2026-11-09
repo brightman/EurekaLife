@@ -16,7 +16,7 @@ private final class AskAIBackgroundExecution: AskAIBackgroundExecuting {
 #if os(iOS)
     private var identifier: UIBackgroundTaskIdentifier = .invalid
     func begin(expiration: @escaping @MainActor () -> Void) -> Bool {
-        identifier = UIApplication.shared.beginBackgroundTask(withName: "WiseLife Ask AI") {
+        identifier = UIApplication.shared.beginBackgroundTask(withName: "EurekaLife Ask AI") {
             MainActor.assumeIsolated { expiration() }
         }
         return identifier != .invalid

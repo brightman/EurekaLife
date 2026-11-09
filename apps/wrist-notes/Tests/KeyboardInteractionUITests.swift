@@ -2,7 +2,7 @@ import XCTest
 
 /// Runs against an already-installed WiseLife build, without changing records or model settings.
 final class KeyboardInteractionUITests: XCTestCase {
-    private let app = XCUIApplication(bundleIdentifier: "cloud.karama.wisenote")
+    private let app = XCUIApplication(bundleIdentifier: "cloud.karama.wiselife")
 
     override func setUpWithError() throws {
         continueAfterFailure = false

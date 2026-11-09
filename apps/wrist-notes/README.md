@@ -1,12 +1,18 @@
 > 本工程已导入 [EurekaLife](../../README.md)。当前独立仓库的构建与验证范围见 [导入记录](../../docs/repository-import.md)。
 
-# WiseLife · 我的一天
+# EurekaLife · 我的一天
 
-文档入口：[WiseLife 文档总索引](docs/INDEX.md) — 产品、技术、按日期变更、功能模块、验证发布与历史资料。
+文档入口：[EurekaLife 文档总索引](docs/INDEX.md) — 产品、技术、按日期变更、功能模块、验证发布与历史资料。
 
 官网源码已独立到同级目录 `../wiselife-website/`（源工作区资料，未随代码导入：`../wiselife-website/README.md`），包含现有首页、两版设计与对比页。从 Vessel 根目录运行 `npm run dev:wiselife-website` 即可预览。App 的 Swift 源码、交互原型与品牌母版继续在本目录维护。
 
 一套本地优先的 iPhone 与 Apple Watch 个人每日记录 App。手表录音并保留待传文件；iPhone 收到音频后保存原文件，在设备上转写、编辑，默认使用 Apple 本地模型总结。可选用户自有的 OpenAI / Anthropic 兼容服务生成总结；不使用 Vessel API，也不需要自建中转服务器或 App 账号。
+
+## 当前发布身份（2026-11-08）
+
+产品对外名称已统一为 **EurekaLife**。1.0.3（16）已上传并完成 Apple 处理和出口合规，内部 TestFlight 显示“正在测试”；发布记录与外部审核限制见 [改名记录](docs/testflight-release-2026-10-19.md#eurekalife-build16-20261108)。本次改名沿用构建 15 的应用身份和数据容器。
+
+用户选择在 BIZCARD LIMITED（`2W27U66VBQ`）下新建独立 App。iPhone Bundle ID 为 `cloud.karama.wiselife`，Watch 和两个扩展使用该前缀；版本 1.0.3（15）已上传至新 App（Apple ID `6832169777`），Apple 处理完成，内部 TestFlight 组已开放测试。原 `cloud.karama.wisenote` 及其设备数据保留，新 App 不自动继承旧录音、SQLite、模型文件或 Keychain 设置。工程目录和 target 名称继续使用 `wrist-notes`／`WristNotes`。发布进度见 [新 App 发布记录](docs/testflight-release-2026-10-19.md#new-app-bizcard-20261108)。
 
 ## 2026-10-21：长录音内容标题
 
@@ -16,13 +22,13 @@ iPhone 首页、我的记录和语音详情显示“长录音·内容标题”�
 
 - **说话人关联联系人**：录音详情 → 全文 → 点击说话人 → 关联联系人。系统选择器选定后再确认，支持更换、解除和未关联时手动命名。仅保存选中联系人的标识、名称和小头像，关联限于当前录音；不会修改系统通讯录或自动识别今后录音中的此人。
 - **可选 Apple 提醒事项**：新建／编辑提醒时，默认关闭“同时添加到 Apple 提醒事项”。主动允许后选择可写列表；支持修改、完成、确认后删除及失败重试。外部修改／完成在 App 刷新时读回，外部删除保留状态，不自动重建。
-- **通知和隐私**：关联 Apple 的待办由 Apple 提醒事项通知，避免同时发 WiseLife 通知。只添加任务内容与时间，不添加录音或全文；选择 iCloud 等账户列表时按账户设置同步。解除关联会先删除 Apple 任务，再设置本地通知。
+- **通知和隐私**：关联 Apple 的待办由 Apple 提醒事项通知，避免同时发 EurekaLife 通知。只添加任务内容与时间，不添加录音或全文；选择 iCloud 等账户列表时按账户设置同步。解除关联会先删除 Apple 任务，再设置本地通知。
 - **验证范围**：联系人／提醒状态与持久化测试、SQLite 迁移回归及 iPhone＋Watch＋录音组件模拟器构建通过；真实权限、联系人选择和 Apple 账户同步需真机验收。见 [实现与验证记录](verification/people-reminders-native.md)。
 
 ## 2026-10-20：iPhone 快捷录音
 
-- 新增圆形锁屏“快捷录音”小组件：**长按锁屏 → 自定 → 锁定屏幕 → 添加小组件 → WiseLife → 快捷录音**。轻点麦克风开始；重复轻点保持同一段录音，通过实时活动“停止并保存”。App 内“设置 → 快捷录音”也有添加指引。构建、组件打包和录音状态回归通过，锁屏授权与实际收音待真机验收，见 [锁屏快捷录音验证记录](verification/lock-screen-recording.md)。
-- 在 iPhone **设置 → 操作按钮 → 快捷指令 → 选取快捷指令** 中，选择 WiseLife 的 **开始／停止录音**。长按开始，再次长按结束并自动保存。也提供独立的“开始录音”和“停止并保存录音”快捷指令。
+- 新增圆形锁屏“快捷录音”小组件：**长按锁屏 → 自定 → 锁定屏幕 → 添加小组件 → EurekaLife → 快捷录音**。轻点麦克风开始；重复轻点保持同一段录音，通过实时活动“停止并保存”。App 内“设置 → 快捷录音”也有添加指引。构建、组件打包和录音状态回归通过，锁屏授权与实际收音待真机验收，见 [锁屏快捷录音验证记录](verification/lock-screen-recording.md)。
+- 在 iPhone **设置 → 操作按钮 → 快捷指令 → 选取快捷指令** 中，选择 EurekaLife 的 **开始／停止录音**。长按开始，再次长按结束并自动保存。也提供独立的“开始录音”和“停止并保存录音”快捷指令。
 - 锁屏与灵动岛的实时活动显示录音状态、时长及“停止并保存”。快捷指令录音需要麦克风权限和实时活动权限；首次使用先打开 App 完成授权。App 的“设置 → 快捷录音”提供配置引导。
 - 页面和快捷指令共用录音服务；中断后保存已录制部分，保存失败保留草稿并可重试。保存先写入本地音频与笔记，再排队进行端上转写。
 - 已完成模拟器构建、录音状态测试及原生音频/存储测试。物理操作按钮、锁屏冷启动、后台麦克风和实际实时活动仍需真机验收，详见 [快捷录音验证记录](verification/quick-recording.md)。
@@ -66,6 +72,8 @@ Watch 单按钮界面方案见 [`prototype/watch-recorder.html`](prototype/watch
 ### Watch 与 Ring 长录音
 
 Watch 每小时保存一个 M4A，通过录音组 ID、序号和真实偏移恢复连续时间轴。Ring 每条硬件录音保留为一个完整文件，本地转为 16 kHz 单声道 AAC/M4A；超过一小时也不套用 Watch 分片限制或重新拆成小时文件。两者共用按帧范围读取的 AI 窗口，窗口和主题片段不改变原音文件粒度。
+
+Ring 的 5 小时单文件已用合成 Opus 验证转码、入库与尾部读取；AI 核心窗口最多 5 分钟，保留整条录音的绝对时间戳。转码写入独立临时文件，完成并校验后才原子标记为可复用；中断重试复用完整下载的原音，避免将可播放的半成品当成完整录音。设备提供时长时使用固定 2 秒误差上限，不按长录音百分比放宽。真实 5 小时 BLE 传输及锁屏续传尚待硬件验证，SDK 未暴露字节级断点续传接口。详见 [5 小时边界验证](docs/2026-10-20-ring-build-switch.md#2026-11-06-五小时录音边界与恢复)。
 
 来源保存在 `RecordingOrigin.captureDevice`（`watch`／`ring`），同时保留设备名称、设备 ID 和文件名；旧数据缺少字段时按名称识别。首页、完整录音及内容片段详情统一显示 Apple Watch／EurekaRing。契约与验证见 [Ring 编译与文件处理说明](docs/2026-10-20-ring-build-switch.md)。
 
@@ -121,14 +129,14 @@ Key 保存在 iOS Keychain（仅本设备，解锁后访问），普通设置存
 
 ## Watch 表盘快捷录音
 
-已新增 watchOS 10+ 的 WiseLife 录音复杂功能，支持圆形、矩形、内联文字与角落位置。安装更新后的 Watch App 后，在支持复杂功能的表盘上：
+已新增 watchOS 10+ 的 EurekaLife 录音复杂功能，支持圆形、矩形、内联文字与角落位置。安装更新后的 Watch App 后，在支持复杂功能的表盘上：
 
 1. 长按表盘 →「编辑」→「复杂功能」。
-2. 选择一个位置 → 选择「WiseLife 录音」。
-3. 回到表盘并轻点入口：打开 Watch 上的 WiseLife，空闲时开始长录音；首次使用需要允许麦克风。
+2. 选择一个位置 → 选择「EurekaLife 录音」。
+3. 回到表盘并轻点入口：打开 Watch 上的 EurekaLife，空闲时开始长录音；首次使用需要允许麦克风。
 4. 正在录音时再次点击入口，只返回录音页。点击 App 中的停止按钮，保存并按现有流程传到 iPhone。
 
-录音入口不会因为重复点击而停止录音。正常从 App 列表打开仍需手动开始。授权期间退出到后台会取消该次快捷启动；延迟过久则提示重新点击，不在之后打开 App 时重放旧请求。图标表示入口，不展示可能延迟的实时录音状态。首次安装若暂时找不到，请先确认 WiseLife 已安装在手表，并打开一次 Watch App，再进入表盘编辑。
+录音入口不会因为重复点击而停止录音。正常从 App 列表打开仍需手动开始。授权期间退出到后台会取消该次快捷启动；延迟过久则提示重新点击，不在之后打开 App 时重放旧请求。图标表示入口，不展示可能延迟的实时录音状态。首次安装若暂时找不到，请先确认 EurekaLife 已安装在手表，并打开一次 Watch App，再进入表盘编辑。
 
 这项功能的逻辑、编译与打包已验证；表盘添加、实际录音、震动和权限界面仍需在配对 Watch 上验收。测试命令及真机清单见 [表盘录音验证记录](verification/watch-recording-complication.md)。
 
@@ -152,7 +160,7 @@ swiftc -module-cache-path /private/tmp/wristnotes-modulecache apps/wrist-notes/S
 
 ```sh
 xcodebuild -workspace apps/wrist-notes/WristNotes.xcworkspace -scheme WristNotes -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -derivedDataPath /private/tmp/wiselife-simulator CODE_SIGN_IDENTITY=- CODE_SIGNING_ALLOWED=YES build
-xcrun simctl install booted /private/tmp/wiselife-simulator/Build/Products/Debug-iphonesimulator/WiseLife.app
+xcrun simctl install booted /private/tmp/wiselife-simulator/Build/Products/Debug-iphonesimulator/EurekaLife.app
 ```
 
 仅在构建成功后执行安装。此操作更新现有 App，保留其数据；不需要卸载 App 或重置模拟器。设备名称可替换成已有的 iOS 模拟器。模拟器使用临时签名，真机继续使用项目原有的开发者签名设置。
@@ -161,8 +169,8 @@ xcrun simctl install booted /private/tmp/wiselife-simulator/Build/Products/Debug
 
 ```sh
 python3 apps/wrist-notes/Tests/test_keychain_entitlements.py \\
-  --app /private/tmp/wiselife-simulator/Build/Products/Debug-iphonesimulator/WiseLife.app \\
-  --simulated-entitlements /private/tmp/wiselife-simulator/Build/Intermediates.noindex/WristNotes.build/Debug-iphonesimulator/WristNotes.build/WiseLife.app-Simulated.xcent
+  --app /private/tmp/wiselife-simulator/Build/Products/Debug-iphonesimulator/EurekaLife.app \\
+  --simulated-entitlements /private/tmp/wiselife-simulator/Build/Intermediates.noindex/WristNotes.build/Debug-iphonesimulator/WristNotes.build/EurekaLife.app-Simulated.xcent
 ```
 
 无需完整 App 或外部 AI 服务即可运行钥匙串回归检查（先启动一个 iOS 模拟器）：
@@ -183,9 +191,11 @@ python3 apps/wrist-notes/Tests/test_keychain_simulator.py --device booted
 
 原生依赖位于仓库内 `pods/br_flutter_plugin_ble`，通过 Native Pod 3.0.0 链接 BRRecorderCore、BRBluetoothLib 和 BRRecorderOpus。没有引入 Flutter、`br_app_services`、Wi-Fi 快传或打点页面。SDK 的现有 Wi-Fi 等代码作为原生库的一部分存在，本次流程不调用这些功能。
 
-Ring 闪念由硬件触发，结束通知后自动同步。SDK 已通过 CRC 校验的实时文件复用同一恢复、转换和保存流程；实时数据缺失时从设备 BLE 补同步，离线闪念也支持补同步。闪念显示在现有“一天 → 闪念”分类，支持回听、编辑、搜索。音频自动在本地转写，再由 Apple 本地模型整理核心想法和明确待办。即使其他笔记选择自定义 AI，Ring 闪念的整理仍固定使用本地模型；模型暂不可用时保留录音和全文，提示重试，不回退到远程服务。SDK 未提供 App 开始／结束闪念的指令，需在硬件上操作。
+Ring 闪念由硬件触发，结束通知后自动同步。SDK 已通过 CRC 校验的实时文件复用同一恢复、转换和保存流程；实时数据缺失时从设备 BLE 补同步，离线闪念也支持补同步。同一设备、格式化代次和文件名对应一条录音，实时事件与文件列表的时间戳差异不会触发重复导入。闪念显示在现有“一天 → 闪念”分类，支持回听、编辑、搜索。音频自动在本地转写，再使用设置中选择的 AI 模型整理；远程模型遵循已有发送确认／免提示设置，仅发送相关文本。模型不可用时保留录音和全文，允许重试，不自动换用其他模型。SDK 未提供 App 开始／结束闪念的指令，需在硬件上操作。真机问题取证与回归见 [Ring 说明](docs/2026-10-20-ring-build-switch.md#2026-11-06-闪念重复导入与模型选择)。
 
 当前 SDK 若连接时设备已经在录音，会缺少停止指令所需的录音上下文：App 会显示真实录音状态，并提示在 Ring 上结束，再同步。验证范围及恢复策略见 [`verification/eureka-ring-native.md`](verification/eureka-ring-native.md)。
+
+闪念支持“创建个日程／创建一个日程”等明确口语指令。完整时间且系统授权允许时进入日历创建队列；缺少开始／结束时间则显示“待补充”。Ring 校时确认之后的新录音保留可确定的时区，旧离线录音不猜时区。空整理结果提供手动“重新整理”，已有行动不会重复执行。[日程排查与验证](docs/2026-10-20-ring-build-switch.md#2026-11-06-闪念日程漏识别)。
 
 ## 原型对齐验证（2026-10-18）
 

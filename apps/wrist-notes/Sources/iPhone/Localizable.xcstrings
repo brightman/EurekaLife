@@ -129,6 +129,9 @@
     "%@ · 回顾" : {
 
     },
+    "%@ · 当天共计 1 次出现" : {
+
+    },
     "%@ · 说话人与我的声音 · %@" : {
       "localizations" : {
         "en" : {
@@ -177,6 +180,9 @@
     "%@ / 6 张图片" : {
 
     },
+    "%@ / 4000 字" : {
+
+    },
     "%@ %@" : {
       "localizations" : {
         "zh-Hans" : {
@@ -196,16 +202,22 @@
     "%@ 个文件待确认保存，会继续保留。" : {
 
     },
-    "%@ 天" : {
+    "%@ 条" : {
 
     },
-    "%@ 条" : {
+    "%@ 条来源记录 · 计 1 次" : {
 
     },
     "%@ 条记录" : {
 
     },
+    "%@ 次" : {
+
+    },
     "%@ 片" : {
+
+    },
+    "%@ 笔" : {
 
     },
     "%@ 项" : {
@@ -236,6 +248,26 @@
     },
     "%@/220" : {
 
+    },
+    "%@%@ %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@%2$@ %3$@"
+          }
+        }
+      }
+    },
+    "%@%@ 条" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@%2$@ 条"
+          }
+        }
+      }
     },
     "%@年%@月" : {
       "localizations" : {
@@ -1415,25 +1447,25 @@
         }
       }
     },
-    "Enable Face ID for WiseLife" : {
+    "Enable Face ID for EurekaLife" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enable Face ID for WiseLife"
+            "value" : "Enable Face ID for EurekaLife"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "WiseLife の Face ID を有効にする"
+            "value" : "EurekaLife の Face ID を有効にする"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "为 WiseLife 开启 Face ID"
+            "value" : "为 EurekaLife 开启 Face ID"
           }
         }
       }
@@ -1441,28 +1473,157 @@
     "English" : {
 
     },
-    "EurekaRing" : {
-
-    },
-    "EurekaRing 尚未集成到 WiseLife。需要官方设备 SDK、通信协议与真实设备验证后，才能提供连接和记录接收。" : {
-      "extractionState" : "stale",
+    "EurekaLife" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "EurekaRing is not integrated with WiseLife yet. Connecting and receiving records require the official device SDK, communication protocol and verification on real devices."
+            "value" : "EurekaLife"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "EurekaRing は WiseLife とまだ連携していません。接続と記録の受信には、公式デバイス SDK、通信仕様、および実機での検証が必要です。"
+            "value" : "EurekaLife"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "EurekaRing 尚未集成到 WiseLife。需要官方设备 SDK、通信协议与真实设备验证后，才能提供连接和记录接收。"
+            "value" : "EurekaLife"
+          }
+        }
+      }
+    },
+    "EurekaLife AI" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EurekaLife AI"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EurekaLife AI"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EurekaLife AI"
+          }
+        }
+      }
+    },
+    "EurekaLife is protected" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EurekaLife is protected"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EurekaLife は保護されています"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EurekaLife 已隐藏内容"
+          }
+        }
+      }
+    },
+    "EurekaLife 录音" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EurekaLife Recording"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EurekaLife 録音"
+          }
+        }
+      }
+    },
+    "EurekaLife 提醒" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EurekaLife reminder"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EurekaLife リマインダー"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EurekaLife 提醒"
+          }
+        }
+      }
+    },
+    "EurekaLife 的隐私、服务条款与联系渠道。" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EurekaLife privacy, terms, and contact information."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EurekaLifeのプライバシー、利用規約、お問い合わせ。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EurekaLife 的隐私、服务条款与联系渠道。"
+          }
+        }
+      }
+    },
+    "EurekaRing" : {
+
+    },
+    "EurekaRing 尚未集成到 EurekaLife。需要官方设备 SDK、通信协议与真实设备验证后，才能提供连接和记录接收。" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EurekaRing is not integrated with EurekaLife yet. Connecting and receiving records require the official device SDK, communication protocol and verification on real devices."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EurekaRing は EurekaLife とまだ連携していません。接続と記録の受信には、公式デバイス SDK、通信仕様、および実機での検証が必要です。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EurekaRing 尚未集成到 EurekaLife。需要官方设备 SDK、通信协议与真实设备验证后，才能提供连接和记录接收。"
           }
         }
       }
@@ -1666,24 +1827,24 @@
         }
       }
     },
-    "Unlock WiseLife" : {
+    "Unlock EurekaLife" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Unlock WiseLife"
+            "value" : "Unlock EurekaLife"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "WiseLife のロックを解除"
+            "value" : "EurekaLife のロックを解除"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "解锁 WiseLife"
+            "value" : "解锁 EurekaLife"
           }
         }
       }
@@ -1766,135 +1927,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Watch 通信不可用"
-          }
-        }
-      }
-    },
-    "WiseLife" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WiseLife"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WiseLife"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WiseLife"
-          }
-        }
-      }
-    },
-    "WiseLife AI" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WiseLife AI"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WiseLife AI"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WiseLife AI"
-          }
-        }
-      }
-    },
-    "WiseLife is protected" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WiseLife is protected"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WiseLife は保護されています"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WiseLife 已隐藏内容"
-          }
-        }
-      }
-    },
-    "WiseLife 录音" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WiseLife Recording"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WiseLife 録音"
-          }
-        }
-      }
-    },
-    "WiseLife 提醒" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WiseLife reminder"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WiseLife リマインダー"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WiseLife 提醒"
-          }
-        }
-      }
-    },
-    "WiseLife 的隐私、服务条款与联系渠道。" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WiseLife privacy, terms, and contact information."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WiseLifeのプライバシー、利用規約、お問い合わせ。"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WiseLife 的隐私、服务条款与联系渠道。"
           }
         }
       }
@@ -2629,6 +2661,9 @@
         }
       }
     },
+    "人物信息" : {
+
+    },
     "仅为一次采集点，不能推断全程位置。" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2744,7 +2779,7 @@
         }
       }
     },
-    "仅保存在 WiseLife，不修改系统通讯录。" : {
+    "仅保存在 EurekaLife，不修改系统通讯录。" : {
 
     },
     "仅发送下方开头、中间和结尾摘录，原始音频保留在本机。生成成功后替换当前标题。" : {
@@ -3520,6 +3555,16 @@
         }
       }
     },
+    "位置资料覆盖 %@ 至 %@；不代表完整行程或停留时长。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "位置资料覆盖 %1$@ 至 %2$@；不代表完整行程或停留时长。"
+          }
+        }
+      }
+    },
     "低信息内容保留在录音库中，不在时间轴展示。" : {
 
     },
@@ -3764,6 +3809,9 @@
         }
       }
     },
+    "保留保存时的原灵感快照，后续编辑不会改变此出处。" : {
+
+    },
     "保留时间未保存，请稍后重试" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3780,9 +3828,6 @@
           }
         }
       }
-    },
-    "保留生成时的原灵感快照，后续编辑不会改变此出处。" : {
-
     },
     "保留登记" : {
       "extractionState" : "stale",
@@ -3930,19 +3975,19 @@
         }
       }
     },
-    "停止当前的 WiseLife 录音，并自动保存到本机。" : {
+    "停止当前的 EurekaLife 录音，并自动保存到本机。" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Stop the current WiseLife recording and save it on this device."
+            "value" : "Stop the current EurekaLife recording and save it on this device."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "WiseLife の現在の録音を停止し、このデバイスに保存します。"
+            "value" : "EurekaLife の現在の録音を停止し、このデバイスに保存します。"
           }
         }
       }
@@ -4201,28 +4246,31 @@
     "关联仅用于这条录音中的说话人，不会修改系统通讯录，也不会用于其他录音。" : {
 
     },
-    "关联后由 Apple 提醒事项负责通知，WiseLife 不再重复通知。添加失败时待办仍保留在“我的提醒”中，可重试或改用本地通知。" : {
+    "关联后由 Apple 提醒事项负责通知，EurekaLife 不再重复通知。添加失败时待办仍保留在“我的提醒”中，可重试或改用本地通知。" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Apple Reminders handles linked alerts without duplicate WiseLife notifications. Unconfirmed additions remain in My Reminders for retry or an explicit switch to local notifications."
+            "value" : "Apple Reminders handles linked alerts without duplicate EurekaLife notifications. Unconfirmed additions remain in My Reminders for retry or an explicit switch to local notifications."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "関連付け後の通知は Apple リマインダーが担当し、WiseLife は重複通知しません。追加できなかったタスクは「マイリマインダー」に残り、再試行やローカル通知への切り替えができます。"
+            "value" : "関連付け後の通知は Apple リマインダーが担当し、EurekaLife は重複通知しません。追加できなかったタスクは「マイリマインダー」に残り、再試行やローカル通知への切り替えができます。"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "关联后由 Apple 提醒事项负责通知，WiseLife 不再重复通知。添加失败时待办仍保留在“我的提醒”中，可重试或改用本地通知。"
+            "value" : "关联后由 Apple 提醒事项负责通知，EurekaLife 不再重复通知。添加失败时待办仍保留在“我的提醒”中，可重试或改用本地通知。"
           }
         }
       }
+    },
+    "关联的录音片段" : {
+
     },
     "关联联系人" : {
       "extractionState" : "manual",
@@ -4448,6 +4496,9 @@
           }
         }
       }
+    },
+    "出现日期" : {
+
     },
     "分片 %@" : {
 
@@ -5535,16 +5586,6 @@
     "发布时间" : {
 
     },
-    "发言范围 %@–%@ 秒" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "发言范围 %1$@–%2$@ 秒"
-          }
-        }
-      }
-    },
     "发送本次问题与文字摘录？" : {
       "localizations" : {
         "en" : {
@@ -5740,6 +5781,9 @@
           }
         }
       }
+    },
+    "另有 %@ 笔缺少日期，暂不能归入本次时间范围。" : {
+
     },
     "只使用选中的 %@ 条灵感，原内容保持不变。" : {
 
@@ -6037,6 +6081,9 @@
         }
       }
     },
+    "合并结果另存为新灵感；原条目和来源会保留。无需调用 AI。" : {
+
+    },
     "同一录音中的相邻片段" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -6077,25 +6124,25 @@
         }
       }
     },
-    "同步服务尚未准备好，请确认手表已配对并安装 WiseLife，然后刷新状态。" : {
+    "同步服务尚未准备好，请确认手表已配对并安装 EurekaLife，然后刷新状态。" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sync is not ready. Make sure Watch is paired and WiseLife is installed, then refresh status."
+            "value" : "Sync is not ready. Make sure Watch is paired and EurekaLife is installed, then refresh status."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "同期の準備ができていません。Watch がペアリング済みで WiseLife がインストールされていることを確認し、状態を更新してください。"
+            "value" : "同期の準備ができていません。Watch がペアリング済みで EurekaLife がインストールされていることを確認し、状態を更新してください。"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "同步服务尚未准备好，请确认手表已配对并安装 WiseLife，然后刷新状态。"
+            "value" : "同步服务尚未准备好，请确认手表已配对并安装 EurekaLife，然后刷新状态。"
           }
         }
       }
@@ -6501,37 +6548,37 @@
         }
       }
     },
-    "图示来自 WiseLife 原生 App 模拟器截图。轻点图片可查看完整截图。" : {
+    "图示供操作参考。轻点图片可查看完整示意图。" : {
 
     },
     "圆点表示这天有记录。今天是 %@。" : {
 
     },
-    "在 Mac 打开“配对 iPhone”，扫描新生成的二维码。请保持两端连接同一网络。" : {
-
-    },
-    "在 WiseLife 开始录音，并显示录音实时活动。" : {
+    "在 EurekaLife 开始录音，并显示录音实时活动。" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Start recording in WiseLife and show the recording Live Activity."
+            "value" : "Start recording in EurekaLife and show the recording Live Activity."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "WiseLifeで録音を開始し、録音のライブアクティビティを表示します。"
+            "value" : "EurekaLifeで録音を開始し、録音のライブアクティビティを表示します。"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在 WiseLife 开始录音，并显示录音实时活动。"
+            "value" : "在 EurekaLife 开始录音，并显示录音实时活动。"
           }
         }
       }
+    },
+    "在 Mac 打开“配对 iPhone”，扫描新生成的二维码。请保持两端连接同一网络。" : {
+
     },
     "在多人录音中，找到你说的话。" : {
       "extractionState" : "stale",
@@ -6711,6 +6758,9 @@
         }
       }
     },
+    "地点名称" : {
+
+    },
     "地点地址正在解析" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -6802,6 +6852,9 @@
           }
         }
       }
+    },
+    "地点类型" : {
+
     },
     "地点详情" : {
       "extractionState" : "manual",
@@ -7311,7 +7364,7 @@
         }
       }
     },
-    "对准 Mac 上的 WiseLife 配对二维码" : {
+    "对准 Mac 上的 EurekaLife 配对二维码" : {
 
     },
     "对话操作" : {
@@ -7409,25 +7462,25 @@
         }
       }
     },
-    "将删除 WiseLife 待办和关联的 Apple 提醒事项。若系统删除失败，会保留待办供你重试。" : {
+    "将删除 EurekaLife 待办和关联的 Apple 提醒事项。若系统删除失败，会保留待办供你重试。" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This deletes the WiseLife task and its linked Apple reminder. If system deletion fails, the task stays available for retry."
+            "value" : "This deletes the EurekaLife task and its linked Apple reminder. If system deletion fails, the task stays available for retry."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "WiseLife のタスクと関連する Apple リマインダーを削除します。システムでの削除に失敗した場合は再試行できるよう保持します。"
+            "value" : "EurekaLife のタスクと関連する Apple リマインダーを削除します。システムでの削除に失敗した場合は再試行できるよう保持します。"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "将删除 WiseLife 待办和关联的 Apple 提醒事项。若系统删除失败，会保留待办供你重试。"
+            "value" : "将删除 EurekaLife 待办和关联的 Apple 提醒事项。若系统删除失败，会保留待办供你重试。"
           }
         }
       }
@@ -7625,25 +7678,25 @@
         }
       }
     },
-    "尚未允许通知，提醒没有安排。请在系统设置中开启 WiseLife 通知，再重新确认。" : {
+    "尚未允许通知，提醒没有安排。请在系统设置中开启 EurekaLife 通知，再重新确认。" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Notifications are not allowed, so no reminder was scheduled. Enable WiseLife notifications in system settings and confirm again."
+            "value" : "Notifications are not allowed, so no reminder was scheduled. Enable EurekaLife notifications in system settings and confirm again."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "通知が許可されていないためリマインダーは未設定です。システム設定でWiseLifeの通知を有効にして、もう一度確認してください。"
+            "value" : "通知が許可されていないためリマインダーは未設定です。システム設定でEurekaLifeの通知を有効にして、もう一度確認してください。"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "尚未允许通知，提醒没有安排。请在系统设置中开启 WiseLife 通知，再重新确认。"
+            "value" : "尚未允许通知，提醒没有安排。请在系统设置中开启 EurekaLife 通知，再重新确认。"
           }
         }
       }
@@ -8432,6 +8485,9 @@
     "已有自定义关系暂未载入，你仍可选择或添加关系。" : {
 
     },
+    "已有记录会沿用这个名称，出现次数不变。" : {
+
+    },
     "已有记录保存在本机。录音始终由你主动开始；未授权健康数据时，首页显示闪念条数与图片张数。" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -8518,6 +8574,12 @@
         }
       }
     },
+    "已确认 %@ 笔账目" : {
+
+    },
+    "已确认账目中，%@ 笔尚未分类。" : {
+
+    },
     "已达到 ChatGPT 应用用量上限，请前往 ChatGPT 设置中的用量页面查看。" : {
       "localizations" : {
         "en" : {
@@ -8562,6 +8624,9 @@
           }
         }
       }
+    },
+    "已选 %@ 条灵感" : {
+
     },
     "已选择" : {
 
@@ -8891,19 +8956,19 @@
         }
       }
     },
-    "开始 WiseLife 录音；已在录音时，停止并自动保存到本机。适合绑定操作按钮。" : {
+    "开始 EurekaLife 录音；已在录音时，停止并自动保存到本机。适合绑定操作按钮。" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Start a WiseLife recording, or stop and save the current recording on this device. Assign this action to the Action button."
+            "value" : "Start a EurekaLife recording, or stop and save the current recording on this device. Assign this action to the Action button."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "WiseLife の録音を開始します。録音中の場合は停止してこのデバイスに保存します。アクションボタンに割り当てられます。"
+            "value" : "EurekaLife の録音を開始します。録音中の場合は停止してこのデバイスに保存します。アクションボタンに割り当てられます。"
           }
         }
       }
@@ -9220,6 +9285,9 @@
           }
         }
       }
+    },
+    "当天 %@ 条来源记录" : {
+
     },
     "当天的地点" : {
       "extractionState" : "manual",
@@ -9570,8 +9638,21 @@
         }
       }
     },
-    "录音和闪念通过蓝牙同步，转换后保存在本机。Ring 闪念自动使用本地转写和 Apple Intelligence整理，在“一天 → 闪念”中查看。同步不会删除设备原录音。" : {
-
+    "录音和闪念通过蓝牙同步，转换后保存在本机。Ring 闪念在本地转写，并使用设置中选择的 AI 模型整理，在“一天 → 闪念”中查看。发送到外部模型遵循你的确认设置；同步不会删除设备原录音。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recordings and thoughts sync over Bluetooth and are converted and saved on this iPhone. Ring thoughts are transcribed locally and organized with the AI model selected in Settings. Find them under Day → Thoughts. External AI requests follow your confirmation settings; syncing keeps the original recordings on your Ring."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "録音とひらめきはBluetoothで同期し、変換してiPhoneに保存します。Ringのひらめきは端末内で文字起こしし、設定で選んだAIモデルで整理します。「一日 → ひらめき」で確認できます。外部モデルへの送信は確認設定に従い、同期してもRingの元の録音は削除しません。"
+          }
+        }
+      }
     },
     "录音已中断" : {
       "extractionState" : "stale",
@@ -9809,19 +9890,19 @@
         }
       }
     },
-    "录音标识无效，请在 WiseLife 中查看录音状态。" : {
+    "录音标识无效，请在 EurekaLife 中查看录音状态。" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Invalid recording ID. Check the recording status in WiseLife."
+            "value" : "Invalid recording ID. Check the recording status in EurekaLife."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "録音 ID が無効です。WiseLife で録音の状態を確認してください。"
+            "value" : "録音 ID が無効です。EurekaLife で録音の状態を確認してください。"
           }
         }
       }
@@ -10350,9 +10431,6 @@
     "手动创建默认关联第一条来源；AI 可以分别识别各条来源。" : {
 
     },
-    "手动名称独立保存，更名不改变计数；来源删除后仍保留名称。" : {
-
-    },
     "手机正在录音，保存后可从这里开始 Ring 录音。" : {
 
     },
@@ -10539,6 +10617,23 @@
         }
       }
     },
+    "打开 EurekaLife 系统设置" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open EurekaLife settings"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EurekaLife の設定を開く"
+          }
+        }
+      }
+    },
     "打开 iPhone「设置」→「操作按钮」。" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -10552,23 +10647,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "iPhone の「設定」→「アクションボタン」を開きます。"
-          }
-        }
-      }
-    },
-    "打开 WiseLife 系统设置" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open WiseLife settings"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WiseLife の設定を開く"
           }
         }
       }
@@ -10925,7 +11003,7 @@
     "按记录中的位置归组，附近地点可能归为同一区域。" : {
 
     },
-    "按账目发生月汇总，各币种分别计算；待补充与已撤销账目不计入。缺日期账目暂按录制月显示。" : {
+    "按账目发生月汇总，各币种分别计算；待补充与已删除账目不计入。缺日期账目暂按录制月显示。" : {
 
     },
     "按问题查找相关记录" : {
@@ -11358,25 +11436,25 @@
     "收入" : {
 
     },
-    "改用 WiseLife 本地通知？" : {
+    "改用 EurekaLife 本地通知？" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Switch to WiseLife local notifications?"
+            "value" : "Switch to EurekaLife local notifications?"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "WiseLife のローカル通知に切り替えますか？"
+            "value" : "EurekaLife のローカル通知に切り替えますか？"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "改用 WiseLife 本地通知？"
+            "value" : "改用 EurekaLife 本地通知？"
           }
         }
       }
@@ -12208,9 +12286,6 @@
     "暂无传输事件。连接或同步后会显示在这里。" : {
 
     },
-    "暂无关联录音。解除关联或删除来源不会删除联系人。" : {
-
-    },
     "暂无可显示片段，完整录音仍可回听。" : {
       "localizations" : {
         "en" : {
@@ -12321,19 +12396,19 @@
         }
       }
     },
-    "暂时无法创建录音实时活动，请打开 WiseLife 后重试。" : {
+    "暂时无法创建录音实时活动，请打开 EurekaLife 后重试。" : {
       "comment" : "Recording Live Activity error",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A recording Live Activity is unavailable. Open WiseLife and try again."
+            "value" : "A recording Live Activity is unavailable. Open EurekaLife and try again."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "録音のライブアクティビティを開始できません。WiseLife を開いて再試行してください。"
+            "value" : "録音のライブアクティビティを開始できません。EurekaLife を開いて再試行してください。"
           }
         }
       }
@@ -12571,25 +12646,25 @@
         }
       }
     },
-    "未关联 Apple 的提醒使用 WiseLife 本地通知。关联后由 Apple 提醒事项负责通知；内容是否同步由所选列表的账户设置决定。" : {
+    "未关联 Apple 的提醒使用 EurekaLife 本地通知。关联后由 Apple 提醒事项负责通知；内容是否同步由所选列表的账户设置决定。" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Unlinked tasks use WiseLife local notifications. Linked tasks use Apple Reminders; syncing follows the selected list’s account settings."
+            "value" : "Unlinked tasks use EurekaLife local notifications. Linked tasks use Apple Reminders; syncing follows the selected list’s account settings."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "未関連付けのタスクは WiseLife のローカル通知を使用します。関連付け後は Apple リマインダーが通知し、同期は選択したリストのアカウント設定に従います。"
+            "value" : "未関連付けのタスクは EurekaLife のローカル通知を使用します。関連付け後は Apple リマインダーが通知し、同期は選択したリストのアカウント設定に従います。"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "未关联 Apple 的提醒使用 WiseLife 本地通知。关联后由 Apple 提醒事项负责通知；内容是否同步由所选列表的账户设置决定。"
+            "value" : "未关联 Apple 的提醒使用 EurekaLife 本地通知。关联后由 Apple 提醒事项负责通知；内容是否同步由所选列表的账户设置决定。"
           }
         }
       }
@@ -12680,7 +12755,7 @@
         }
       }
     },
-    "未授权时，想法仍可保存在 WiseLife，暂不能写入 Apple 提醒事项。" : {
+    "未授权时，想法仍可保存在 EurekaLife，暂不能写入 Apple 提醒事项。" : {
 
     },
     "未接入" : {
@@ -12707,9 +12782,6 @@
       }
     },
     "未提供" : {
-
-    },
-    "未标记" : {
 
     },
     "未登记 · 让笔记认出我说的话" : {
@@ -13498,9 +13570,6 @@
         }
       }
     },
-    "来源录音已不可用，原话仍保留。" : {
-
-    },
     "来源未提供睡眠分期，已保留可读取的实际睡眠时长。" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -13684,25 +13753,25 @@
         }
       }
     },
-    "查看常见问题、隐私与服务条款，或联系 WiseLife。" : {
+    "查看常见问题、隐私与服务条款，或联系 EurekaLife。" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Find answers, review the privacy policy and terms, or contact WiseLife."
+            "value" : "Find answers, review the privacy policy and terms, or contact EurekaLife."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "よくある質問、プライバシーと利用規約を確認するか、WiseLife にお問い合わせください。"
+            "value" : "よくある質問、プライバシーと利用規約を確認するか、EurekaLife にお問い合わせください。"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "查看常见问题、隐私与服务条款，或联系 WiseLife。"
+            "value" : "查看常见问题、隐私与服务条款，或联系 EurekaLife。"
           }
         }
       }
@@ -14904,25 +14973,25 @@
         }
       }
     },
-    "此连接使用 ChatGPT 套餐的可用额度。WiseLife 的购买费用不包含 ChatGPT 订阅，也不代表无限用量。" : {
+    "此连接使用 ChatGPT 套餐的可用额度。EurekaLife 的购买费用不包含 ChatGPT 订阅，也不代表无限用量。" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This connection uses your ChatGPT plan allowance. Your WiseLife purchase does not include a ChatGPT subscription or unlimited usage."
+            "value" : "This connection uses your ChatGPT plan allowance. Your EurekaLife purchase does not include a ChatGPT subscription or unlimited usage."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ChatGPT プランの利用枠を使用します。WiseLife の購入に ChatGPT の契約や無制限の利用は含まれません。"
+            "value" : "ChatGPT プランの利用枠を使用します。EurekaLife の購入に ChatGPT の契約や無制限の利用は含まれません。"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "此连接使用 ChatGPT 套餐的可用额度。WiseLife 的购买费用不包含 ChatGPT 订阅，也不代表无限用量。"
+            "value" : "此连接使用 ChatGPT 套餐的可用额度。EurekaLife 的购买费用不包含 ChatGPT 订阅，也不代表无限用量。"
           }
         }
       }
@@ -16201,25 +16270,25 @@
     "直接说你想知道什么。\n我会从你允许的记录里寻找线索。" : {
 
     },
-    "相机权限未开启。可在系统设置中允许 WiseLife 使用相机，或从相册选择。" : {
+    "相机权限未开启。可在系统设置中允许 EurekaLife 使用相机，或从相册选择。" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Camera access is off. Allow WiseLife to use the camera in system settings, or choose from your photo library."
+            "value" : "Camera access is off. Allow EurekaLife to use the camera in system settings, or choose from your photo library."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "カメラの使用が許可されていません。システム設定でWiseLifeのカメラ使用を許可するか、写真ライブラリから選択してください。"
+            "value" : "カメラの使用が許可されていません。システム設定でEurekaLifeのカメラ使用を許可するか、写真ライブラリから選択してください。"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "相机权限未开启。可在系统设置中允许 WiseLife 使用相机，或从相册选择。"
+            "value" : "相机权限未开启。可在系统设置中允许 EurekaLife 使用相机，或从相册选择。"
           }
         }
       }
@@ -17979,6 +18048,9 @@
         }
       }
     },
+    "该范围内另有 %@ 笔待补充，未计入合计。" : {
+
+    },
     "语义索引与问题翻译在本机处理；清除索引不会删除原始记录。" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -18523,6 +18595,9 @@
     "说话人信息已更新，请处理完成后再编辑。" : {
 
     },
+    "说话人关联需要复核；这段发言不代表现实见面记录。" : {
+
+    },
     "说话人分析失败，可重试。" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -18780,105 +18855,105 @@
         }
       }
     },
-    "请在 Apple Watch 上安装“WiseLife”，录音会自动传到这里。" : {
+    "请在 Apple Watch 上安装“EurekaLife”，录音会自动传到这里。" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Install WiseLife on Apple Watch. Recordings will transfer here automatically."
+            "value" : "Install EurekaLife on Apple Watch. Recordings will transfer here automatically."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Apple Watch に WiseLife をインストールしてください。録音はここに自動転送されます。"
+            "value" : "Apple Watch に EurekaLife をインストールしてください。録音はここに自動転送されます。"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "请在 Apple Watch 上安装“WiseLife”，录音会自动传到这里。"
+            "value" : "请在 Apple Watch 上安装“EurekaLife”，录音会自动传到这里。"
           }
         }
       }
     },
-    "请在 ChatGPT 授权页面完成登录。WiseLife 不会接收你的密码。" : {
+    "请在 ChatGPT 授权页面完成登录。EurekaLife 不会接收你的密码。" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Complete sign-in on the ChatGPT authorization page. WiseLife does not receive your password."
+            "value" : "Complete sign-in on the ChatGPT authorization page. EurekaLife does not receive your password."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ChatGPT の認証画面でログインを完了してください。WiseLife はパスワードを受け取りません。"
+            "value" : "ChatGPT の認証画面でログインを完了してください。EurekaLife はパスワードを受け取りません。"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "请在 ChatGPT 授权页面完成登录。WiseLife 不会接收你的密码。"
+            "value" : "请在 ChatGPT 授权页面完成登录。EurekaLife 不会接收你的密码。"
           }
         }
       }
     },
-    "请在系统设置中允许 WiseLife 使用麦克风。" : {
+    "请在系统设置中允许 EurekaLife 使用麦克风。" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Allow WiseLife to use the microphone in system settings."
+            "value" : "Allow EurekaLife to use the microphone in system settings."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "システム設定でWiseLifeのマイク使用を許可してください。"
+            "value" : "システム設定でEurekaLifeのマイク使用を許可してください。"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "请在系统设置中允许 WiseLife 使用麦克风。"
+            "value" : "请在系统设置中允许 EurekaLife 使用麦克风。"
           }
         }
       }
     },
-    "请在系统设置中允许 WiseLife 的实时活动，以便通过操作按钮录音。" : {
+    "请在系统设置中允许 EurekaLife 的实时活动，以便通过操作按钮录音。" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Allow Live Activities for WiseLife in Settings to record with the Action button."
+            "value" : "Allow Live Activities for EurekaLife in Settings to record with the Action button."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "アクションボタンで録音するには、設定で WiseLife のライブアクティビティを許可してください。"
+            "value" : "アクションボタンで録音するには、設定で EurekaLife のライブアクティビティを許可してください。"
           }
         }
       }
     },
-    "请在系统设置中允许 WiseLife 的实时活动，然后重新开始录音。" : {
+    "请在系统设置中允许 EurekaLife 的实时活动，然后重新开始录音。" : {
       "comment" : "Recording Live Activity error",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Allow Live Activities for WiseLife in Settings, then start recording again."
+            "value" : "Allow Live Activities for EurekaLife in Settings, then start recording again."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "設定で WiseLife のライブアクティビティを許可してから、もう一度録音を開始してください。"
+            "value" : "設定で EurekaLife のライブアクティビティを許可してから、もう一度録音を開始してください。"
           }
         }
       }
@@ -18928,59 +19003,59 @@
         }
       }
     },
-    "请打开 WiseLife 开始录音。" : {
+    "请打开 EurekaLife 开始录音。" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Open WiseLife to start recording."
+            "value" : "Open EurekaLife to start recording."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "WiseLifeを開いて録音を開始してください。"
+            "value" : "EurekaLifeを開いて録音を開始してください。"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "请打开 WiseLife 开始录音。"
+            "value" : "请打开 EurekaLife 开始录音。"
           }
         }
       }
     },
-    "请打开 WiseLife 结束并保存录音。" : {
+    "请打开 EurekaLife 结束并保存录音。" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Open WiseLife to stop and save the recording."
+            "value" : "Open EurekaLife to stop and save the recording."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "WiseLife を開いて録音を停止し、保存してください。"
+            "value" : "EurekaLife を開いて録音を停止し、保存してください。"
           }
         }
       }
     },
-    "请打开 WiseLife，完成首次麦克风授权后开始录音。" : {
+    "请打开 EurekaLife，完成首次麦克风授权后开始录音。" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Open WiseLife to allow microphone access before your first recording."
+            "value" : "Open EurekaLife to allow microphone access before your first recording."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "初回の録音前に WiseLife を開き、マイクへのアクセスを許可してください。"
+            "value" : "初回の録音前に EurekaLife を開き、マイクへのアクセスを許可してください。"
           }
         }
       }
@@ -19008,19 +19083,19 @@
         }
       }
     },
-    "请更新并打开手表上的 WiseLife，等待手表返回存储统计后设置。" : {
+    "请更新并打开手表上的 EurekaLife，等待手表返回存储统计后设置。" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Update and open WiseLife on Watch, then wait for its storage estimate before configuring retention."
+            "value" : "Update and open EurekaLife on Watch, then wait for its storage estimate before configuring retention."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "请更新并打开手表上的 WiseLife，等待手表返回存储统计后设置。"
+            "value" : "请更新并打开手表上的 EurekaLife，等待手表返回存储统计后设置。"
           }
         }
       }
@@ -19136,25 +19211,25 @@
         }
       }
     },
-    "请重新授权，并允许 WiseLife 使用 ChatGPT 套餐。可用性取决于账号和应用的接入资格。" : {
+    "请重新授权，并允许 EurekaLife 使用 ChatGPT 套餐。可用性取决于账号和应用的接入资格。" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Authorize again and allow WiseLife to use your ChatGPT plan. Availability depends on account and app eligibility."
+            "value" : "Authorize again and allow EurekaLife to use your ChatGPT plan. Availability depends on account and app eligibility."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "再認証して WiseLife に ChatGPT プランの使用を許可してください。利用可否はアカウントとアプリの利用資格によります。"
+            "value" : "再認証して EurekaLife に ChatGPT プランの使用を許可してください。利用可否はアカウントとアプリの利用資格によります。"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "请重新授权，并允许 WiseLife 使用 ChatGPT 套餐。可用性取决于账号和应用的接入资格。"
+            "value" : "请重新授权，并允许 EurekaLife 使用 ChatGPT 套餐。可用性取决于账号和应用的接入资格。"
           }
         }
       }
@@ -19207,6 +19282,9 @@
           }
         }
       }
+    },
+    "账目明细" : {
+
     },
     "起床 · 估计" : {
       "extractionState" : "stale",
@@ -19371,25 +19449,25 @@
         }
       }
     },
-    "轻点「添加小组件」→ WiseLife →「快捷录音」。" : {
+    "轻点「添加小组件」→ EurekaLife →「快捷录音」。" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tap Add Widgets → WiseLife → Quick Recording."
+            "value" : "Tap Add Widgets → EurekaLife → Quick Recording."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "「ウィジェットを追加」→ WiseLife →「クイック録音」をタップします。"
+            "value" : "「ウィジェットを追加」→ EurekaLife →「クイック録音」をタップします。"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "轻点「添加小组件」→ WiseLife →「快捷录音」。"
+            "value" : "轻点「添加小组件」→ EurekaLife →「快捷录音」。"
           }
         }
       }
@@ -19524,6 +19602,9 @@
     "近 30 天 · 同一地点每天计 1 次" : {
 
     },
+    "近 30 天出现 · 同一天只记 1 次" : {
+
+    },
     "返回" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -19546,6 +19627,9 @@
           }
         }
       }
+    },
+    "还没有关联的录音片段。为录音中的说话人关联此人物后，已完成整理的片段会出现在这里。" : {
+
     },
     "还没有安排提醒" : {
 
@@ -19737,6 +19821,9 @@
           }
         }
       }
+    },
+    "这个范围内没有可用记录。" : {
+
     },
     "这会删除本机原始音频及全部派生内容片段，无法撤销。" : {
       "extractionState" : "stale",
@@ -20102,22 +20189,22 @@
         }
       }
     },
-    "选择 2 至 10 条灵感，生成结果另存，保留原想法。" : {
+    "选择 2 至 10 条，合并为新灵感，保留原记录。" : {
 
     },
-    "选择 WiseLife 的「开始／停止录音」。" : {
+    "选择 EurekaLife 的「开始／停止录音」。" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choose WiseLife’s “Start / Stop Recording”."
+            "value" : "Choose EurekaLife’s “Start / Stop Recording”."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "WiseLife の「録音を開始／停止」を選びます。"
+            "value" : "EurekaLife の「録音を開始／停止」を選びます。"
           }
         }
       }
@@ -20375,6 +20462,9 @@
           }
         }
       }
+    },
+    "部分资料仅限本机处理，未包含在这次结果中。" : {
+
     },
     "配对状态" : {
       "extractionState" : "stale",
@@ -21177,7 +21267,23 @@
         }
       }
     },
-    "闪念在 iPhone 本地转写，并由 Apple Intelligence整理。模型暂不可用时可先回听、查看全文，稍后重试。" : {
+    "闪念在 iPhone 本地转写，并使用设置中选择的 AI 模型整理。发送到外部模型遵循你的确认设置；模型暂不可用时可先回听、查看全文，稍后重试。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thoughts are transcribed on this iPhone and organized with the AI model selected in Settings. External AI requests follow your confirmation settings. If the model is unavailable, you can listen to the recording, read the transcript, and retry later."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ひらめきはiPhone内で文字起こしし、設定で選んだAIモデルで整理します。外部モデルへの送信は確認設定に従います。モデルを利用できない場合も、録音の再生や全文の確認をして、後で再試行できます。"
+          }
+        }
+      }
+    },
+    "闪念记为我的发言，无需说话人分析" : {
 
     },
     "问问 AI 这些图片" : {

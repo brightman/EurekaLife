@@ -39,7 +39,7 @@ struct CompanionView: View {
                 Image(systemName: "sparkles").font(.system(size: 24, weight: .medium)).foregroundStyle(Theme.accent)
                     .frame(width: 42, height: 42).background(Theme.blueSoft, in: RoundedRectangle(cornerRadius: 13))
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("WiseLife").font(.system(size: 20, weight: .semibold, design: .rounded))
+                    Text("EurekaLife").font(.system(size: 20, weight: .semibold, design: .rounded))
                     Text("Mac Companion").font(.system(size: 10, weight: .medium)).tracking(0.6).foregroundStyle(Theme.muted)
                 }
             }.padding(.horizontal, 22).padding(.top, 36).padding(.bottom, 40)
@@ -68,7 +68,7 @@ struct CompanionView: View {
     private var header: some View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 7) {
-                Text("WISELIFE · MAC").font(.system(size: 10, weight: .medium)).tracking(2).foregroundStyle(Theme.muted)
+                Text("EUREKALIFE · MAC").font(.system(size: 10, weight: .medium)).tracking(2).foregroundStyle(Theme.muted)
                 Text(model.page.rawValue).font(.system(size: 28, weight: .semibold, design: .rounded))
             }
             Spacer()
@@ -336,7 +336,7 @@ struct CompanionView: View {
                             ForEach(model.networkNames, id: \.self) { Text(LocalInterface.displayName(for: $0)).tag($0) }
                         }.font(.system(size: 12)).frame(maxWidth: 300)
                     }
-                    Text("找不到 Mac 时，请检查局域网权限、Mac 是否休眠，以及路由器或热点是否阻止设备互访。配对需要支持「附近 Mac」的 WiseLife iPhone 版本。").font(.system(size: 12)).foregroundStyle(Theme.muted).lineSpacing(5)
+                    Text("找不到 Mac 时，请检查局域网权限、Mac 是否休眠，以及路由器或热点是否阻止设备互访。配对需要支持「附近 Mac」的 EurekaLife iPhone 版本。").font(.system(size: 12)).foregroundStyle(Theme.muted).lineSpacing(5)
                     Button("重试局域网服务") { model.retryService() }.disabled(!model.initialized)
                     Text("配对不是在线证明。Mac 只会在收到合法请求后处理文字。").font(.system(size: 11)).foregroundStyle(Theme.muted)
                 }
@@ -349,7 +349,7 @@ struct CompanionView: View {
             privacyRow("只处理你授权的文字", "选择「附近 Mac」后，获准用于当前任务的文字会离开 iPhone，经局域网发送到这台 Mac。音频、照片和无关资料不在此服务的接收范围内。", icon: "text.badge.checkmark")
             privacyRow("一次扫码，独立凭据", "所有请求使用 TLS 加密。配对码 2 分钟失效且只能使用一次；每台 iPhone 使用独立凭据，Mac 将凭据校验值和证书存于系统钥匙串。", icon: "key.horizontal")
             privacyRow("推理完成后，释放会话", "Mac 保存模型文件和配对资料；不保存提示词、转写、总结或回复，也不记录请求和响应正文。每次生成使用独立的推理会话。", icon: "arrow.trianglehead.2.clockwise.rotate.90")
-            privacyRow("服务暂停时，由你决定下一步", "Mac 不可用时，iPhone 应明确提示并允许重试。该服务不会把请求改发给 ChatGPT、自定义云端服务或 WiseLife 服务器。", icon: "hand.raised")
+            privacyRow("服务暂停时，由你决定下一步", "Mac 不可用时，iPhone 应明确提示并允许重试。该服务不会把请求改发给 ChatGPT、自定义云端服务或 EurekaLife 服务器。", icon: "hand.raised")
             panel {
                 VStack(alignment: .leading, spacing: 10) {
                     sectionLabel("关于这个版本", icon: "info.circle")

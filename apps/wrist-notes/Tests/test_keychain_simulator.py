@@ -24,7 +24,7 @@ def main():
         base = Path(folder)
         app = base / "KeychainCheck.app"
         app.mkdir()
-        bundle = "cloud.karama.wisenote.keychaincheck." + uuid.uuid4().hex
+        bundle = "cloud.karama.wiselife.keychaincheck." + uuid.uuid4().hex
         (app / "Info.plist").write_bytes(plistlib.dumps({
             "CFBundleIdentifier": bundle, "CFBundleExecutable": "KeychainCheck",
             "CFBundlePackageType": "APPL", "CFBundleVersion": "1",

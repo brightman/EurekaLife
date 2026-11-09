@@ -38,7 +38,7 @@ module WatchRecordingWidgetProject
       settings['CURRENT_PROJECT_VERSION'] = parent['CURRENT_PROJECT_VERSION'] || info.fetch('CFBundleVersion')
       settings['GENERATE_INFOPLIST_FILE'] = 'YES'
       settings['INFOPLIST_FILE'] = 'Sources/WatchRecordingWidget/Info.plist'
-      settings['INFOPLIST_KEY_CFBundleDisplayName'] = 'WiseLife'
+      settings['INFOPLIST_KEY_CFBundleDisplayName'] = 'EurekaLife'
       settings['APPLICATION_EXTENSION_API_ONLY'] = 'YES'
       settings['SKIP_INSTALL'] = 'YES'
       settings['TARGETED_DEVICE_FAMILY'] = '4'

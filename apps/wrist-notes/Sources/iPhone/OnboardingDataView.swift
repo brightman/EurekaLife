@@ -28,7 +28,7 @@ struct OnboardingDataView: View {
                     }.buttonStyle(DaybookSettingsButtonStyle()).disabled(reminders.isLoadingApple || requesting != nil)
                 }
                 if let error = reminders.appleError { Text(error).foregroundStyle(DaybookStyle.red) }
-                Text("未授权时，想法仍可保存在 WiseLife，暂不能写入 Apple 提醒事项。")
+                Text("未授权时，想法仍可保存在 EurekaLife，暂不能写入 Apple 提醒事项。")
                     .foregroundStyle(DaybookStyle.secondary)
             }.font(.system(size: 12)).lineSpacing(6).daybookRecordingCard()
             SettingsFootnote(text: "麦克风、相机与照片在实际使用时申请。健康数据的读取权限由系统保护，App 不能判断你拒绝了哪些健康项目。可以随时在系统设置中调整授权。")

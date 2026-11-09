@@ -69,7 +69,7 @@ enum WatchConnectivityStatus {
     ) -> String {
         guard isSupported else { return "此设备不支持 Watch Connectivity" }
         guard isActivated else { return "正在准备同步…" }
-        guard companionInstalled else { return "请先在配对 iPhone 安装并打开 WiseLife" }
+        guard companionInstalled else { return "请先在配对 iPhone 安装并打开 EurekaLife" }
         if missingFileCount > 0 { return "有 \(missingFileCount) 条录音文件缺失，无法发送" }
         if pendingCount > 0 { return "已配对 · 待同步 \(pendingCount) 条" }
         if transferCount > 0 { return "录音已传输，等待 iPhone 保存确认" }

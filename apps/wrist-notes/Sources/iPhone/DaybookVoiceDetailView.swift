@@ -110,6 +110,8 @@ struct DaybookVoiceDetailView: View {
     @EnvironmentObject private var settings: AppSettings
     @EnvironmentObject private var audioProcessing: AudioProcessingModel
     @EnvironmentObject private var segmentModel: ContentSegmentModel
+    @EnvironmentObject private var flash: FlashCaptureModel
+    @EnvironmentObject private var actions: ActionStore
     @Environment(\.dismiss) private var dismiss
     @StateObject private var playback = AudioPlayback()
     @StateObject private var groupedPlayback = RecordingRangePlayback()
@@ -249,10 +251,16 @@ struct DaybookVoiceDetailView: View {
                     VStack(spacing: 0) {
                         processingStatusRow("录音已保存", detail: "音频文件保存在此 iPhone。", state: .ready)
                         processingStatusRow("语音转写", detail: processingDescription(note.transcriptionState, ready: note.transcript.isEmpty ? "已完成，未识别到文字" : "全文已就绪"), state: note.transcriptionState)
-                        if let state = note.diarizationState {
+                        if note.kind == .thought {
+                            processingStatusRow("说话人", detail: "我 · 闪念无需说话人分析", state: .ready)
+                        } else if let state = note.diarizationState {
                             processingStatusRow("说话人分析", detail: processingDescription(state, ready: "说话人分析已完成"), state: state)
                         }
-                        processingStatusRow("总结", detail: processingDescription(note.summaryState, ready: note.summary.isEmpty ? "尚无总结" : "总结已就绪"), state: note.summaryState)
+                        if note.kind == .thought {
+                            flashProcessingStatus(note)
+                        } else {
+                            processingStatusRow("总结", detail: processingDescription(note.summaryState, ready: note.summary.isEmpty ? "尚无总结" : "总结已就绪"), state: note.summaryState)
+                        }
                     }
                     .daybookRecordingCard(padding: 13)
                     .padding(.top, 8)
@@ -381,6 +389,38 @@ struct DaybookVoiceDetailView: View {
         .overlay(alignment: .bottom) { DaybookStyle.line.frame(height: 1) }
     }
 
+    /// Flash organization has its own durable batch; the legacy summary field can
+    /// remain pending forever because the runtime deliberately skips that pipeline.
+    private func flashProcessingStatus(_ note: VoiceNote) -> some View {
+        let batch = flash.batches[note.id]
+        let state: ProcessingState
+        let detail: String
+        if flash.processing.contains(note.id) {
+            state = .running; detail = "正在整理闪念…"
+        } else {
+            switch batch?.state {
+            case .complete:
+                state = .ready
+                let hasResults = flash.assets.contains { $0.source.id == note.id }
+                    || actions.flashTimelineItems.contains { $0.source?.id == note.id }
+                detail = hasResults ? "整理已完成；日程、待办和提醒的执行状态请查看整理结果。"
+                    : "整理已完成，未提取到想法、账目或行动。可返回整理页重试。"
+            case .running:
+                state = .running; detail = "正在整理闪念…"
+            case .failed:
+                state = .failed; detail = batch?.message ?? "整理失败，可返回整理页重试。"
+            case .awaitingConsent:
+                state = .pending; detail = batch?.message ?? "等待确认发送全文到所选 AI 模型。"
+            case .historical:
+                state = .pending; detail = "历史闪念尚未整理，可在整理页手动开始。"
+            case .pending, .none:
+                state = .pending
+                detail = note.transcriptionState == .ready ? "等待整理闪念。" : "等待语音转写完成后整理。"
+            }
+        }
+        return processingStatusRow("闪念整理", detail: detail, state: state)
+    }
+
     private func processingDescription(_ state: ProcessingState, ready: String) -> String {
         switch state {
         case .pending: "等待处理"
@@ -415,8 +455,8 @@ struct DaybookVoiceDetailView: View {
                 Text("来自 \(origin.device) · 录制时间缺失，按同步时间显示")
                     .font(.system(size: 10)).foregroundStyle(DaybookStyle.secondary)
             }
-            if note.usesLocalThoughtAI {
-                Text("闪念在 iPhone 本地转写，并由 Apple Intelligence整理。模型暂不可用时可先回听、查看全文，稍后重试。")
+            if note.isRingThought {
+                Text("闪念在 iPhone 本地转写，并使用设置中选择的 AI 模型整理。发送到外部模型遵循你的确认设置；模型暂不可用时可先回听、查看全文，稍后重试。")
                     .font(.system(size: 10)).lineSpacing(6).foregroundStyle(DaybookStyle.secondary)
             }
         }.daybookRecordingCard(padding:13)
@@ -825,7 +865,7 @@ struct DaybookVoiceDetailView: View {
                     Text(isSummary ? "正在使用 \(model.summaryModels[note.id] ?? model.summaryConfiguration(for: note).label) 生成总结…" : "正在转写录音…")
                 }.font(.system(size: 11)).foregroundStyle(DaybookStyle.secondary)
             }
-            if !isSummary && note.diarizationState == .ready, !(note.transcriptSegments ?? []).isEmpty {
+            if !isSummary && (note.kind == .thought || note.diarizationState == .ready), !(note.transcriptSegments ?? []).isEmpty {
                 SpeakerTranscriptView(note: note)
             } else {
                 Text(text.isEmpty ? (isSummary ? "还没有总结。可以根据转写全文生成。" : "还没有转写文字。可以开始转写，或在编辑页面补充。") : text)
@@ -849,7 +889,7 @@ struct DaybookVoiceDetailView: View {
                             else { Task { await model.summarize(note.id) } }
                         } else { Task { await model.transcribe(note.id) } }
                     }
-                    .disabled(pending || (!isSummary && note.diarizationState == .running) || (isSummary && note.transcript.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty))
+                    .disabled(pending || (!isSummary && note.kind != .thought && note.diarizationState == .running) || (isSummary && note.transcript.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty))
                     Spacer(minLength: 0)
                     Button("编辑标题与全文") {
                         playback.stop(); groupedPlayback.stop()

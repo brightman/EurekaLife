@@ -44,3 +44,24 @@ Mac 的 Metal Toolchain 可按 Xcode 提示执行 `xcodebuild -downloadComponent
 每日记录与片段音频到 Mac 的同步仍处于设计阶段；Mac 当前提供本地模型推理服务。此次不安装真机、不操作 Ring 硬件、不下载模型权重、不做 TestFlight／Developer ID 签名和公证。
 
 第三方许可原样保留，尤其 Ring SDK 的专有许可；未为整个导入新增统一开源许可。
+
+## 2026-11-06 iOS 模拟器安装
+
+来源：EurekaLife `main` / `dd2904f`。目标：已启动的 `WiseLife Notebook Review`，iPhone 17 Pro、iOS 26.3。使用现有模拟器原位更新，未卸载 App、未清空或重建模拟器。
+
+```sh
+cd apps/wrist-notes
+xcodebuild -workspace WristNotes.xcworkspace -scheme WristNotes \
+  -configuration Debug -destination 'platform=iOS Simulator,name=WiseLife Notebook Review' \
+  -derivedDataPath /private/tmp/eurekalife-simulator-20261106/build \
+  CODE_SIGN_IDENTITY=- CODE_SIGNING_ALLOWED=YES build
+```
+
+- `BUILD SUCCEEDED`，0 error；有 1 条本机缺失 Metal Toolchain 目录的 linker search-path warning，不影响本次 iOS 模拟器构建。
+- `codesign --verify --deep --strict` 通过；`Tests/test_keychain_entitlements.py` 确认模拟器 application identifier 和 Keychain access group 正确。
+- `simctl install` 成功，版本 **1.0.3 (13)**；`simctl launch` 与后续进程状态确认运行，截图可见 WiseLife 首页。
+- 安装器重新分配了数据容器 UUID；原 SQLite 数据库仍在，安装后、启动前核查的 10 个文件修改时间均早于安装，未进行用户数据清理。未查询或导出数据库内容。
+- 当前 Xcode 使用 Device Hub；本机没有独立 Simulator.app。App 已在模拟器运行，但尝试自动显示 Device Hub 时返回 `cgWindowNotFound`，未确认桌面窗口可见。屏幕截图由 `simctl io screenshot` 核验。
+- 本次不代表 Ring 真机、完整业务交互或 TestFlight 发布验收；未推送代码。
+
+临时构建／安装结果与启动截图位于 `/private/tmp/eurekalife-simulator-20261106/`，不纳入 Git；本节保留命令、结果和环境限制。

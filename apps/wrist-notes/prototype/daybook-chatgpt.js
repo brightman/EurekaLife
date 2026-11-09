@@ -5,7 +5,7 @@ window.createDaybookChatGPT=function(app){
   let state='disconnected',revision=0,acknowledged=false,confirmDisconnect=false,outcome='success';
   const messages={
     disconnected:['连接你的 ChatGPT','用已有账号选择可用模型，无需填写 API Key。'],
-    authorizing:['等待 ChatGPT 授权','正式 App 将打开 ChatGPT 授权页面，WiseLife 不会接收你的密码。此处仅演示授权返回。'],
+    authorizing:['等待 ChatGPT 授权','正式 App 将打开 ChatGPT 授权页面，EurekaLife 不会接收你的密码。此处仅演示授权返回。'],
     connected:['已连接 · 示例账号','demo@example.com'],
     cancelled:['已取消授权','没有连接账号，可以随时重新开始。'],
     error:['暂时无法连接','请检查网络后重试，当前模型不会自动更换。'],
@@ -23,7 +23,7 @@ window.createDaybookChatGPT=function(app){
     if(confirmDisconnect){
       content=`<h3>断开 ChatGPT 连接？</h3><p>后续任务将停止使用此账号，已有笔记和示例对话保留。你可以重新连接，或主动切换模型。</p><div class="chatgpt-actions"><button class="secondary-button" data-chatgpt-action="keep">保留连接</button><button class="secondary-button chatgpt-danger" data-chatgpt-action="confirm-disconnect">确认断开</button></div>`;
     }else if(state==='connected'&&!acknowledged){
-      content=`<div class="chatgpt-status">${icon('CheckCheck')}<span>授权成功 · 演示</span></div><h3>使用你的 ChatGPT 套餐</h3><p>此连接使用 ChatGPT 套餐的可用额度。WiseLife 的购买费用不包含 ChatGPT 订阅，也不代表无限用量。</p><button class="primary-button wide" data-chatgpt-action="acknowledge">知道了</button>`;
+      content=`<div class="chatgpt-status">${icon('CheckCheck')}<span>授权成功 · 演示</span></div><h3>使用你的 ChatGPT 套餐</h3><p>此连接使用 ChatGPT 套餐的可用额度。EurekaLife 的购买费用不包含 ChatGPT 订阅，也不代表无限用量。</p><button class="primary-button wide" data-chatgpt-action="acknowledge">知道了</button>`;
     }else{
       content=`<div class="chatgpt-status" data-state="${state}">${icon(state==='connected'?'CheckCheck':'MessageCircle')}<strong>${title}</strong></div><p>${description}</p>`;
       if(state==='authorizing')content+=`<div class="chatgpt-actions"><button class="secondary-button" data-chatgpt-action="cancel-auth">取消授权</button><button class="primary-button" data-chatgpt-action="complete-auth">模拟授权返回</button></div>`;
@@ -57,7 +57,7 @@ window.createDaybookChatGPT=function(app){
 window.daybookChatGPTCopy=[
   ['自定义 AI 模型','Bring Your Own Model','カスタム AI モデル'],
   ['用于笔记总结、跨记录洞察与 AI 对话。','For note summaries, insights across records and AI conversations.','ノートの要約、記録からの洞察、AI との対話に使用します。'],
-  ['无需 API Key，在 iPhone 上理解文字。WiseLife 端上 AI 要求 iOS 27.3 及以上、iPhone 15 Pro／Pro Max 或更新的支持机型。','No API key needed. Understand text on iPhone. WiseLife on-device AI requires iOS 27.3 or later and iPhone 15 Pro / Pro Max or a newer supported model.','API キー不要で、iPhone 上でテキストを理解します。WiseLife のオンデバイス AI は iOS 27.3 以降と iPhone 15 Pro / Pro Max または対応する後継機種が必要です。'],
+  ['无需 API Key，在 iPhone 上理解文字。EurekaLife 端上 AI 要求 iOS 27.3 及以上、iPhone 15 Pro／Pro Max 或更新的支持机型。','No API key needed. Understand text on iPhone. EurekaLife on-device AI requires iOS 27.3 or later and iPhone 15 Pro / Pro Max or a newer supported model.','API キー不要で、iPhone 上でテキストを理解します。EurekaLife のオンデバイス AI は iOS 27.3 以降と iPhone 15 Pro / Pro Max または対応する後継機種が必要です。'],
   ['使用自己的模型地址与 API Key。选择云端服务时，允许的文字会发送给该服务。','Use your own model endpoint and API key. If you choose a cloud service, only the text you allow will be sent to it.','独自のモデルのアドレスと API キーを使用します。クラウドサービスを選ぶと、許可したテキストがそのサービスに送信されます。'],
   ['需要 Apple Intelligence 可用','Requires Apple Intelligence','Apple Intelligence が必要です'],
   ['在系统设置中启用并下载。可用性取决于设备、语言和地区；不可用时不自动切换远程服务。','Enable and download in system settings. Availability depends on device, language and region. No automatic switch to a remote service.','システム設定で有効化しダウンロードします。対応は端末・言語・地域によります。リモートサービスには自動で切り替えません。'],
@@ -67,7 +67,7 @@ window.daybookChatGPTCopy=[
   ['连接你的 ChatGPT','Connect your ChatGPT','ChatGPT に接続'],
   ['用已有账号选择可用模型，无需填写 API Key。','Choose available models with your account. No API key needed.','既存のアカウントで利用可能なモデルを選択。API キーは不要です。'],
   ['等待 ChatGPT 授权','Waiting for ChatGPT authorization','ChatGPT の認証を待っています'],
-  ['正式 App 将打开 ChatGPT 授权页面，WiseLife 不会接收你的密码。此处仅演示授权返回。','The app will open ChatGPT authorization. WiseLife will not receive your password. This only simulates the return.','正式アプリは ChatGPT の認証画面を開きます。WiseLife はパスワードを受け取りません。ここでは認証結果を再現します。'],
+  ['正式 App 将打开 ChatGPT 授权页面，EurekaLife 不会接收你的密码。此处仅演示授权返回。','The app will open ChatGPT authorization. EurekaLife will not receive your password. This only simulates the return.','正式アプリは ChatGPT の認証画面を開きます。EurekaLife はパスワードを受け取りません。ここでは認証結果を再現します。'],
   ['已连接 · 示例账号','Connected · example account','接続済み · サンプルアカウント'],
   ['已取消授权','Authorization cancelled','認証をキャンセルしました'],
   ['没有连接账号，可以随时重新开始。','No account connected. You can try again anytime.','アカウントは未接続です。いつでも再開できます。'],
@@ -85,7 +85,7 @@ window.daybookChatGPTCopy=[
   ['保留连接','Stay connected','接続を維持'],['确认断开','Disconnect','接続を解除'],
   ['授权成功 · 演示','Authorized · demo','認証成功 · デモ'],
   ['使用你的 ChatGPT 套餐','Use your ChatGPT plan','ChatGPT プランを使用'],
-  ['此连接使用 ChatGPT 套餐的可用额度。WiseLife 的购买费用不包含 ChatGPT 订阅，也不代表无限用量。','This connection uses your ChatGPT plan allowance. Your WiseLife purchase does not include a ChatGPT subscription or unlimited usage.','ChatGPT プランの利用枠を使用します。WiseLife の購入に ChatGPT の契約や無制限の利用は含まれません。'],
+  ['此连接使用 ChatGPT 套餐的可用额度。EurekaLife 的购买费用不包含 ChatGPT 订阅，也不代表无限用量。','This connection uses your ChatGPT plan allowance. Your EurekaLife purchase does not include a ChatGPT subscription or unlimited usage.','ChatGPT プランの利用枠を使用します。EurekaLife の購入に ChatGPT の契約や無制限の利用は含まれません。'],
   ['知道了','Got it','了解'],['取消授权','Cancel authorization','認証をキャンセル'],
   ['模拟授权返回','Simulate authorization return','認証結果を再現'],
   ['使用 ChatGPT 套餐','Using ChatGPT plan','ChatGPT プランを使用中'],

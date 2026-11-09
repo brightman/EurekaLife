@@ -62,7 +62,7 @@ enum DaybookReminderError: Error, LocalizedError, Equatable {
         switch self {
         case .invalidTitle: "请输入 1–200 字的提醒内容。"
         case .invalidDate: "请选择未来的提醒时间。"
-        case .permissionDenied: "尚未允许通知，提醒没有安排。请在系统设置中开启 WiseLife 通知，再重新确认。"
+        case .permissionDenied: "尚未允许通知，提醒没有安排。请在系统设置中开启 EurekaLife 通知，再重新确认。"
         case .notificationFailure: "系统未能安排通知，原有提醒已保留。请重试。"
         case .notFound: "这条提醒已不存在，请返回列表刷新。"
         case .busy: "正在保存上一项操作，请稍后再试。"

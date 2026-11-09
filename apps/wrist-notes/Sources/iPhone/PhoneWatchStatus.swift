@@ -84,7 +84,7 @@ struct PhoneWatchStatus: Equatable {
         if !isSupported { return String(localized: "当前设备不支持 Apple Watch 通信。") }
         if !isActivated { return String(localized: "同步服务正在准备，请稍后刷新状态。") }
         if !isPaired { return String(localized: "请先在 iPhone 的 Watch App 中配对手表。") }
-        if !isInstalled { return String(localized: "请在 Apple Watch 上安装“WiseLife”，录音会自动传到这里。") }
+        if !isInstalled { return String(localized: "请在 Apple Watch 上安装“EurekaLife”，录音会自动传到这里。") }
         return String(localized: "每个已封存的录音文件会交由系统安排传输。iPhone 保存录音后会回执 Watch；Watch 收到回执才显示已同步。手机可达状态与后台文件传输队列分别显示，状态更新可能延迟。")
     }
     private static func format(_ date: Date) -> String {

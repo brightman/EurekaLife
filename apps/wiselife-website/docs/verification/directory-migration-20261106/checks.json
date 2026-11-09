@@ -1,0 +1,30 @@
+{
+  "status": "PASS",
+  "date": "2026-11-06",
+  "sourceFiles": 487,
+  "unchangedFiles": 481,
+  "changedFiles": [
+    "README.md",
+    "package.json",
+    "AGENTS.md",
+    "docs/tencent-deployment.md",
+    "docs/directory-migration.md",
+    "docs/INDEX.md"
+  ],
+  "missingFiles": [],
+  "legalTests": {
+    "passed": 4
+  },
+  "browser": "PASS",
+  "oldPaths": [
+    "/Users/karama/Documents/Vessel/apps/wiselife-website",
+    "/Users/karama/Documents/wiselife-website"
+  ],
+  "canonicalSource": "/Users/karama/Documents/WiseLife/wiselife-website",
+  "homepageEntriesIdentical": true,
+  "standalonePlaywrightVersion": "1.63.0",
+  "gitInitialized": false,
+  "committed": false,
+  "pushed": false,
+  "deployed": false
+}

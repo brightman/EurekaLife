@@ -1,0 +1,247 @@
+[
+  {
+    "path": "assets/wiselife/ai-answer-next.webp",
+    "status": 200,
+    "sha256": "4cb12ba8eb345b0b1dd9c6a84f784ce0901feddf5c33e538e7181bb9d9375636"
+  },
+  {
+    "path": "assets/wiselife/ai-answer.webp",
+    "status": 200,
+    "sha256": "bc47d4a83cabab1284e6fe8845827b3a5bb58a1ba45f6bff1150612398eb7e4a"
+  },
+  {
+    "path": "assets/wiselife/day-overview-recap.png",
+    "status": 200,
+    "sha256": "bef7d4303f317ae60ae537d9e973bd5243a086305d5099bc3e7fbd8b9a3936aa"
+  },
+  {
+    "path": "assets/wiselife/day-overview.webp",
+    "status": 200,
+    "sha256": "39873b3b0c8501ef41100c9eb6dcb1ecfac67312f2cc2c1c3f9e2ded6f449422"
+  },
+  {
+    "path": "assets/wiselife/film-poster.webp",
+    "status": 200,
+    "sha256": "e2474079f7e6468b0e497740ce8d7e69e5f48e66eea022acb69b4a52cd268429"
+  },
+  {
+    "path": "assets/wiselife/hardware-connected.webp",
+    "status": 200,
+    "sha256": "5f6e8a78d4a9f40186d971205904301da732edec52d1a687cd00f7b0c598caa3"
+  },
+  {
+    "path": "assets/wiselife/note-summary.webp",
+    "status": 200,
+    "sha256": "fc6ea2a820d371dc855730dd694088c98d8cf007d0e941921abef5725ad6be90"
+  },
+  {
+    "path": "assets/wiselife/note-transcript.webp",
+    "status": 200,
+    "sha256": "b77285c234dfacd7641327c0ff8882aaf8cc6c7329c104c64c961f6c75ae7558"
+  },
+  {
+    "path": "assets/wiselife/ring-connected.webp",
+    "status": 200,
+    "sha256": "cb8da34d1a2a70920be2d3894cf67bacb535bae939956d5623108d4c89f1fc74"
+  },
+  {
+    "path": "assets/wiselife/thought-transcript.webp",
+    "status": 200,
+    "sha256": "ccc8cfec02a6663c64ef5271c4915d70f2d06e9d7f32d44a88ef2bf4654d4620"
+  },
+  {
+    "path": "assets/wiselife/wiselife-walkthrough.mp4",
+    "status": 200,
+    "sha256": "c98bbf07b5d1fefa1680a1662ebf0eee4e5b6ecc6dc167c27cfb94d89aeece86"
+  },
+  {
+    "path": "daybook-locales.js",
+    "status": 200,
+    "sha256": "a34344940b495b527e937755bd25e977e8d9c04281e1dcf2726ecedd365140bc"
+  },
+  {
+    "path": "design-preview-v2/assets/hd/iphone-ai.webp",
+    "status": 200,
+    "sha256": "e56c60ee6afd02985837275d42d85dc345d1516f741a33dd29d8c0e37a7cbe71"
+  },
+  {
+    "path": "design-preview-v2/assets/hd/iphone-day.webp",
+    "status": 200,
+    "sha256": "ec23264aaa8efa491a13305d5ac15b445c13d5c025b12bd904999456deb2dee5"
+  },
+  {
+    "path": "design-preview-v2/assets/hd/mac-knowledge.webp",
+    "status": 200,
+    "sha256": "bce44bcbbeb8e6a53a9156a2bc010de665970e8752486567e41a370a73e834d3"
+  },
+  {
+    "path": "design-preview-v2/assets/hd/mac-models.webp",
+    "status": 200,
+    "sha256": "a87fe6c26e8362b2631d1cd97aed85cbc359ff4502545c2ae72236d86af34ab2"
+  },
+  {
+    "path": "design-preview-v2/assets/hd/watch-recording.webp",
+    "status": 200,
+    "sha256": "30569d011d1d128f8f73d8a03679e65fbe7a833c5e1afeeec602ef60f642f1c8"
+  },
+  {
+    "path": "iphone-day.html",
+    "status": 200,
+    "sha256": "3dfc782d3d9efa73c71987a83c5c0e981297dda0cb63733d40d6771544a6772e"
+  },
+  {
+    "path": "launch-preview/assets/companion.webp",
+    "status": 200,
+    "sha256": "de35765e8ab6734627532928adfb902b43927f1c396405a17d9aabf51846fcf5"
+  },
+  {
+    "path": "launch-preview/assets/iphone.webp",
+    "status": 200,
+    "sha256": "79de5c9b54662944b0a0d37b88a43ea1b91561081d3ac30a5367c540d9ed2568"
+  },
+  {
+    "path": "launch-preview/assets/watch.webp",
+    "status": 200,
+    "sha256": "0f8c96d995be65c6c7b66c9452e53619727c0f626d2f6a4113ed7e23cee3944a"
+  },
+  {
+    "path": "launch-preview/demos/iphone.html",
+    "status": 200,
+    "sha256": "661eac6cba40205cc45f1b168c0917173ca48aec1559ee6c655b3e9f4cade8ec"
+  },
+  {
+    "path": "launch-preview/demos/mac/companion.js",
+    "status": 200,
+    "sha256": "778f29b5f81eb081f56885ea73f550709282e8907f0f11518c3e76d22a0c27ec"
+  },
+  {
+    "path": "launch-preview/demos/mac/index.html",
+    "status": 200,
+    "sha256": "34a3e8a8af86ab6822112cbac4de5fdc7242852f435a4855536f1ea423faeb78"
+  },
+  {
+    "path": "launch-preview/demos/mac/knowledge.js",
+    "status": 200,
+    "sha256": "045fdbc485643b1ac52d06c6d45395507f03ebfae805fc69fa4295bd61fa7d23"
+  },
+  {
+    "path": "launch-preview/demos/watch.html",
+    "status": 200,
+    "sha256": "4bd2afa17949d71827feafbc3c31a11c0a86a605ec325d6b24cb8815032f1ed0"
+  },
+  {
+    "path": "privacy/index.html",
+    "status": 200,
+    "sha256": "9c6181c9a5ee57406b77afb7b31fd9ffef8c170328b8bb4d20a6c997b183620e"
+  },
+  {
+    "path": "product-demos/iphone/assets/wiselife/ai-answer-next.webp",
+    "status": 200,
+    "sha256": "4cb12ba8eb345b0b1dd9c6a84f784ce0901feddf5c33e538e7181bb9d9375636"
+  },
+  {
+    "path": "product-demos/iphone/assets/wiselife/ai-answer.webp",
+    "status": 200,
+    "sha256": "bc47d4a83cabab1284e6fe8845827b3a5bb58a1ba45f6bff1150612398eb7e4a"
+  },
+  {
+    "path": "product-demos/iphone/assets/wiselife/day-overview-recap.png",
+    "status": 200,
+    "sha256": "bef7d4303f317ae60ae537d9e973bd5243a086305d5099bc3e7fbd8b9a3936aa"
+  },
+  {
+    "path": "product-demos/iphone/assets/wiselife/day-overview.webp",
+    "status": 200,
+    "sha256": "39873b3b0c8501ef41100c9eb6dcb1ecfac67312f2cc2c1c3f9e2ded6f449422"
+  },
+  {
+    "path": "product-demos/iphone/assets/wiselife/film-poster.webp",
+    "status": 200,
+    "sha256": "e2474079f7e6468b0e497740ce8d7e69e5f48e66eea022acb69b4a52cd268429"
+  },
+  {
+    "path": "product-demos/iphone/assets/wiselife/hardware-connected.webp",
+    "status": 200,
+    "sha256": "5f6e8a78d4a9f40186d971205904301da732edec52d1a687cd00f7b0c598caa3"
+  },
+  {
+    "path": "product-demos/iphone/assets/wiselife/note-summary.webp",
+    "status": 200,
+    "sha256": "fc6ea2a820d371dc855730dd694088c98d8cf007d0e941921abef5725ad6be90"
+  },
+  {
+    "path": "product-demos/iphone/assets/wiselife/note-transcript.webp",
+    "status": 200,
+    "sha256": "b77285c234dfacd7641327c0ff8882aaf8cc6c7329c104c64c961f6c75ae7558"
+  },
+  {
+    "path": "product-demos/iphone/assets/wiselife/ring-connected.webp",
+    "status": 200,
+    "sha256": "cb8da34d1a2a70920be2d3894cf67bacb535bae939956d5623108d4c89f1fc74"
+  },
+  {
+    "path": "product-demos/iphone/assets/wiselife/thought-transcript.webp",
+    "status": 200,
+    "sha256": "ccc8cfec02a6663c64ef5271c4915d70f2d06e9d7f32d44a88ef2bf4654d4620"
+  },
+  {
+    "path": "product-demos/iphone/assets/wiselife/wiselife-walkthrough.mp4",
+    "status": 200,
+    "sha256": "c98bbf07b5d1fefa1680a1662ebf0eee4e5b6ecc6dc167c27cfb94d89aeece86"
+  },
+  {
+    "path": "product-demos/iphone/daybook-locales.js",
+    "status": 200,
+    "sha256": "aff9cc64eb10d7196fbe35a8f6b29ba1f707b2d8566522c40f9892dd8c55a53d"
+  },
+  {
+    "path": "product-demos/iphone/index.html",
+    "status": 200,
+    "sha256": "3488f0d74a29b08cacf71df68f98a38f08a851f32da444c72be6e65eabf3b536"
+  },
+  {
+    "path": "product-demos/iphone/privacy/index.html",
+    "status": 200,
+    "sha256": "9c6181c9a5ee57406b77afb7b31fd9ffef8c170328b8bb4d20a6c997b183620e"
+  },
+  {
+    "path": "product-demos/iphone/terms/index.html",
+    "status": 200,
+    "sha256": "2dfaed8051323a3427d76d07f48f1f24332942591cdb402f98edf06066544db6"
+  },
+  {
+    "path": "product-demos/mac/companion.js",
+    "status": 200,
+    "sha256": "778f29b5f81eb081f56885ea73f550709282e8907f0f11518c3e76d22a0c27ec"
+  },
+  {
+    "path": "product-demos/mac/index.html",
+    "status": 200,
+    "sha256": "3502cb7a5c483e283b007a49c9c252c96490d2be9f78d78c173438732d50912c"
+  },
+  {
+    "path": "product-demos/mac/knowledge.js",
+    "status": 200,
+    "sha256": "045fdbc485643b1ac52d06c6d45395507f03ebfae805fc69fa4295bd61fa7d23"
+  },
+  {
+    "path": "product-demos/watch/index.html",
+    "status": 200,
+    "sha256": "5a20a53631f518eac80d51db3f669f35e6e21cbb7168eff3c5523745666619dd"
+  },
+  {
+    "path": "terms/index.html",
+    "status": 200,
+    "sha256": "2dfaed8051323a3427d76d07f48f1f24332942591cdb402f98edf06066544db6"
+  },
+  {
+    "path": "watch-recorder.html",
+    "status": 200,
+    "sha256": "51ef0de87e6feaf571afd56f2c541d27c25fddaf4fd2c5dd99c15aed3e6bc8ea"
+  },
+  {
+    "path": "website-english.js",
+    "status": 200,
+    "sha256": "7a82ee1d99e74432a8fc727f5e3a0a694868cb79e20dec02c08468ad68e87571"
+  }
+]

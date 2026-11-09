@@ -26,7 +26,7 @@
 /* Begin PBXFileReference section */
 		27E786BD2666D10CDF35C0DF /* CompanionBenchmark */ = {isa = PBXFileReference; includeInIndex = 0; path = CompanionBenchmark; sourceTree = BUILT_PRODUCTS_DIR; };
 		4E48E01AA03F88D0923CE6D0 /* CompanionView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CompanionView.swift; path = Sources/WiseLifeCompanion/CompanionView.swift; sourceTree = "<group>"; };
-		5149925EA56F3F808B371BF0 /* WiseLifeCompanion.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WiseLifeCompanion.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5149925EA56F3F808B371BF0 /* EurekaLife.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EurekaLife.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5F4653361C47C378EEE2B293 /* CompanionBenchmark.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CompanionBenchmark.swift; path = Sources/CompanionBenchmark/CompanionBenchmark.swift; sourceTree = "<group>"; };
 		71F5BE94DB894538236F203C /* ThirdPartyNotices.txt */ = {isa = PBXFileReference; includeInIndex = 1; name = ThirdPartyNotices.txt; path = Resources/ThirdPartyNotices.txt; sourceTree = "<group>"; };
 		78F1EAEC49670FE431FDE063 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Resources/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -106,7 +106,7 @@
 		8AA5954300C8679B80FE17C2 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				5149925EA56F3F808B371BF0 /* WiseLifeCompanion.app */,
+				5149925EA56F3F808B371BF0 /* EurekaLife.app */,
 				27E786BD2666D10CDF35C0DF /* CompanionBenchmark */,
 			);
 			name = Products;
@@ -161,7 +161,7 @@
 				3D461D963D7C84D6009BAE23 /* CompanionMLX */,
 			);
 			productName = WiseLifeCompanion;
-			productReference = 5149925EA56F3F808B371BF0 /* WiseLifeCompanion.app */;
+			productReference = 5149925EA56F3F808B371BF0 /* EurekaLife.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -402,7 +402,8 @@
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 0.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "cloud.karama.wiselife.mac-companion";
-				PRODUCT_NAME = WiseLifeCompanion;
+				PRODUCT_NAME = EurekaLife;
+				PRODUCT_MODULE_NAME = WiseLifeCompanion;
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -429,7 +430,8 @@
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 0.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "cloud.karama.wiselife.mac-companion";
-				PRODUCT_NAME = WiseLifeCompanion;
+				PRODUCT_NAME = EurekaLife;
+				PRODUCT_MODULE_NAME = WiseLifeCompanion;
 				SDKROOT = macosx;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;

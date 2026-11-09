@@ -46,6 +46,33 @@ import Foundation
   try db.execute("INSERT INTO recording_speaker_contacts(source_key,speaker_id,contact_id,linked_at,speaker_revision) VALUES(?,'speaker-1',?,0,'outdated')",[.text(key),.text(b.id)])
   let sources=try repo.sources(contactID:b.id)
   precondition(sources.count == 1 && sources[0].sourceID.uuidString == session && sources[0].start == 2 && sources[0].end == 7 && sources[0].needsReview)
+  // A real speaker overlap is required; nonfinal, deleted and empty segments stay hidden.
+  let segmentID=UUID()
+  let payload=Data(#"{"title":"项目讨论","summary":"确认下周计划","isFinal":true,"hasText":true,"editorial":{"classification":"meaningful"}}"#.utf8)
+  for (id,start,end) in [(segmentID,0.0,10.0),(UUID(),10.0,20.0)] {
+   try db.execute("INSERT INTO content_segments(id,source_key,start,revision,payload) VALUES(?,?,?,1,?)",[.text(id.uuidString),.text(key),.real(start),.blob(payload)])
+   try db.execute("INSERT INTO content_segment_ranges(segment_id,position,start,end,payload) VALUES(?,0,?,?,?)",[.text(id.uuidString),.real(start),.real(end),.blob(Data())])
+  }
+  let linked=try repo.segments(contactID:b.id)
+  precondition(linked.count == 1 && linked[0].id == segmentID && linked[0].title == "项目讨论")
+  precondition(linked[0].capturedAt == Date(timeIntervalSinceReferenceDate:100) && linked[0].duration == 10 && linked[0].needsReview)
+  for marker in [#"{"title":"待处理","summary":"","isFinal":false,"hasText":true}"#,
+                 #"{"title":"无文字","summary":"","isFinal":true,"hasText":false}"#,
+                 #"{"title":"碎语","summary":"","isFinal":true,"hasText":true,"editorial":{"classification":"lowInformation"}}"#] {
+   try db.execute("UPDATE content_segments SET payload=? WHERE id=?",[.blob(Data(marker.utf8)),.text(segmentID.uuidString)])
+   let excluded=try repo.segments(contactID:b.id);precondition(excluded.isEmpty)
+  }
+  try db.execute("UPDATE content_segments SET payload=? WHERE id=?",[.blob(payload),.text(segmentID.uuidString)])
+  try db.execute("UPDATE audio_processing_jobs SET active=0 WHERE id='j'")
+  let inactive=try repo.segments(contactID:b.id);precondition(inactive.isEmpty)
+  try db.execute("UPDATE audio_processing_jobs SET active=1 WHERE id='j'")
+  try db.execute("INSERT INTO audio_transcript_spans(job_id,position,start,end,text,speaker_id) VALUES('j',1,4,8,'second turn','speaker-2')")
+  try db.execute("INSERT INTO recording_speaker_contacts(source_key,speaker_id,contact_id,linked_at,speaker_revision) VALUES(?,'speaker-2',?,0,'outdated')",[.text(key),.text(b.id)])
+  let deduplicated=try repo.segments(contactID:b.id);precondition(deduplicated.count == 1)
+  try db.execute("DELETE FROM recording_speaker_contacts WHERE speaker_id='speaker-2'")
+  try db.execute("UPDATE content_segments SET deleted=1 WHERE id=?",[.text(segmentID.uuidString)])
+  let hidden=try repo.segments(contactID:b.id);precondition(hidden.isEmpty)
+  try db.execute("UPDATE content_segments SET deleted=0 WHERE id=?",[.text(segmentID.uuidString)])
   _ = try repo.save(id:b.id,expectedRevision:b.revision,name:b.name,organization:"Studio",email:"bound@example.test",phone:"123",relationships:["朋友"])
   let preservedSources=try repo.sources(contactID:b.id)
   precondition(preservedSources.count == 1 && preservedSources[0].sourceID.uuidString == session && preservedSources[0].speakerID == "speaker-1")

@@ -193,7 +193,7 @@ final class DaybookSystemNotificationScheduler: NSObject, DaybookReminderSchedul
     func schedule(_ reminder: DaybookReminder) async throws {
         try DaybookReminder.validateDate(reminder.scheduledAt)
         let content = UNMutableNotificationContent()
-        content.title = String(localized: "WiseLife 提醒", locale: Locale(identifier: UserDefaults.standard.string(forKey: "interfaceLanguage") ?? "zh-Hans"))
+        content.title = String(localized: "EurekaLife 提醒", locale: Locale(identifier: UserDefaults.standard.string(forKey: "interfaceLanguage") ?? "zh-Hans"))
         content.body = reminder.title
         content.sound = .default
         content.threadIdentifier = "wisenote.daybook.reminders"

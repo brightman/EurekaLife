@@ -106,7 +106,7 @@ struct KeychainVoiceProfilePersistence: VoiceProfilePersistence {
     let service: String
     private let account = "profile"
 
-    init(service: String = (Bundle.main.bundleIdentifier ?? "cloud.karama.wisenote") + ".voice-profile") {
+    init(service: String = (Bundle.main.bundleIdentifier ?? "cloud.karama.wiselife") + ".voice-profile") {
         self.service = service
     }
 

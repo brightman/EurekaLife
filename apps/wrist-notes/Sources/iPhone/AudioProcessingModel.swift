@@ -13,7 +13,7 @@ struct ContentEnrichmentConfirmation: Identifiable {
 
 /// App-lifetime observable facade. File discovery, validation, hashing and SQLite run on its actor worker.
 @MainActor final class AudioProcessingModel: ObservableObject {
-    private static let contentV2Logger = Logger(subsystem:"cloud.karama.wisenote",category:"ContentV2")
+    private static let contentV2Logger = Logger(subsystem:"cloud.karama.wiselife",category:"ContentV2")
     static let enrichmentDidChange = Notification.Name("WiseLife.ContentEnrichmentDidChange")
     static let contentDidChange = Notification.Name("WiseLife.ContentSegmentsDidChange")
     static let didCommit = Notification.Name("WiseLife.AudioProcessingDidCommit")

@@ -9,9 +9,9 @@ final class RecordingActivityManager: RecordingActivityManaging {
         var errorDescription: String? {
             switch self {
             case .disabled:
-                NSLocalizedString("请在系统设置中允许 WiseLife 的实时活动，然后重新开始录音。", comment: "Recording Live Activity error")
+                NSLocalizedString("请在系统设置中允许 EurekaLife 的实时活动，然后重新开始录音。", comment: "Recording Live Activity error")
             case .unavailable:
-                NSLocalizedString("暂时无法创建录音实时活动，请打开 WiseLife 后重试。", comment: "Recording Live Activity error")
+                NSLocalizedString("暂时无法创建录音实时活动，请打开 EurekaLife 后重试。", comment: "Recording Live Activity error")
             }
         }
     }

@@ -15,7 +15,7 @@ struct KeychainSimulatorSmoke {
 
     @MainActor private static func run() throws {
         guard let bundleID = Bundle.main.bundleIdentifier,
-              bundleID.hasPrefix("cloud.karama.wisenote.keychaincheck.") else {
+              bundleID.hasPrefix("cloud.karama.wiselife.keychaincheck.") else {
             throw CheckFailure(message: "Refusing to use a non-test Keychain namespace")
         }
         let suite = bundleID + ".settings"

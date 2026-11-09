@@ -70,7 +70,7 @@ struct ActionItem: Codable, Equatable, Identifiable, Sendable {
     }
     var syncTitle: String {
         switch sync {
-        case .local: return kind == .reminder ? "WiseLife 本地提醒" : "仅保存在本机"
+        case .local: return kind == .reminder ? "EurekaLife 本地提醒" : "仅保存在本机"
         case .pending: return "系统操作待完成"
         case .linked: return "已关联 Apple \(kind == .event ? "日历" : "提醒事项")"
         case .failed: return syncError ?? "系统更新失败，可重试"

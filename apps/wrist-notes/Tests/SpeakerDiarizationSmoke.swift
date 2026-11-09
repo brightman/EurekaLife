@@ -30,6 +30,22 @@ struct SpeakerDiarizationSmoke {
         let reopened = try NoteRepository(root: root)
         precondition(reopened.notes[0].speakerName("speaker-1") == "Alice")
 
+        // Thought ownership is a capture rule, including old diarized thoughts.
+        for duration in [3.0, 3_600.0] {
+            var thought = VoiceNote(id: UUID(), kind: .thought, capturedAt: .now, duration: duration)
+            thought.applyTranscription(.init(text: "My idea", segments: [.init(start: 0, end: 2, text: "My idea", speakerID: "speaker-1")]))
+            thought.speakerNames = ["speaker-1": "Old label"]
+            let pieces = thought.transcriptSegments!
+            let revision = thought.transcriptRevision
+            precondition(thought.speakerName(nil) == "我", "Thoughts without diarization belong to me")
+            precondition(thought.speakerName("speaker-1") == "我", "Historical labels must not override thought ownership")
+            precondition(!thought.canEditSpeaker("speaker-1", expectedRevision: revision, expectedSegments: pieces))
+            thought.renameSpeaker("speaker-1", name: "Someone else")
+            precondition(thought.speakerNames?["speaker-1"] == "Old label", "Thought ownership cannot be renamed")
+            precondition(!thought.applyDiarization([], expectedRevision: revision), "Thoughts reject stale diarization results")
+            precondition(thought.transcriptSegments == pieces && thought.transcriptRevision == revision, "Virtual ownership preserves transcript evidence")
+        }
+
         let timed = TimedTranscriptBuilder.segments([
             .init(text: "（", start: nil, end: nil),
             .init(text: "你好", start: 1, end: 2),

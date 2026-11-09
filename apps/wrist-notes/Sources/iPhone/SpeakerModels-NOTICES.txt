@@ -4,7 +4,7 @@ Model authors/contributors: Argmax, Inc. and pyannote contributors.
 Source: https://huggingface.co/argmaxinc/speakerkit-coreml
 Pinned revision: 556fc52a13327837688f02289457cded017802e9
 Selected artifacts: Pyannote v3 W8A16 segmenter and embedder/preprocessor;
-Pyannote v4 W32A32 PLDA projector. WiseLife does not modify the downloaded weights.
+Pyannote v4 W32A32 PLDA projector. EurekaLife does not modify the downloaded weights.
 License declared by the model repository: Creative Commons Attribution 4.0 International.
 License: https://creativecommons.org/licenses/by/4.0/
 Legal code: https://creativecommons.org/licenses/by/4.0/legalcode

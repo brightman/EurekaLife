@@ -18,7 +18,7 @@ struct ChatGPTSettingsSection: View {
                              text: "此版本尚未启用 ChatGPT 登录。商业应用需要先获得 OpenAI 的接入资格，开通后才能连接账号。")
                 continueButton.disabled(true)
             } else if account.isConnecting {
-                SettingsFootnote(text: "请在 ChatGPT 授权页面完成登录。WiseLife 不会接收你的密码。")
+                SettingsFootnote(text: "请在 ChatGPT 授权页面完成登录。EurekaLife 不会接收你的密码。")
                 Button("取消授权") { account.cancelSignIn() }
                     .buttonStyle(DaybookSettingsButtonStyle())
             } else {
@@ -124,7 +124,7 @@ struct ChatGPTSettingsSection: View {
             SettingsInfo(title: "授权已过期", text: "重新授权后才能继续使用 ChatGPT。")
         case .permissionMissing:
             SettingsInfo(title: "尚未允许使用 ChatGPT 套餐",
-                         text: "请重新授权，并允许 WiseLife 使用 ChatGPT 套餐。可用性取决于账号和应用的接入资格。")
+                         text: "请重新授权，并允许 EurekaLife 使用 ChatGPT 套餐。可用性取决于账号和应用的接入资格。")
         case .limited:
             SettingsInfo(title: "ChatGPT 用量已达上限",
                          text: "请前往 ChatGPT 管理用量，或在设置中选择 Apple Intelligence。额度恢复后可重试。")
@@ -160,7 +160,7 @@ struct ChatGPTSettingsSection: View {
     private var planNotice: some View {
         VStack(alignment: .leading, spacing: 12) {
             SettingsInfo(title: "使用你的 ChatGPT 套餐",
-                         text: "此连接使用 ChatGPT 套餐的可用额度。WiseLife 的购买费用不包含 ChatGPT 订阅，也不代表无限用量。")
+                         text: "此连接使用 ChatGPT 套餐的可用额度。EurekaLife 的购买费用不包含 ChatGPT 订阅，也不代表无限用量。")
             Button("知道了") { account.acknowledgePlan() }
                 .buttonStyle(DaybookPrimaryButtonStyle(wide: true))
                 .disabled(account.isDisconnecting)

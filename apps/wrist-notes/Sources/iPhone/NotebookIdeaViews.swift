@@ -4,6 +4,8 @@ struct NotebookAssetEditor: View {
     @ObservedObject var model: NotebookIdeasModel
     @State var item: FlashAsset
     let isNew: Bool
+    var mergeSeeds:[FlashAsset]=[]
+    var onSaved:()->Void = {}
     @Environment(\.dismiss) private var dismiss
     @State private var amount=""
     @State private var currency=""
@@ -11,10 +13,15 @@ struct NotebookAssetEditor: View {
     @State private var saving=false
     @State private var error:String?
     var body: some View {
-        DaybookSheetLayout(title:isNew ? (item.kind == .idea ? "新建灵感" : "记一笔") : "编辑",onClose:{ dismiss() }) {
+        DaybookSheetLayout(title:!mergeSeeds.isEmpty ? "合并灵感" : isNew ? (item.kind == .idea ? "新建灵感" : "记一笔") : "编辑",onClose:{ dismiss() }) {
             VStack(alignment:.leading,spacing:20) {
                 DaybookSettingsField("标题") { TextField("简短标题",text:$item.title).accessibilityIdentifier("notebook.editor.title") }
                 DaybookSettingsField("内容") { TextField(item.kind == .idea ? "写下你的想法" : "这笔收支的用途或备注",text:$item.text,axis:.vertical).lineLimit(4...12).accessibilityIdentifier("notebook.editor.text") }
+                if !mergeSeeds.isEmpty {
+                    Text("合并结果另存为新灵感；原条目和来源会保留。无需调用 AI。").font(.system(size:13)).foregroundStyle(DaybookStyle.secondary)
+                    ForEach(mergeSeeds) { seed in DisclosureGroup(seed.title) { Text(seed.text).font(.system(size:14)) } }
+                    Text("\(item.text.count) / 4000 字").font(.system(size:12)).foregroundStyle(item.text.count > 4000 ? DaybookStyle.red : DaybookStyle.secondary)
+                }
                 if item.kind == .expense {
                     DaybookSettingsField("收支") { Picker("收支",selection:$item.direction) {
                         Text("待补充").tag(Optional<FlashAsset.Direction>.none); Text("支出").tag(Optional(FlashAsset.Direction.expense)); Text("收入").tag(Optional(FlashAsset.Direction.income))
@@ -46,8 +53,11 @@ struct NotebookAssetEditor: View {
                 value.amountMinor=amount.isEmpty || code.isEmpty ? nil : try FlashMoney.minorUnits(amount,currency:code)
                 value.date=date.trimmingCharacters(in:.whitespacesAndNewlines).isEmpty ? nil : date
             }
-            if await model.save(value) {
-                NotificationCenter.default.post(name:.notebookAssetSaved,object:nil); dismiss()
+            let saved:Bool
+            if mergeSeeds.isEmpty { saved=await model.save(value) }
+            else { saved=await model.merge(value,seeds:mergeSeeds) }
+            if saved {
+                onSaved(); NotificationCenter.default.post(name:.notebookAssetSaved,object:nil); dismiss()
             } else { error=model.error }
         } catch { self.error=error.localizedDescription }
     }
@@ -58,46 +68,63 @@ struct NotebookAssetDetail: View {
     let opening: FlashAsset
     let onOpenSource:(UUID)->Void
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var notes:NotesModel
     @State private var editing:FlashAsset?
     @State private var busy=false
-    private var item:FlashAsset { model.rows.first { $0.id == opening.id } ?? opening }
+    @State private var confirmingDelete=false
+    private var item:FlashAsset {
+        [opening,model.latestSaved,model.rows.first { $0.id == opening.id }]
+            .compactMap{$0}.filter{$0.id == opening.id}.max(by:{$0.revision < $1.revision}) ?? opening
+    }
     var body:some View {
         DaybookSheetLayout(title:item.kind == .idea ? "灵感" : "账目",onClose:{ dismiss() }) {
             VStack(alignment:.leading,spacing:20) {
                 Text(item.title).font(.system(size:24,weight:.semibold))
                 if item.kind == .expense { Text(item.amountText).font(.system(size:28,weight:.medium)).monospacedDigit() }
                 Text(item.text).font(.system(size:16)).lineSpacing(7).textSelection(.enabled)
-                Text("\(RecordingFormat.date(item.source.capturedAt)) · \(item.statusTitle)").font(.system(size:12)).foregroundStyle(DaybookStyle.secondary)
+                Text("\(item.kind == .expense ? (item.date ?? "日期待补充") : RecordingFormat.date(item.source.capturedAt)) · \(item.revoked ? "已删除" : item.statusTitle)").font(.system(size:12)).foregroundStyle(DaybookStyle.secondary)
                 HStack(spacing:28) {
                     Button("编辑") { editing=item }.accessibilityIdentifier("notebook.detail.edit")
-                    Button(item.revoked ? "恢复" : "撤销") { Task {
-                        busy=true; var value=item; value.revoked.toggle()
-                        if await model.save(value) { NotificationCenter.default.post(name:.notebookAssetSaved,object:nil); dismiss() }
-                        busy=false
-                    } }.disabled(busy)
-                }.font(.system(size:14,weight:.medium))
+                    if item.revoked {
+                        Button("恢复") { setDeleted(false) }.disabled(busy)
+                    } else {
+                        Button(item.kind == .idea ? "删除灵感" : "删除账目",role:.destructive) { confirmingDelete=true }
+                            .disabled(busy).accessibilityIdentifier("notebook.detail.delete")
+                    }
+                }.font(.system(size:14,weight:.medium)).disabled(busy)
                 if let parents=item.parentIdeas,!parents.isEmpty {
                     VStack(alignment:.leading,spacing:14) {
                         Text("来自这些灵感").font(.system(size:13,weight:.medium))
                         ForEach(parents) { source in
                             DisclosureGroup(source.title) { Text(source.text).font(.system(size:14)).lineSpacing(5).padding(.top,8) }
                         }
-                        Text("保留生成时的原灵感快照，后续编辑不会改变此出处。").font(.system(size:12)).foregroundStyle(DaybookStyle.secondary)
+                        Text("保留保存时的原灵感快照，后续编辑不会改变此出处。").font(.system(size:12)).foregroundStyle(DaybookStyle.secondary)
                     }.daybookRecordingCard(padding:16)
                 } else {
                     VStack(alignment:.leading,spacing:10) {
                         Text(item.origin == .manual ? "初次记录" : "原话").font(.system(size:13,weight:.medium))
                         Text(item.source.quote).font(.system(size:14)).lineSpacing(6)
                         if item.origin == nil {
-                            if notes.note(item.source.id) != nil { Button("查看来源录音") { onOpenSource(item.source.id) }.font(.system(size:13)) }
-                            else { Text("来源录音已不可用，原话仍保留。").font(.system(size:12)).foregroundStyle(DaybookStyle.secondary) }
+                            Button("查看来源录音") { onOpenSource(item.source.id) }.font(.system(size:13))
                         }
                     }.daybookRecordingCard(padding:16)
                 }
                 if let error=model.error { Text(error).font(.system(size:13)).foregroundStyle(DaybookStyle.red) }
             }.padding(.top,12)
         }.sheet(item:$editing) { NotebookAssetEditor(model:model,item:$0,isNew:false) }
+            .confirmationDialog(item.kind == .idea ? "删除这条灵感？" : "删除这笔账目？",isPresented:$confirmingDelete,titleVisibility:.visible) {
+                Button("删除",role:.destructive) { setDeleted(true) }
+                Button("取消",role:.cancel) {}
+            } message: {
+                Text(item.kind == .idea ? "原始录音和其他灵感保留。可在“显示已删除”中恢复。" : "删除后更新月度收支，原始录音保留。可在“显示已删除”中恢复。")
+            }.interactiveDismissDisabled(busy)
+    }
+    private func setDeleted(_ deleted:Bool) {
+        busy=true
+        Task {
+            var value=item;value.revoked=deleted
+            if await model.save(value) { NotificationCenter.default.post(name:.notebookAssetSaved,object:nil); dismiss() }
+            busy=false
+        }
     }
 }
 

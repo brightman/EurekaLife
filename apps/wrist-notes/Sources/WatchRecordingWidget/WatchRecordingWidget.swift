@@ -26,7 +26,7 @@ struct WiseLifeWatchRecordingWidget: Widget {
                 .widgetURL(WatchRecordingLink.url)
                 .containerBackground(for: .widget) { Color.black }
         }
-        .configurationDisplayName("WiseLife 录音")
+        .configurationDisplayName("EurekaLife 录音")
         .description("轻点开始录音；录音中轻点返回，停止并保存请使用 App 内按钮。")
         .supportedFamilies([.accessoryCircular, .accessoryRectangular, .accessoryInline, .accessoryCorner])
     }
@@ -39,7 +39,7 @@ private struct RecordingComplicationView: View {
     var body: some View {
         content
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel(Text("WiseLife 快捷录音"))
+            .accessibilityLabel(Text("EurekaLife 快捷录音"))
             .accessibilityHint(Text("未录音时开始录音，录音中返回 App。"))
     }
 
@@ -51,7 +51,7 @@ private struct RecordingComplicationView: View {
             HStack(spacing: 7) {
                 microphone.font(.title2)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("WiseLife").font(.headline).widgetAccentable()
+                    Text("EurekaLife").font(.headline).widgetAccentable()
                     Text("快捷录音").font(.caption)
                 }
                 .lineLimit(1)

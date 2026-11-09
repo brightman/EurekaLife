@@ -26,7 +26,7 @@ final class NoteRepository {
         try recoverOrphanedAudio()
         // Optional metadata repair must not hide otherwise readable notes if a write fails.
         do { try repairUnknownDurations() }
-        catch { Logger(subsystem: "cloud.karama.wisenote", category: "RecordingMetadata").error("Audio duration repair deferred: \(error.localizedDescription, privacy: .public)") }
+        catch { Logger(subsystem: "cloud.karama.wiselife", category: "RecordingMetadata").error("Audio duration repair deferred: \(error.localizedDescription, privacy: .public)") }
         cleanupTombstones()
     }
 

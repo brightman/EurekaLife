@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "A7279274994A4A64A0E7D0FA"
-               BuildableName = "WiseLifeCompanion.app"
+               BuildableName = "EurekaLife.app"
                BlueprintName = "WiseLifeCompanion"
                ReferencedContainer = "container:WiseLifeMac.xcodeproj">
             </BuildableReference>
@@ -31,7 +31,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "A7279274994A4A64A0E7D0FA"
-            BuildableName = "WiseLifeCompanion.app"
+            BuildableName = "EurekaLife.app"
             BlueprintName = "WiseLifeCompanion"
             ReferencedContainer = "container:WiseLifeMac.xcodeproj">
          </BuildableReference>
@@ -54,7 +54,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "A7279274994A4A64A0E7D0FA"
-            BuildableName = "WiseLifeCompanion.app"
+            BuildableName = "EurekaLife.app"
             BlueprintName = "WiseLifeCompanion"
             ReferencedContainer = "container:WiseLifeMac.xcodeproj">
          </BuildableReference>
@@ -71,7 +71,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "A7279274994A4A64A0E7D0FA"
-            BuildableName = "WiseLifeCompanion.app"
+            BuildableName = "EurekaLife.app"
             BlueprintName = "WiseLifeCompanion"
             ReferencedContainer = "container:WiseLifeMac.xcodeproj">
          </BuildableReference>

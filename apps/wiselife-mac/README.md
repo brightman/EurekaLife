@@ -1,8 +1,12 @@
 > 独立仓库入口：[EurekaLife](../../README.md)。本次编译与测试状态见 [导入记录](../../docs/repository-import.md)。
 
-# WiseLife Mac Companion
+# EurekaLife Mac Companion
 
 按 `2026-10-23-wiselife-mac-mlx-companion-design.md` 实现的独立原生 macOS 本地 AI 伴侣。本工程与 iPhone／Watch 工程独立，具有自己的 Bundle ID、存储目录、钥匙串服务和 Bonjour 服务；原工作区的 `desktop/` 客户端不属于本次导入范围。
+
+## EurekaLife 品牌更新（2026-11-08）
+
+产品名、窗口、菜单栏、权限提示及原型统一为 EurekaLife，产物为 `dist/EurekaLife.app` 和 `dist/EurekaLife-macOS.zip`。现有 Bundle ID、模型目录、Keychain 与 Bonjour／配对协议保持不变。Release 编译、23 项测试（1 项按默认设置跳过、0 失败）以及 ZIP 解压签名校验通过；安装包仅为本机 ad-hoc 签名，未公证或进行本次真机端到端验收。发布汇总见 [记录](../wrist-notes/docs/testflight-release-2026-10-19.md#eurekalife-build16-20261108)。
 
 ## 构建与启动
 
@@ -13,7 +17,7 @@ cd apps/wiselife-mac
 open WiseLifeMac.xcodeproj
 # 或构建本机 ad-hoc 签名 App 和 zip：
 sh scripts/build.sh
-open dist/WiseLifeCompanion.app
+open dist/EurekaLife.app
 ```
 
 首次构建需联网获取 Swift 包与 MLX 的源代码子模块。若 `xcrun metal --version` 提示缺少工具链，先执行 `xcodebuild -downloadComponent MetalToolchain`。必须使用 Xcode 构建推理程序，`swift build` 不会编译 MLX Metal shaders。

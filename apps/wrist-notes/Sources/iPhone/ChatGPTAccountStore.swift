@@ -25,7 +25,7 @@ protocol ChatGPTAccountStoring {
 struct ChatGPTKeychainStore: ChatGPTAccountStoring {
     private var query: [String: Any] {
         [kSecClass as String: kSecClassGenericPassword,
-         kSecAttrService as String: (Bundle.main.bundleIdentifier ?? "cloud.karama.wisenote") + ".chatgpt",
+         kSecAttrService as String: (Bundle.main.bundleIdentifier ?? "cloud.karama.wiselife") + ".chatgpt",
          kSecAttrAccount as String: "account-vault", kSecAttrSynchronizable as String: false]
     }
     func load() throws -> ChatGPTAccountVault? {

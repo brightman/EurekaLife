@@ -146,7 +146,7 @@ actor LocalTranscriptionService {
         guard duration >= 30, duration <= 60.5 else { throw VoiceEnrollmentError.duration }
         let turns = try await speakerTurns(samples: samples)
         let ranges = try VoiceSpeechSelection.enrollmentRanges(turns: turns, sampleCount: samples.count)
-        let windows = ranges.flatMap { VoiceSpeechSelection.windows(samples: samples, ranges: $0, limit: 12) }
+        let windows = try VoiceSpeechSelection.enrollmentWindows(samples: samples, groups: ranges)
         do {
             let vectors = try await embeddings(windows)
             let profile = try VoiceIdentityPolicy.makeProfile(embeddings: vectors, duration: min(60, duration))

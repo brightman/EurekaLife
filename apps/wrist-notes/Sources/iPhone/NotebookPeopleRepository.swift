@@ -80,6 +80,52 @@ final class NotebookPeopleRepository {
         let person=try save(id:nil,expectedRevision:nil,name:name,organization:organization,email:email,phone:phone,relationships:relationships)
         return .init(identifier:person.id,displayName:person.name,thumbnailData:nil,origin:.manual,organization:person.organization,emails:person.emails,phoneNumbers:person.phoneNumbers)
     }
+    /// Join persisted segments to actual current speaker spans, not a speaker's min/max envelope.
+    /// SQL pagination is on unique segments, so several linked speakers cannot duplicate a card.
+    func segments(contactID:String,limit:Int = 30,offset:Int = 0) throws -> [NotebookPersonSegment] {
+        let rows=try db.query("""
+            SELECT c.id,c.source_key,c.start,c.payload,s.descriptor,COALESCE(n.captured_at,r.started_at,r.created_at) AS captured_at,
+                   (SELECT SUM(end-start) FROM content_segment_ranges WHERE segment_id=c.id) AS duration
+            FROM content_segments c JOIN audio_processing_sources s ON s.source_key=c.source_key
+            LEFT JOIN voice_notes n ON n.id=s.note_id LEFT JOIN recording_sessions r ON r.id=s.session_id
+            WHERE c.source_key IN (SELECT source_key FROM recording_speaker_contacts WHERE contact_id=?)
+              AND c.deleted=0 AND json_extract(CAST(c.payload AS TEXT),'$.isFinal')=1
+              AND json_extract(CAST(c.payload AS TEXT),'$.hasText')=1
+              AND COALESCE(json_extract(CAST(c.payload AS TEXT),'$.editorial.classification'),'meaningful')='meaningful'
+              AND EXISTS (
+                SELECT 1 FROM content_segment_ranges cr
+                JOIN audio_processing_jobs j ON j.source_key=c.source_key AND j.active=1 AND j.configuration_key=s.configuration_key AND j.result IS NOT NULL
+                JOIN audio_transcript_spans t ON t.job_id=j.id AND t.end>cr.start AND t.start<cr.end
+                JOIN recording_speaker_contacts l ON l.source_key=c.source_key AND l.speaker_id=t.speaker_id
+                WHERE cr.segment_id=c.id AND l.contact_id=?
+              )
+            ORDER BY captured_at+c.start DESC,c.id LIMIT ? OFFSET ?
+            """,[.text(contactID),.text(contactID),.integer(Int64(max(1,min(100,limit)))),.integer(Int64(max(0,offset)))])
+        struct Fields:Decodable { let title:String; let summary:String }
+        struct SourceFields:Decodable { let origin:AudioSourceOrigin? }
+        var reviewCache:[String:Bool]=[:]
+        return try rows.map { row in
+            let id=UUID(uuidString:try row.requiredString("id"))!,key=try row.requiredString("source_key")
+            let fields=try DaybookDatabase.decode(Fields.self,row["payload"])
+            let links=try db.query("SELECT speaker_id,speaker_revision FROM recording_speaker_contacts WHERE source_key=? AND contact_id=?",[.text(key),.text(contactID)])
+            var needsReview=false
+            for link in links {
+                let speaker=try link.requiredString("speaker_id"),cacheKey=key+":"+speaker
+                if reviewCache[cacheKey] == nil {
+                    let spans=try db.query("SELECT j.id,j.result_hash,t.position,t.start,t.end,t.text FROM audio_transcript_spans t JOIN audio_processing_jobs j ON j.id=t.job_id JOIN audio_processing_sources s ON s.source_key=j.source_key WHERE j.source_key=? AND j.active=1 AND j.configuration_key=s.configuration_key AND j.result IS NOT NULL AND t.speaker_id=? ORDER BY t.start,t.end,j.id,t.position",[.text(key),.text(speaker)])
+                    var parts:[String]=[]
+                    for span in spans { parts += [span["id"]?.string ?? "",span["result_hash"]?.string ?? "",String(span["position"]?.double ?? 0),String(span["start"]?.double ?? 0),String(span["end"]?.double ?? 0),span["text"]?.string ?? ""] }
+                    let encoder=JSONEncoder();encoder.outputFormatting=[.sortedKeys]
+                    let revision=SHA256.hash(data:try encoder.encode(parts)).map{String(format:"%02x",$0)}.joined()
+                    reviewCache[cacheKey]=spans.isEmpty || revision != link["speaker_revision"]?.string
+                }
+                needsReview = needsReview || reviewCache[cacheKey] == true
+            }
+            return .init(id:id,title:fields.title.isEmpty ? "录音片段" : fields.title,summary:fields.summary,
+                capturedAt:Date(timeIntervalSinceReferenceDate:(row["captured_at"]?.double ?? 0)+(row["start"]?.double ?? 0)),
+                duration:row["duration"]?.double ?? 0,device:(try? DaybookDatabase.decode(SourceFields.self,row["descriptor"]))?.origin?.deviceLabel,needsReview:needsReview)
+        }
+    }
     func sources(contactID:String,limit:Int = 30,offset:Int = 0) throws -> [NotebookPersonSource] {
         let rows=try db.query("SELECT l.source_key,l.speaker_id,l.speaker_revision,s.source_id,COALESCE(n.captured_at,r.started_at,r.created_at) AS captured_at FROM recording_speaker_contacts l JOIN audio_processing_sources s ON s.source_key=l.source_key LEFT JOIN voice_notes n ON n.id=s.note_id LEFT JOIN recording_sessions r ON r.id=s.session_id WHERE l.contact_id=? ORDER BY captured_at DESC,l.source_key,l.speaker_id LIMIT ? OFFSET ?",[.text(contactID),.integer(Int64(max(1,min(100,limit)))),.integer(Int64(max(0,offset)))])
         return try rows.compactMap { row in

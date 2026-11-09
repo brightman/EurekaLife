@@ -1,8 +1,8 @@
 # WiseLife TestFlight 发布记录
 
-类型：发布记录。首发日期：2026-10-19；更新：2026-11-04。
+类型：发布记录。首发日期：2026-10-19；更新：2026-11-08。
 
-最新发布进度见 [1.0.3 构建 13](#build13-20261104)；下方 10 月 19 日内容为当时记录，不代表当前线上构建状态。
+最新发布见 [EurekaLife 改名构建 16](#eurekalife-build16-20261108)：1.0.3（16）于 2026-11-08 17:41（UTC+8）上传成功，Apple 处理与出口合规完成，内部组显示“正在测试”，当前账号已获邀请；尚未验证真机安装。外部组的构建 15 仍在等待审核，Apple 暂不允许提交同版本的构建 16。新 App 身份见 [BIZCARD 独立新 App](#new-app-bizcard-20261108)，下方历史记录不代表当前线上状态。
 
 **2026-11-05 签名勘误：** 构建 13 的发布包虽通过严格签名检查，但实际签名缺少 HealthKit 权限。此前“签名通过”不等于健康能力通过。后续发布必须采用[带签名归档与最终 IPA 校验](#healthkit-signing-20261105)；下方不签名归档命令仅保留为历史事实，不再作为发布流程。
 
@@ -228,3 +228,103 @@ xcodebuild -exportArchive \
 - 验证 IPA 16,295,402 字节，SHA-256 `56fcf214cba42179bf831918e8aa4e954c57b0922cd2e1d80f0f80779365461a`。该包是后续 Xcode warning 修复之前的工作区快照，仅用于证明签名流程修复，不作为已发布或 warning 修复后产物。
 
 同日完成 Xcode warning 与播放／健康初始化修复后的最终签名产物：`/private/tmp/wiselife-warnings-20261105/release-accepted/export/WiseLife.ipa`，16,340,596 字节，SHA-256 `397b3757c3623269c3b09c36f4fc5b5cef6b776b5ef492271c1a778f616132cf`。归档及导出均成功，完整日志 0 warning、0 error，归档与 IPA 的两项实际健康权限和 profile 检查均通过，IPA 为 distribution 签名。仍为 1.0.3（13）的本地验证包，未上传；模拟器与真机验收限制见[完整修复记录](work/2026-11-05-xcode-warnings/README.md)。
+
+<a id="build14-20261106"></a>
+
+## 2026-11-06：1.0.3（14）
+
+状态：1.0.3（14）已上传成功，App Store Connect 显示“正在处理”。Apple 处理、测试组分发与测试员安装分别核验，上传成功不代表已可安装。
+
+- 发布当前 EurekaLife 工作区，基于 `dd2904f` 且包含未提交修改；没有执行 Git 提交或推送。iPhone、Watch、Live Activity、Watch 快捷录音组件的八处配置统一为 `1.0.3 (14)`。App、Bundle ID 与签名团队沿用，Mac Companion 不在本次 TestFlight 包内。
+- 包含 Ring 录音同步、重复导入修复、AI 模型设置遵循、5 小时录音转码恢复和完整性检查、口语日程识别与已知录制时区、空结果手动重试及闪念实际处理状态显示；另包含 HealthKit 发布签名修复。范围与设备验收边界见 [Ring 记录](2026-10-20-ring-build-switch.md)。
+- 发布前实时确认 App Store Connect 最高构建为 `1.0.3 (13)`，已“正在测试”；沿用 `WiseLife Internal` 和 `WiseLife External Beta`，不修改测试员成员。
+- 本轮发布检查：`pod install --no-repo-update`、`BuildFeaturesSmoke.rb`（4 项／112 断言）、`ProjectSourceMembershipSmoke.rb`、`verify_ble_pod.py`（79 哈希／3 XCFrameworks）、`test_release_info.sh` 和差异格式检查通过。之前同日 Ring 集成 59 通过／2 项缺模型跳过、Action 集成 9 通过、闪念与音频处理回归通过；这些是对应修复的验证，不替代 TestFlight 实机验收。
+- 首次归档失败是 `package_release.sh` 全局 `CODE_SIGNING_ALLOWED=YES` 覆盖了 CocoaPods 资源包的禁用签名设置，使隐私／许可资源 target 要求独立团队。移除全局覆盖，保留 App／扩展自动签名和资源包各自设置，未改为无签名归档。修正后 `ARCHIVE SUCCEEDED`、`EXPORT SUCCEEDED`，脚本退出 0。
+- Xcode 27.2 (27B52)，Release／generic iOS，最低 iOS 26.0。归档有 Metal toolchain 搜索路径及预编译 Ring SDK 原构建缓存路径缺失警告，不声称零 warning；SDK 完整性、编译及最终签名通过。SDK 二进制未改动。
+- 归档和最终 IPA 的实际 App 签名均含 `com.apple.developer.healthkit=true` 和 `com.apple.developer.healthkit.background-delivery=true`，profile 同样允许；IPA 四组件均通过严格签名验证且 `get-task-allow=false`，版本均为 `1.0.3 (14)`。iPhone／Watch／Ring 隐私清单和 Opus 许可均入包，无运行数据库、录音、密钥或 AppleDouble 文件。
+- 私有产物目录：`/Users/karama/Documents/WiseLife-Reports/TestFlight/2026-11-06-build14/`。最终归档 `package-signed/WiseLife.xcarchive`，IPA `package-signed/export/WiseLife.ipa`，18,113,413 字节，SHA-256 `e52f913bd6de72589acbfe4ee25d8467e282b2c7ca72fc1aeae147b4f58a06b4`。构建时间 `2026-11-06T07:40:06Z`。522 项源码／配置／SDK 哈希在构建前后保持一致，见 `source-hashes.json`；产物检查见 `release-verification.json`。
+- 上传复用同一签名归档，`UploadOptions.plist` 使用 `destination=upload`、`manageAppVersionAndBuildNumber=false`，日志 `upload.log`。首个失败打包日志与产物单独保留，未覆盖最终包。
+- 15:44:31（UTC+8）Apple 返回 `Uploaded package is processing`、`Upload succeeded`、`Uploaded WristNotes`、`EXPORT SUCCEEDED`，命令退出 0；网页随后显示 `1.0.3 (14)`，创建时间 Nov 6, 2026 3:44 PM，状态“正在处理”。
+- 上传后约 10 分钟复核仍为“正在处理”，无处理失败提示。内部组添加构建选择器只有 13／12，14 尚不可选；已关闭选择器，未误加旧版本或修改测试员。中英文测试说明保存在私有目录 `what-to-test-{zh,en}.txt`，尚未保存到 Apple。待处理完成后需保存测试说明、关联现有内部／外部组，并核验是否需 Beta App Review；当前不能宣称构建 14 已可安装，无需重复上传。
+- 未卸载、重置或覆盖设备数据；本次未在真机安装。真实 5 小时 BLE、锁屏恢复、所选模型效果及 TestFlight 升级后的健康读取仍需设备验收。
+- 如需撤回测试分发，先从构建 14 的测试组移除或在 App Store Connect 停止该构建测试；不要通过卸载 App 回退。构建 13 已知缺少 HealthKit 签名权限，不应作为健康功能回滚方案；修复版本须使用更高构建号重新发布。
+
+<a id="build15-20261108"></a>
+
+## 2026-11-08：切换 BIZCARD LIMITED，1.0.3（15）签名受阻
+
+状态：这次保留原 Bundle ID 的尝试失败，未导出或上传。用户随后明确选择创建独立新 App，当前进度见[后续记录](#new-app-bizcard-20261108)。
+
+- iPhone、Watch、Live Activity、Watch 快捷录音组件的 Debug／Release 共八处团队改为 `2W27U66VBQ`，构建号由 14 递增为 15，版本保留 `1.0.3`。全部原 Bundle ID 保留，未修改应用数据、Keychain 范围或设备安装；项目生成器会读取并保留现有团队和版本，无需重建项目文件。
+- 当前生产源码／依赖与构建 14 相同，本轮仅改变项目团队和构建号；保留既有未提交代码、官网工作区和旧发布产物。`pod install --no-repo-update`、`BuildFeaturesSmoke.rb`（4 项／112 断言）、`ProjectSourceMembershipSmoke.rb`、`verify_ble_pod.py`（79 哈希／3 XCFrameworks）、`test_release_info.sh` 均通过。
+- 使用 Xcode 27.2 的签名归档脚本实际请求 Apple provisioning。Apple 对 `cloud.karama.wisenote`、`.watchkitapp`、`.recording-activity`、`.watchkitapp.recording-widget` 四个标识均返回 `Failed Registering Bundle Identifier ... cannot be registered to your development team because it is not available`，随后报告匹配的 provisioning profile 不存在；`ARCHIVE FAILED`，退出码 65。这是新团队无法取得现有 App 标识的问题，不能靠更换本机签名证书解决。
+- 私有诊断目录 `/Users/karama/Documents/WiseLife-Reports/TestFlight/2026-11-08-build15-bizcard/` 保存原项目配置备份、`pods.log`、`package.log`、`source-hashes.json`、`release-status.json` 及待发布测试说明。归档尝试前后源码哈希一致。本轮没有有效的构建 15 发布 IPA。
+- Computer Use 原生连接返回 `Sky Computer Use native pipe startup failed`，浏览器连接返回 `The browser access host is unavailable`；无法实时核验 App Store Connect 的 App 转移状态和账号权限。未读取或导出账号密码／会话凭据，也未使用其他 UI 自动化绕过。
+- 当时提出 App 转移或创建新 App 两种选择；用户随后说明原 App 仅提交 TestFlight、无真实用户，并明确选择新建 App。Apple 的[转移条件](https://developer.apple.com/help/app-store-connect/transfer-an-app/app-transfer-criteria/)要求至少一个版本已在 App Store 发布，因此按用户描述原 App 不符合转移条件。
+- 配置回退仅需将本轮八处团队／构建号恢复为原值，可对照私有备份；不得覆盖此前未提交修改。原构建 14 没有被撤回、替换或重复上传，其当前 Apple 分发状态本轮未核验。
+
+<a id="new-app-bizcard-20261108"></a>
+
+## 2026-11-08：BIZCARD 独立新 App，1.0.3（15）
+
+状态：新标识注册、签名归档、App Store IPA 导出及实际权限验证通过。首次上传因缺少 App 记录失败；随后已在 BIZCARD LIMITED 下创建独立 App，并于 2026-11-08 13:16:42（UTC+8）上传成功。Apple 处理及出口合规设置已完成，内部组显示“正在测试”，当前账号已获邀请；未提交外部 Beta Review，未验证实际安装。
+
+- 团队为 BIZCARD LIMITED（`2W27U66VBQ`），指定发布账号 `mr.brightman@gmail.com`。iPhone 使用 `cloud.karama.wiselife`，Watch 使用 `.watchkitapp`，iPhone 扩展使用 `.recording-activity`，Watch 扩展使用 `.watchkitapp.recording-widget`；版本／构建号统一为 `1.0.3 (15)`。
+- 同步更新 Watch companion 标识、项目生成器、预览／UI 测试标识、Keychain service 的默认命名、日志命名和最终 IPA 的身份校验。保留工程路径、数据库与音频格式、原 App 数据和历史发布文件。
+- 新 Watch App 的快捷录音 URL scheme 为 `wiselife-bizcard-watch`，注册声明、共享路由及测试一致，避免与旧 App 的 `wiselife-watch` 冲突。App 图标和显示名仍为 WiseLife。
+- 新身份配置的 `pod install --no-repo-update`、构建开关 4 项／112 断言、源码成员、Watch 安装配置及项目生成、Watch 组件资源／嵌入检查、SDK 79 哈希／3 XCFrameworks、版本元信息均通过。快捷录音启动 12 场景和按钮交互 8 场景通过。首次检查命令在仓库根目录引用 `Tests/` 报路径不存在，切到 App 目录后完整重跑通过。
+- 私有产物仍放在 `2026-11-08-build15-bizcard/`；新归档输出单独使用 `package-new-app/`、日志 `package-new-app.log`、源码清单 `source-hashes-new-app.json`，不覆盖使用旧标识的失败证据。新 App 记录字段准备在 `new-app-record.json`。
+- `package-new-app.log` 为 `ARCHIVE SUCCEEDED`、`EXPORT SUCCEEDED`，打包脚本退出 0。归档及最终 IPA 四个组件的实际签名和 profile 均属于 `2W27U66VBQ`，版本均为 `1.0.3 (15)`；最终包为 distribution 签名，`get-task-allow=false`。iPhone 的 Keychain group 为 `2W27U66VBQ.cloud.karama.wiselife`，实际 HealthKit／background-delivery 两项权限及 profile 检查通过。
+- 最终 IPA：`package-new-app/export/WiseLife.ipa`，18,119,272 字节，SHA-256 `dedb66c0a608f9010b9c5264cbf44c52308e20ad24b7079aaed9ccaa6546fc52`；构建时间 `2026-11-08T04:52:17Z`。522 项源码清单在归档前后保持一致。Watch companion／独立 URL scheme、三份隐私清单、Opus 许可资源、无运行数据库／录音／密钥文件检查通过，详见私有 `archive-new-app-verification.json` 与 `release-verification-new-app.json`。
+- 随后使用同一归档、明确 `teamID=2W27U66VBQ`、`destination=upload`、`manageAppVersionAndBuildNumber=false` 实际尝试上传。`upload-new-app.log` 返回 `App record with bundle identifier "cloud.karama.wiselife" not found on App Store Connect. Create an app record on App Store Connect, or distribute the app from Xcode, and then try again.`，`EXPORT FAILED`，退出码 70；未进入上传成功状态。此时剩余阻塞是商店 App 记录，而非签名或 Bundle ID。
+- 电脑控制连接仍不可用，已请求用户恢复连接或在 BIZCARD LIMITED 下创建记录：iOS、建议名称 `WiseLife: Voice & Notes`、简体中文、Bundle ID／SKU 均为 `cloud.karama.wiselife`；未要求提供密码或私钥。记录创建后重试同一签名归档，无需再次编译，再分别核验 Apple 处理、新测试组及 Beta App Review。
+- 新 App 的录音／SQLite／Keychain 与旧 App 隔离，模型资源和授权需要在新 App 内准备；未卸载、清理或迁移用户设备。Mac Companion 不在本次发布范围。
+
+### 同日继续：新 App 创建与上传成功
+
+- 重启终端 Codex 后，Computer Use 原生桌面通道恢复。浏览器扩展通道仍不可用，通过同一 CUA 的 Chrome 原生窗口完成操作；没有读取或导出密码、Cookie、会话令牌。
+- 在 BIZCARD LIMITED 下创建 **WiseLife: Voice & Notes**，Apple ID **6832169777**，主要语言简体中文，Bundle ID／SKU 均为 `cloud.karama.wiselife`。采用有限访问权限，保留组织既有角色与当前账号。新 App 的 [TestFlight 页面](https://appstoreconnect.apple.com/apps/6832169777/testflight) 与旧 App 独立。
+- 复用 `package-new-app/WiseLife.xcarchive` 重试上传，`upload-new-app-retry.log` 返回 `Upload succeeded`、`Uploaded package is processing` 和 `EXPORT SUCCEEDED`，命令退出 0；`IDEDistribution.critical.log` 为 0 字节。上传接受时间为 `2026-11-08T05:16:42Z`。私有目录保存完整 distribution logs 和 `upload-new-app-retry-result.json`，原失败证据保留。
+- 新建内部组 `WiseLife Internal`（`13701ea9-7e03-49a2-b59a-3ffceeab9444`），关闭自动分发；仅添加当前账号 `mr.brightman@gmail.com`。新 App 的中文 Beta 描述、反馈邮箱、免登录审核备注已保存，未创建外部组或邀请其他人。
+- 页面显示测试员“无可用构建版本”，内部组尚无关联构建。这是处理阶段的中间状态，后续已完成处理、测试要点与内部组关联，见下方最终核验。
+- App Store Connect 有更新付费协议的提示，但未阻止本次创建与上传；没有代替账户持有人接受协议。今后如提交环节要求接受协议，应另行处理。
+
+### 最终核验：内部 TestFlight 已开放
+
+- Apple 处理完成后，构建 15 首先显示“缺少出口合规证明”。检查当前源码使用的系统 URLSession／Security／CryptoKit，以及三个 Ring XCFramework 的公开接口与反混淆符号，未发现独立加密算法实现；据此选择“不属于上述的任意一种算法”并保存。本次通过 App Store Connect 完成声明，没有为跳过问卷而重编译或修改已上传包。
+- 构建 ID 为 `6210fdb9-c7ec-4e8c-a907-f4e6f7f3702d`；中文测试要点已保存，包含 Ring 去重、模型选择、闪念日程、5 小时长录音边界、HealthKit 与独立新 App 数据隔离说明。
+- 构建 1.0.3（15）已关联 `WiseLife Internal`。页面确认 **1 名测试员、1 个构建版本**；构建状态为 **“正在测试”**，90 天后过期；当前账号 `mr.brightman@gmail.com` 为 **“已邀请”**。
+- 发布范围为内部 TestFlight；未提交外部 Beta Review、未创建公开邀请链接、未提交正式 App Store 审核。用户需通过新邀请接受测试；旧 App 的公开链接不能用于新 App。
+- 上传前 IPA SHA-256 与准备记录一致，上传后 522 项源码哈希未变化，`git diff --check` 通过。没有安装或卸载真机 App，实际设备安装及 Ring／Watch 验收仍需另行执行。
+
+
+<a id="eurekalife-build16-20261108"></a>
+## 2026-11-08：EurekaLife 品牌统一 · 1.0.3（16）
+
+用户要求 App 整体改名为 EurekaLife。iPhone、Watch、Mac 的产品名、界面、快捷指令、录音组件、权限说明、中英文资源与当前原型同步更新；Mac 产物名为 `EurekaLife.app`。工程目录、target、Swift 模块、Bundle ID、URL scheme、Bonjour、数据库和 Keychain 标识保持原值，继续更新 BIZCARD LIMITED 下 Apple ID `6832169777` 的同一新 App。不会卸载应用或迁移／清空数据。
+
+本次构建基于含前序功能修改的未提交工作区，版本 1.0.3（16）。私有备份、日志与产物位于仓库外 `WiseLife-Reports/TestFlight/2026-11-08-build16-eurekalife/`。
+
+- App Store Connect 名称已保存为 `EurekaLife`；Beta 说明、审核备注以及 `EurekaLife Internal`／`EurekaLife external` 组名已同步。保留原组成员、访问范围、手动分发与构建 15 的外部审核。
+- 静态与逻辑检查：本地化 JSON／plist 有效；与改名前快照比较，签名、Bundle ID、URL 与存储身份未改变。工程开关 4 项测试／112 个断言、源文件归属、Watch 安装／组件配置、Ring SDK 79 个校验值通过；Watch 同步、快捷录音、状态、ChatGPT 协议、版本元数据、首次使用持久化测试通过。
+- Mac 测试：`sh scripts/test.sh` 共 23 项，1 项需显式联网的下载检查按默认设置跳过，0 失败。未下载模型权重，未启动真实用户的 LAN 服务。
+- 4 张现有首次使用图片只更新品牌标题区域，并改称使用示意图；不是本次新截取的模拟器验收图。
+- iPhone／Watch 最终签名归档 `package-final/EurekaLife.xcarchive` 成功，四个 bundle 均为 1.0.3（16）；HealthKit／后台投递权限保留，快捷指令类型身份与构建 15 相同。实际录音组件、Watch 平台／版本／URL／资源检查通过，最终 `Assets.car` 已包含更新后的引导示意图。
+- Mac Release 编译通过，`dist/EurekaLife-macOS.zip` 为 12,646,730 字节，SHA-256 `aa2ec6b8fc750e8879cc3cdc79130eadf4699f8ffc49ec68aa1f1aa99bedab25`。ZIP 解压后的深度签名检查通过；此为本机 ad-hoc 包，未做 Developer ID 公证。首次打包失败来自 Finder／File Provider 扩展属性，脚本现用 `ditto --norsrc --noextattr` 排除附加元数据，应用内容与签名不改变。
+- 14:32 命令行导出返回 `No Accounts`／找不到 iOS Distribution 证书，同时 Mac 锁屏。解锁恢复电脑控制后，CLI 仍报账号不可用；已通过 Xcode 中现有 `mr.brightman@gmail.com`／BIZCARD LIMITED 会话与 Cloud Managed Apple Distribution 证书完成最终 IPA 导出，无需更改账号、证书或归档。
+- 最终 IPA：`package-final/EurekaLife-build16-export/EurekaLife.ipa`，18,117,505 字节，SHA-256 `2345926963e499fac2b13620b9328fda3ab1b6baa757a81fc91e239f036545c2`。`verify_healthkit_signing.py --require-distribution` 通过，HealthKit／后台投递权限及发布 profile 一致；版本保留 1.0.3（16）。17:41（UTC+8）经 Xcode Organizer 上传，界面显示 `EurekaLife 1.0.3 (16) uploaded`。Apple 处理完成，出口合规按与构建 15 相同的实际加密实现填写并保存。
+- TestFlight 构建 ID `cff560a9-5a1d-42b1-abcf-b86b9ad02601`。测试说明已保存，加入现有 `EurekaLife Internal` 后，组内构建 16 显示“正在测试”、90 天后过期；该组为 1 位测试员／2 个构建，`mr.brightman@gmail.com` 状态为“已邀请”。构建 15 保留，可在需要时作为先前版本选择；没有使旧构建过期。
+- 外部组保留构建 15 的“正在等待审核”状态。Apple 页面明确同一版本只能同时提交一个 Beta Review 构建，暂不允许将 16 添加到外部组；未撤销或替换原审核，未新建公开链接或扩大测试员范围。
+- 未安装／卸载真机 App，未进行本次真机录音、Watch、Ring 交互验收；未提交或推送 Git。
+
+### 2026-11-08：App Store 英语（美国）分发资料准备
+
+用户要求在 Chrome 填写审核所需的英文分发信息。本次仅保存资料，未提交正式 App Review，也未发布 App。
+
+- App Store 版本草稿从 `1.0` 更新为 `1.0.3`，关联已上传的构建 `16`；发布方式设为“手动发布此版本”。
+- 英语（美国）名称 `EurekaLife`，副标题 `Voice Notes & Daily Journal`；推广文本、产品描述、关键词、版权、现有审核联系人及英文审核说明已保存。审核说明覆盖免登录、iPhone 核心测试步骤、可选 Watch／Ring、模型下载及外部 AI 的使用条件。主要语言仍为简体中文，未移除其他本地化。
+- 类别为“效率／生活”。年龄问卷根据 App 的实际功能填写，健康或保健主题为“是”；系统显示主要地区 `9+`，越南 `12+`，其他区域以 Apple 分级为准。
+- 用户指定官网 `https://wiselife.karama.cloud/`。技术支持与营销 URL 使用此地址；英语（美国）的隐私政策 URL 为 `https://wiselife.karama.cloud/privacy/`。HTTP 200 与 Chrome 页面访问均已验证，重新打开分发页面确认英文内容、网址、构建和手动发布模式持久保存。
+- 尚未完成：iPhone／iPad／Watch 商店截图（当前均为空）、初始定价与销售地区、内容版权声明及 App 隐私数据收集申报。可选外部 AI 会传输授权文本，其数据保留与披露口径需核实，未直接申报为“不收集数据”。原主要语言的产品描述等仍为空。
+- 官网仍使用 WiseLife 品牌，隐私政策仍为中文且包含旧权限说明；正式提交前需与 EurekaLife 的实际行为一致。App 中原 `wiselife.cloud` 链接未在本次网页资料任务中修改，当前域名解析失败。
+- 未修改 TestFlight 测试组、测试员或构建 15 的外部审核；未上传截图、修改协议或重编译 App。

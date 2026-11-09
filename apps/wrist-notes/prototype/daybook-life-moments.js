@@ -101,7 +101,7 @@ window.createDaybookLifeMoments = function(app) {
       refresh();openSleep();toast(wakeConfirmed?'起床时间已在原型中确认。':'已恢复为估计时间。');return true;
     }
     if(b.dataset.lmAction==='health'){
-      openSheet('Apple 健康',`${badge('Heart','健康数据连接')}<p class="sheet-intro">读取你选择分享的步数与睡眠。数据暂未出现时，可检查「健康」中的记录和 WiseLife 的读取权限。</p>${info('本原型没有连接 Apple 健康，也不发起权限请求。真实 App 可在系统允许刷新时补齐数据，无法保证零点准时刷新。')}`);return true;
+      openSheet('Apple 健康',`${badge('Heart','健康数据连接')}<p class="sheet-intro">读取你选择分享的步数与睡眠。数据暂未出现时，可检查「健康」中的记录和 EurekaLife 的读取权限。</p>${info('本原型没有连接 Apple 健康，也不发起权限请求。真实 App 可在系统允许刷新时补齐数据，无法保证零点准时刷新。')}`);return true;
     }
     return false;
   }

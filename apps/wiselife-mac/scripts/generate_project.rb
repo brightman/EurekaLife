@@ -9,6 +9,7 @@ project.root_object.package_references << package
 
 [['WiseLifeCompanion', :application, 'Sources/WiseLifeCompanion'], ['CompanionBenchmark', :command_line_tool, 'Sources/CompanionBenchmark']].each do |name, type, source|
   target = project.new_target(type, name, :osx, '15.0')
+  target.product_reference.path = 'EurekaLife.app' if type == :application
   group = project.main_group.new_group(name, '.')
   Dir.glob(File.join(root, source, '*.swift')).sort.each do |path|
     target.source_build_phase.add_file_reference(group.new_file(path.delete_prefix(root + '/')))
@@ -31,7 +32,8 @@ project.root_object.package_references << package
   target.build_configurations.each do |configuration|
     settings = configuration.build_settings
     settings['PRODUCT_BUNDLE_IDENTIFIER'] = 'cloud.karama.wiselife.mac-companion' + (type == :application ? '' : '.benchmark')
-    settings['PRODUCT_NAME'] = name
+    settings['PRODUCT_NAME'] = type == :application ? 'EurekaLife' : name
+    settings['PRODUCT_MODULE_NAME'] = name
     settings['SWIFT_VERSION'] = '5.0'
     settings['SWIFT_OPTIMIZATION_LEVEL'] = configuration.name == 'Debug' ? '-Onone' : '-O'
     settings['SWIFT_ACTIVE_COMPILATION_CONDITIONS'] = ['$(inherited)', 'DEBUG'] if configuration.name == 'Debug'

@@ -11,7 +11,7 @@ struct DesktopPairingScanner: View {
     var body: some View {
         NavigationStack {
             Group {
-                if allowed { DesktopCameraPreview(onCode: onCode, prefix: prefix).overlay(alignment: .bottom) { Text("对准 Mac 上的 WiseLife 配对二维码").padding().background(.regularMaterial).clipShape(Capsule()).padding() } }
+                if allowed { DesktopCameraPreview(onCode: onCode, prefix: prefix).overlay(alignment: .bottom) { Text("对准 Mac 上的 EurekaLife 配对二维码").padding().background(.regularMaterial).clipShape(Capsule()).padding() } }
                 else { ContentUnavailableView(checked ? "请允许使用相机，或返回粘贴配对链接" : "正在准备相机", systemImage: "qrcode.viewfinder") }
             }.navigationTitle("扫描 Mac 配对码")
                 .toolbar { ToolbarItem(placement: .cancellationAction) { Button("取消") { dismiss() } } }

@@ -21,6 +21,9 @@ actor NotebookIdeaStore {
             drafts:kind == .idea ? NotebookIdeaRepository(database:db).drafts() : [])
     }
     func save(_ asset: FlashAsset) throws -> FlashAsset { try FlashCaptureRepository(database:open()).save(asset) }
+    func merge(_ asset: FlashAsset, seeds: [FlashAsset]) throws -> FlashAsset {
+        try NotebookIdeaRepository(database:open()).merge(id:asset.id,seeds:seeds,title:asset.title,text:asset.text)
+    }
     func saveDraft(_ draft: NotebookIdeaDraft) throws { try Task.checkCancellation(); try NotebookIdeaRepository(database:open()).save(draft) }
     func accept(_ draft: NotebookIdeaDraft, ids: Set<UUID>) throws -> [FlashAsset] { try NotebookIdeaRepository(database:open()).accept(draftID:draft.id,candidateIDs:ids) }
     func discard(_ draft: NotebookIdeaDraft) throws { try NotebookIdeaRepository(database:open()).discard(draft.id) }
@@ -42,6 +45,7 @@ actor NotebookIdeaStore {
     @Published private(set) var canLoadMore=false
     @Published private(set) var generating=false
     @Published var error: String?
+    @Published private(set) var latestSaved: FlashAsset?
     @Published var result: NotebookIdeaDraft?
     var kind: FlashAsset.Kind = .idea
     var month = NotebookIdeasModel.currentMonth
@@ -70,7 +74,11 @@ actor NotebookIdeaStore {
         } catch { if id == loadID { self.error=error.localizedDescription; loading=false } }
     }
     func save(_ asset: FlashAsset) async -> Bool {
-        do { _=try await store.save(asset); await reload(); return true }
+        do { latestSaved=try await store.save(asset); await reload(); return true }
+        catch { self.error=error.localizedDescription; return false }
+    }
+    func merge(_ asset: FlashAsset, seeds: [FlashAsset]) async -> Bool {
+        do { latestSaved=try await store.merge(asset,seeds:seeds); await reload(); return true }
         catch { self.error=error.localizedDescription; return false }
     }
     func accept(_ draft: NotebookIdeaDraft, ids: Set<UUID>) async -> Bool {

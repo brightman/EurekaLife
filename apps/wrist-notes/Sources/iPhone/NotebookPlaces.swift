@@ -16,6 +16,12 @@ struct NotebookPlace:Identifiable,Sendable {
     let days:Int
     let revision:Int
     var coordinateHint:String? = nil
+    var address:String? = nil
+}
+struct NotebookPlaceDay: Identifiable, Sendable {
+    let day: String
+    let sourceCount: Int
+    var id: String { day }
 }
 struct NotebookPlaceVisit:Identifiable,Sendable {
     let id:String
@@ -31,7 +37,7 @@ enum NotebookPlaceGrid {
     static func id(_ location:CaptureLocation)->String {
         "grid-v1:\(Int(floor(location.latitude*1000))):\(Int(floor(location.longitude*1000)))"
     }
-    static let types=["家","公司","学校","商场","其他"]
+    static let types=["家","公司","学校","商场","餐厅","咖啡馆","公园","健身房","其他"]
     static func day(_ date:Date,zone:String)->String {
         let formatter=DateFormatter();formatter.calendar=Calendar(identifier:.gregorian)
         formatter.locale=Locale(identifier:"en_US_POSIX");formatter.timeZone=TimeZone(identifier:zone) ?? TimeZone(secondsFromGMT:0)!

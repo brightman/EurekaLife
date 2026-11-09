@@ -21,7 +21,7 @@ abort 'Watch widget code leaked into iPhone' unless (phone_sources & %w[WatchRec
 abort 'Widget-only main leaked into Watch app' if watch_sources.include?('WatchRecordingWidget.swift')
 abort 'Missing widget localization resource' unless widget.resources_build_phase.files_references.any? { |r| File.basename(r.path) == 'Localizable.xcstrings' }
 info = Xcodeproj::Plist.read_from_path(File.join(root, 'Sources/Watch/Info.plist'))
-abort 'Watch URL scheme must be registered' unless info.fetch('CFBundleURLTypes').any? { |t| t['CFBundleURLSchemes'].include?('wiselife-watch') }
+abort 'Watch URL scheme must be registered' unless info.fetch('CFBundleURLTypes').any? { |t| t['CFBundleURLSchemes'].include?('wiselife-bizcard-watch') }
 widget.build_configurations.each do |c|
   settings = c.build_settings
   parent = watch.build_configurations.find { |w| w.name == c.name }.build_settings

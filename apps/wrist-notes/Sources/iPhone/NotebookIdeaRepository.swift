@@ -9,6 +9,28 @@ final class NotebookIdeaRepository {
             try db.execute("CREATE TABLE notebook_idea_drafts(id TEXT PRIMARY KEY,created_at REAL NOT NULL,payload BLOB NOT NULL)")
         }
     }
+    /// Plain merge uses the same source snapshots as AI recreation, without an AI call.
+    func merge(id: UUID, seeds: [FlashAsset], title: String, text: String, now: Date = .now) throws -> FlashAsset {
+        guard (2...10).contains(seeds.count), Set(seeds.map(\.id)).count == seeds.count,
+              !seeds.contains(where: { $0.id == id || $0.kind != .idea || $0.revoked }) else {
+            throw ActionFailure.invalid("请选择 2 至 10 条未删除的不同灵感。")
+        }
+        let parents=seeds.map(FlashIdeaSource.init)
+        return try db.transaction {
+            try Task.checkCancellation()
+            if let saved=try assets.asset(id) {
+                guard !saved.revoked, saved.source.recordingKind == "merged", saved.parentIdeas == parents,
+                      saved.title == title, saved.text == text else { throw ActionFailure.changed }
+                return saved
+            }
+            for seed in seeds { guard try assets.asset(seed.id) == seed else { throw ActionFailure.changed } }
+            let source=ActionSource(id:id,title:"合并灵感",quote:text,capturedAt:now,timeZoneID:TimeZone.current.identifier,recordingKind:"merged",timeZoneKnown:true)
+            var result=FlashAsset(kind:.idea,title:title,text:text,source:source)
+            result.id=id; result.origin = .manual; result.parentIdeas=parents
+            result.requiresLocalAI=seeds.contains { $0.requiresLocalAI == true || $0.source.device == "EurekaRing" || $0.parentIdeas?.contains { $0.source.device == "EurekaRing" } == true }
+            return try assets.save(result)
+        }
+    }
     func save(_ draft: NotebookIdeaDraft) throws {
         _=try NotebookIdeaGeneration.context(draft.seeds,direction:draft.direction)
         guard (1...3).contains(draft.candidates.count) else { throw ActionFailure.invalid("候选灵感数量无效。") }

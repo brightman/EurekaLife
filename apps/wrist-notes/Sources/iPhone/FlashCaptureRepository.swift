@@ -47,9 +47,14 @@ final class FlashCaptureRepository {
     func assets() throws -> [FlashAsset] {
         try db.query("SELECT payload FROM flash_assets ORDER BY captured_at DESC,id").map { try DaybookDatabase.decode(FlashAsset.self, $0["payload"]) }
     }
+    func hasResults(for sourceID: UUID) throws -> Bool {
+        if try !db.query("SELECT id FROM flash_assets WHERE source_id=? LIMIT 1", [.text(sourceID.uuidString)]).isEmpty { return true }
+        // Include revoked/deleted commands: retry must never recreate a user's cancellation.
+        return try actions.load().contains { $0.source?.id == sourceID && $0.isFlashCommand }
+    }
     func commit(_ value: FlashExtraction, source: ActionSource, allowsActions: Bool = true) throws {
         try db.transaction {
-            guard try batch(source.id)?.state != .complete else { return }
+            if try batch(source.id)?.state == .complete, try hasResults(for: source.id) { return }
             for asset in value.assets { _ = try save(asset) }
             for var action in value.actions {
                 if !allowsActions { action.sync = .failed; action.syncError = "历史闪念：尚未执行，请编辑后保存以安排。" }

@@ -133,7 +133,7 @@ final class PhoneRecorder: NSObject, ObservableObject, AVAudioRecorderDelegate, 
         guard request == version else { return }
         requestingPermission = false
         guard !Task.isCancelled else { releaseMicrophone(); return }
-        guard allowed else { releaseMicrophone(); errorMessage = "请在系统设置中允许 WiseLife 使用麦克风。"; return }
+        guard allowed else { releaseMicrophone(); errorMessage = "请在系统设置中允许 EurekaLife 使用麦克风。"; return }
         // Playback hardware transitions are queued off-main. Drain any earlier transition before
         // taking the shared session; the capture activity token prevents later playback requests.
         requestingPermission = true
