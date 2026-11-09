@@ -15,6 +15,8 @@
 
 ## 2026-11-09
 
+独立 iPhone 产品原型补充九组功能说明与使用入口：桌面可收起侧栏，窄屏通过问号打开；记事本四类、AI、行动与总结模板边界同步。桌面和 320／390px 浏览器检查通过，见 [原型与验证](../apps/wrist-notes/prototype/daybook-design.md#当前入口与功能说明2026-11-09)。
+
 Apache-2.0 许可与 ChatGPT 套餐接入已实现：官方授权入口、合成连接测试、Agent 工具循环与历史压缩。专项测试和两端构建通过，已原位安装 iPhone，真实授权、模型目录、固定文本和合成工具续传通过；已修复真机缺少 SSE 媒体响应头导致的无效响应。设置补充 Plus／Pro 套餐说明，刷新与连接测试按钮并排，真机显示已核验。当前验证进度见 [实施与验收](../apps/wrist-notes/verification/chatgpt-native.md#opensource-plan-20261109)，计划见 [任务计划](work/2026-11-09-chatgpt-plan-usage/plan.md)。
 
 明确 ChatGPT 接入仅用于授权使用用户套餐调用 LLM，不作为 EurekaLife 注册／登录方式；保留服务授权所需身份验证。此前范围确认阶段未启用真实接入；后续开启与验证见上条，商业申请未发送。见 [接入范围](../apps/wrist-notes/verification/chatgpt-native.md#plan-usage-scope-20261109)。

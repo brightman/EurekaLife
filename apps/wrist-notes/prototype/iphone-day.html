@@ -23,7 +23,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="assets/brand/favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/brand/apple-touch-icon.png">
   <link rel="stylesheet" href="notebook.css?v=notebook-management-20261108">
-  <link rel="stylesheet" href="iphone-day.css?v=records-only-20261103">
+  <link rel="stylesheet" href="iphone-day.css?v=product-guide-20261109">
 </head>
 <body class="iphone-prototype">
   <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true"><defs><symbol id="i-Ring" viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="8" ry="9"></ellipse><ellipse cx="12" cy="12" rx="4.5" ry="6.5"></ellipse><path d="m6.8 5.2 2.1 2M15.1 16.8l2.1 2"></path></symbol><symbol id="i-UserRound" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"></circle><path d="M4 21v-2a8 8 0 0 1 16 0v2"></path></symbol></defs></svg>
@@ -181,17 +181,27 @@
         </dialog>
       </div>
     </div>
+    <aside class="prototype-guide" aria-label="原型使用说明">
+      <p class="prototype-guide-label">EurekaLife · iPhone 产品原型</p>
+      <details class="prototype-guide-panel" open>
+        <summary><span>产品功能说明</span><span class="prototype-guide-toggle"><span class="when-open">收起</span><span class="when-closed">展开</span><span aria-hidden="true">⌄</span></span></summary>
+        <p class="prototype-guide-hint">展开一项功能，了解用途，再进入原型试一试。</p>
+        <div id="prototypeGuideBody" class="prototype-guide-body"></div>
+      </details>
+    </aside>
   </main>
   <template id="productGuide"><div class="product-guide">
-    <p class="product-guide-intro">记录当下，回看经历，把值得留下的内容慢慢积累起来。</p>
-    <details open><summary>一天 · 按时间回看生活</summary><p>切换日期，查看当天的语音、照片、活动、睡眠和地点。点击时间轴或片段可打开详情，查看总结、全文与来源。每日回顾集中呈现一天的记录，可回到原始依据。</p><button class="text-button" data-guide-view="today">查看一天 →</button></details>
-    <details><summary>记录此刻 · 留下声音或照片</summary><p>通过底部“记此刻”记录语音或添加图片。主动录下的闪念可整理成灵感、账目和明确的行动；普通长录音里的想法暂不自动收进灵感。</p><p>原型中的录音为计时演示，不采集麦克风声音；照片可主动选择本地文件预览。</p></details>
-    <details><summary>我的记录 · 查找片段</summary><p>从首页“查看全部”或搜索按钮进入。按语音、图片、闪念、生活筛选当天记录，输入关键词搜索；点开片段回看内容。</p><button class="text-button" data-guide-view="library">打开我的记录 →</button></details>
-    <details><summary>记事本 · 四类持续积累的数据</summary><p>从“设置 → 数据来源 → 记事本”进入，汇集跨日期积累的灵感、记账、人物和地点。</p><ul><li><strong>灵感：</strong>主动闪念自动保存，也可手动添加、编辑。选择两条以上灵感，给 AI 一个方向，再选择候选另存为新灵感，保留原内容和来源。</li><li><strong>记账：</strong>按月查看收入、支出和结余；可筛选、补齐和编辑账目。待补充账目不计入汇总，不同币种分别计算。</li><li><strong>人物：</strong>管理录音中说话人绑定的联系人，也可手动添加。添加和编辑均可填写姓名、公司、邮箱、手机号、关系五项资料。关系支持家人、同事、同学、朋友、客户、路人，以及多选和自定义；可回看关联发言。</li><li><strong>地点：</strong>只展示高频地点，按近 30 天出现的天数排序。同一地点一天出现多次只记 1 次；可标记为家、公司、学校、商场等，并按日期查看来源。</li></ul><button class="text-button" data-notebook-tab="ideas">打开记事本 →</button></details>
-    <details><summary>AI · 从自己的记录中找答案</summary><p>通过文字或按住说话提问。回答可附来源，帮助回顾经历、寻找想法和梳理下一步；可查看提醒并调整 AI 偏好。此原型使用预设回答与模拟生成，没有连接真实模型。</p><button class="text-button" data-guide-view="ai">打开 AI →</button></details>
-    <details><summary>行动 · 查看待办、提醒与日程</summary><p>集中查看已整理的待办、提醒和日程，支持编辑、完成、撤销或补充信息。主动闪念中的明确创建指令会生成对应行动；普通建议不会直接成为系统任务。</p><p>原型只演示状态，不写入系统日历或发送真实通知。</p><button class="text-button" data-guide-view="actions">查看行动 →</button></details>
-    <details><summary>设置 · 管理模型、来源与隐私</summary><p>调整外观、语言、转写与 AI 模型、检索及提醒偏好。查看 Watch、EurekaRing、原始录音和数据来源，管理隐私选项；原型中的连接与权限状态均为示例。</p><button class="text-button" data-guide-view="data">打开设置 →</button></details>
-    <p class="product-guide-boundary">本页是交互产品原型。记录使用合成示例；编辑内容仅在当前页面内保留，刷新重置。除外观与语言偏好外，不将业务数据持久化，不读取真实录音、通讯录或位置，也不代表原生 App 已实现全部功能。</p>
+    <div class="product-guide-start"><p>第一次体验</p><ol><li>在「一天」点开一条记录，查看总结和全文。</li><li>进入「AI」，试着询问今天聊过的事情。</li><li>从「设置」打开记事本，整理灵感、账目、人物和地点。</li></ol></div>
+    <details open><summary>一天<span>按日期回看记录与每日回顾</span></summary><p>语音、照片和已开启的生活来源汇集到时间轴。切换日期可以回看当天经历；点击记录，继续查看内容、总结和来源。</p><p>每日回顾帮助串起一天的重要内容，可返回原记录核对。没有记录的时段保持留白，时间轴不代表全天自动录音。</p><p class="product-guide-entry">入口：底部「一天」→ 顶部日期／时间轴／每日回顾</p><button class="text-button" data-guide-view="today">查看一天 →</button></details>
+    <details><summary>录音、闪念与照片<span>留下当下，再按内容整理</span></summary><p>通过底部「记此刻」录音或添加图片。长录音适合会议和连续谈话；闪念适合随口记下想法、开支或明确的行动指令。</p><p>主动闪念中的想法自动保存为灵感；普通长录音中的想法暂不自动收进灵感。照片可添加说明，帮助回看当时的上下文。</p><p class="product-guide-entry">入口：底部「记此刻」；硬件入口在左上角</p><p class="product-guide-note">此处录音仅演示计时，不使用麦克风。选择照片时，只预览你主动选中的文件。</p></details>
+    <details><summary>录音内容与总结<span>从简要结论回到原话</span></summary><p>点开语音记录，切换「总结／全文」，查看内容片段、说话人和原始录音。总结用于快速阅读，重要结论仍可回到原文核对。</p><p>详细总结提供 26 个模板，按内容自动匹配，也可手动选择；支持简洁、标准、详细三档，以及引用、编辑和历史版本。完整交互在独立总结原型中体验。</p><p class="product-guide-entry">入口：一天／我的记录 → 语音记录</p><a class="text-button product-guide-link" href="summary-templates.html" target="_blank" rel="noopener">打开总结模板原型 ↗<span class="sr-only">（新标签页）</span></a></details>
+    <details><summary>我的记录<span>搜索原始记录与内容片段</span></summary><p>按语音、图片、闪念、生活筛选所选日期的记录，也可输入关键词查找。点开结果继续阅读、编辑或回看来源。</p><p>这里用于查找记录。需要跨日期整理灵感、收支、人物和地点时，进入设置中的「记事本」。</p><p class="product-guide-entry">入口：一天 →「查看全部」，或右上角搜索</p><button class="text-button" data-guide-view="library">打开我的记录 →</button></details>
+    <details><summary>记事本<span>持续积累四类个人资料</span></summary><p class="product-guide-entry">入口：设置 → 数据来源 → 记事本</p><section class="product-guide-category"><h3>灵感</h3><p>主动闪念自动保存，也可手动添加、编辑和删除。选择两条以上灵感，可以合并或让 AI 再创作；预览、修改后另存为新灵感，保留原内容与来源。</p><button class="text-button" data-notebook-tab="ideas">查看灵感 →</button></section><section class="product-guide-category"><h3>记账</h3><p>按月查看收入、支出和结余，可补充、编辑或删除账目。待补充账目不计入合计，不同币种分别统计。</p><button class="text-button" data-notebook-tab="money">查看记账 →</button></section><section class="product-guide-category"><h3>人物</h3><p>管理说话人关联的联系人，也可手动添加。添加和编辑均有姓名、公司、邮箱、手机号、关系五项；关系可多选并添加自定义项。进入人物详情，可回看已关联的发言片段。</p><button class="text-button" data-notebook-tab="people">查看人物 →</button></section><section class="product-guide-category"><h3>地点</h3><p>展示近 30 天高频出现的地点，按出现天数排序；同一地点一天多次出现只记 1 次。可标记为家、公司、学校、商场等，并按日期回看关联记录。</p><button class="text-button" data-notebook-tab="places">查看地点 →</button></section></details>
+    <details><summary>AI<span>围绕自己的记录提问和追问</span></summary><p>输入问题或按住说话，回顾聊过的事、寻找想法、梳理下一步。回答附带的来源可以点开核对；资料不足时，不应把猜测当作记录中的事实。</p><p>可在设置中选择 AI 模型及允许检索的数据范围。记事本的灵感、记账、人物、地点分别控制；授权查询不代表允许 AI 自动修改资料。</p><p class="product-guide-entry">入口：底部「AI」；设置 → 语言与 AI → AI 检索</p><button class="text-button" data-guide-view="ai">打开 AI →</button><p class="product-guide-note">此原型使用预设回答与模拟生成，不连接真实 AI 服务。</p></details>
+    <details><summary>行动<span>管理待办、提醒和日程</span></summary><p>集中查看整理出的行动，补充内容与时间，编辑、完成或撤销。主动闪念中明确要求创建的事项会生成对应行动；普通建议不会直接成为系统任务。</p><p>添加到 Apple 提醒事项属于可选操作，需要主动开启并授权。缺少关键信息的事项先补充，再确认。</p><p class="product-guide-entry">入口：底部「行动」，或闪念详情中的整理结果</p><button class="text-button" data-guide-view="actions">查看行动 →</button><p class="product-guide-note">原型内的操作不写入系统日历、不发送真实通知。</p></details>
+    <details><summary>硬件与 AI 模型<span>选择记录设备和处理方式</span></summary><p>Apple Watch 和 EurekaRing 用于随身录音，录音同步到 iPhone 后继续整理。硬件面板可查看连接、录音和传输状态；原始录音从设置查看。</p><p>语音转写与 AI 理解分别设置。AI 可选择设备支持的本地模型、自有 Mac，或主动配置的第三方服务／ChatGPT；本地能力取决于设备、系统、语言和模型是否就绪。</p><p class="product-guide-entry">入口：左上角硬件状态；设置 → 语言与 AI</p><a class="text-button product-guide-link" href="watch-recorder.html" target="_blank" rel="noopener">打开 Watch 录音原型 ↗<span class="sr-only">（新标签页）</span></a></details>
+    <details><summary>数据来源与隐私<span>决定记录什么、让 AI 读取什么</span></summary><p>健康、日历、地点等生活来源按需开启。采集授权与 AI 读取范围分别控制；关闭某一来源不等于删除已经保存的记录。</p><p>产品默认把记录保存在本机。选择外部 AI 时，按发送确认设置核对将提供的文字；此原型不读取真实录音、通讯录、健康或位置数据。</p><p class="product-guide-entry">入口：设置 → 数据来源／语言与 AI</p><button class="text-button" data-guide-view="data">打开设置 →</button></details>
+    <p class="product-guide-boundary"><strong>关于这个原型</strong>使用合成示例演示交互。编辑、创建和删除仅在当前页面内生效，刷新后重置；外观与语言偏好可记住。功能说明用于理解产品设计，原生 App 的实际支持以当前版本为准。</p>
   </div></template>
   <template id="appFAQ"><div class="app-faq">
 <details><summary>不联网，也能转写和总结吗？<svg class="icon" aria-hidden="true"><use href="#i-Plus"></use></svg></summary><p>EurekaLife App 不提供云端服务；所有记录、转写、照片、总结和洞察默认保存在 iPhone 本机。支持的语音模型下载后可以离线转写；本地总结取决于设备、系统、语言及模型支持。你可以自行连接第三方 AI；只有确认后，选中的文字才会发送给该服务商。</p></details>
@@ -216,7 +226,7 @@
   <script src="daybook-record-management.js?v=flash-organized-20261031"></script>
   <script src="daybook-settings.js?v=settings-hierarchy-20261031"></script>
   <script src="notebook.js?v=notebook-management-20261108"></script>
-  <script src="daybook.js?v=main-integrated-20261103b"></script>
+  <script src="daybook.js?v=product-guide-20261109"></script>
   <script src="daybook-locales.js?v=main-integrated-20261103b"></script>
 </body>
 </html>

@@ -440,6 +440,7 @@
     today:TODAY
   });
   notebook=window.createDaybookNotebook({root:$('notebookView'),getFlashEntries:flashAssets.notebookEntries,saveFlashEntry:flashAssets.saveNotebookEntry,onModal:open=>{document.querySelector('.toolbar').inert=open;document.querySelector('.bottom-nav').inert=open;}});
+  $('prototypeGuideBody')?.append($('productGuide').content.cloneNode(true));
   renderDay();
   const preview=new URLSearchParams(window.location.search).get('preview');
   if(preview==='library')requestAnimationFrame(()=>showView('library'));

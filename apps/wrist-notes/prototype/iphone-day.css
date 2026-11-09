@@ -1,5 +1,5 @@
 /* Standalone app preview. Product styles remain in the shared daybook files. */
-.iphone-prototype .prototype-stage{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px}
+.iphone-prototype .prototype-stage{min-height:100dvh;display:flex;align-items:center;justify-content:center;gap:clamp(32px,5vw,64px);padding:24px}
 .iphone-prototype .phone-shell{width:430px;height:min(928px,calc(100dvh - 48px));min-height:600px;flex-shrink:0}
 html:has(.iphone-prototype #sheet[open]){overflow:hidden}
 .iphone-prototype .app-faq details{border-bottom:1px solid var(--line)}
@@ -21,14 +21,38 @@ html:has(.iphone-prototype #sheet[open]){overflow:hidden}
 .iphone-prototype #notebookView .nb-header>p{margin-bottom:15px}
 .iphone-prototype .nb-overlay{z-index:30}
 .iphone-prototype .nb-toast{z-index:40;bottom:105px}
-.product-guide-intro{font-size:14px;line-height:1.8;color:var(--secondary);margin:8px 0 20px}
-.product-guide details{border-bottom:1px solid var(--line);padding:16px 0}
-.product-guide summary{cursor:pointer;font-size:15px;font-weight:550;line-height:1.6}
-.product-guide details p,.product-guide details li{font-size:13px;color:var(--secondary);line-height:1.85}
-.product-guide ul{padding-left:20px;margin:12px 0}
-.product-guide .text-button{margin-top:5px;min-height:38px}
-.product-guide-boundary{background:var(--nb-soft);border-radius:14px;padding:14px 16px;margin-top:22px;font-size:12px;line-height:1.8;color:var(--secondary)}
+.prototype-guide{width:360px;flex-shrink:0;max-height:calc(100dvh - 48px)}
+.prototype-guide-label{margin:0 0 18px;font-size:12px;line-height:1.6;color:var(--secondary)}
+.prototype-guide-panel>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:20px;cursor:pointer;font-size:23px;font-weight:550;letter-spacing:-.5px;line-height:1.4}
+.prototype-guide-panel>summary::-webkit-details-marker{display:none}
+.prototype-guide-toggle{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:400;letter-spacing:0;color:var(--secondary)}
+.prototype-guide-toggle>span:last-child{font-size:18px}
+.prototype-guide-panel[open] .prototype-guide-toggle>span:last-child{transform:rotate(180deg)}
+.prototype-guide-panel[open] .when-closed,.prototype-guide-panel:not([open]) .when-open{display:none}
+.prototype-guide-hint{font-size:13px;line-height:1.8;color:var(--secondary);margin:12px 0 20px}
+.prototype-guide-body{max-height:calc(100dvh - 195px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--line) transparent;padding:0 14px 4px 0}
+.product-guide-start{padding:15px 17px;background:var(--nb-soft);border-radius:14px;margin:8px 0 12px}
+.product-guide-start>p{font-size:12px;font-weight:550;margin:0 0 7px;color:var(--ink)}
+.product-guide-start ol{padding-left:18px;margin:0;font-size:12px;color:var(--secondary);line-height:1.85}
+.product-guide-start li+li{margin-top:5px}
+.product-guide details{border-bottom:1px solid var(--line);padding:17px 0}
+.product-guide summary{position:relative;padding-right:23px;list-style:none;cursor:pointer;font-size:15px;font-weight:550;line-height:1.6}
+.product-guide summary::-webkit-details-marker{display:none}
+.product-guide summary::after{content:'+';position:absolute;right:2px;top:0;font-size:19px;font-weight:400;color:var(--secondary)}
+.product-guide details[open]>summary::after{content:'−'}
+.product-guide summary>span{display:block;margin-top:3px;font-size:12px;font-weight:400;color:var(--secondary);line-height:1.6}
+.product-guide details p{font-size:13px;color:var(--secondary);line-height:1.9;margin:13px 0 0}
+.product-guide summary:focus-visible,.prototype-guide-panel>summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+.product-guide details .product-guide-entry{font-size:12px;color:var(--accent)}
+.product-guide details .product-guide-note{font-size:12px;padding-left:12px;border-left:2px solid var(--line)}
+.product-guide-category{margin-top:20px}
+.product-guide-category h3{font-size:14px;font-weight:550;line-height:1.6;margin:0}
+.product-guide-category p{margin-top:7px!important}
+.product-guide .text-button{margin-top:10px;min-height:40px;display:inline-flex;align-items:center;text-align:left;font-size:13px;line-height:1.6}
+.product-guide-boundary{margin:23px 0 0;font-size:12px;line-height:1.85;color:var(--secondary)}
+.product-guide-boundary strong{display:block;margin-bottom:6px;font-weight:550;color:var(--ink)}
 :root[data-appearance=dark] .iphone-prototype{--nb-surface:#1b242e;--nb-soft:#202a34}
+@media(max-width:899px){.prototype-guide{display:none}}
 @media(max-width:500px){
   .iphone-prototype .prototype-stage{padding:0}
   .iphone-prototype .phone-shell{width:100%;height:100dvh;min-height:0}

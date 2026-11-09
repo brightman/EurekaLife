@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#fafbfc">
+<meta name="description" content="EurekaLife summary template interaction prototype. Synthetic demo data only; no models, audio or external services.">
+<title>EurekaLife · Summary templates</title>
+<style>
+:root{color-scheme:light;--ink:#20272e;--muted:#65717c;--line:#e5e9ed;--paper:#fafbfc;--blue:#335f83;--soft:#edf3f8;--green:#34745e;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC",sans-serif;font-synthesis:none;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}body{margin:0;color:var(--ink);background:#f0f3f5}button,input,textarea{font:inherit}button{cursor:pointer;color:inherit}button:disabled{cursor:default;opacity:.5}a{color:var(--blue)}button,input,textarea{border-radius:10px}button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #6e9fc2;outline-offset:3px}[hidden]{display:none!important}
+.topbar{max-width:1120px;margin:auto;padding:28px 24px;display:flex;align-items:center;gap:13px}.mark{width:35px;height:35px;display:grid;place-items:center;background:var(--ink);color:white;border-radius:11px;font-size:21px}.brand{font-weight:650;letter-spacing:-.5px}.topbar small{color:var(--muted);font-size:12px}.topbar .spacer{flex:1}.language{border:1px solid #d8e0e5;background:transparent;padding:9px 13px;font-size:12px}.demo{font-size:10px;letter-spacing:.04em;background:#fff;border:1px solid #dbe3e9;color:#64727c;padding:6px 8px;border-radius:5px}
+.workspace{max-width:1120px;margin:24px auto 60px;padding:0 24px;display:grid;grid-template-columns:minmax(0,680px) 284px;gap:28px;align-items:start}.document{background:var(--paper);border:1px solid #dfe5e9;border-radius:24px;box-shadow:0 14px 38px #34495b06;overflow:hidden}.record-header{padding:30px 32px 22px;border-bottom:1px solid var(--line)}.eyebrow{font-size:11px;color:var(--muted);letter-spacing:.04em;display:flex;align-items:center;gap:8px}.eyebrow .dot{height:5px;width:5px;border-radius:50%;background:var(--green)}h1{font-size:29px;line-height:1.25;letter-spacing:-1px;font-weight:590;margin:14px 0 9px}.meta{color:var(--muted);font-size:12px;line-height:1.8}.wave{height:39px;display:flex;align-items:center;gap:3px;margin:22px 0 0;color:var(--blue)}.wave span{display:block;width:3px;background:#a8bdcb;border-radius:3px}.wave .time{margin-left:auto;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}.tabs{display:flex;gap:28px;padding:0 32px;border-bottom:1px solid var(--line)}.tab{background:none;border:0;border-radius:0;padding:17px 0 14px;color:var(--muted);font-size:13px;border-bottom:2px solid transparent}.tab[aria-selected=true]{color:var(--ink);border-color:var(--ink);font-weight:600}.body{padding:27px 32px 32px;min-height:440px}.body-title{display:flex;align-items:flex-start;gap:12px;margin-bottom:22px}.body-title h2{font-size:16px;margin:0 0 6px;font-weight:600}.body-title p{font-size:11px;color:var(--muted);line-height:1.6;margin:0}.body-title .text-button{margin-left:auto;white-space:nowrap}.text-button{background:none;border:0;color:var(--blue);font-size:12px;padding:6px 0}.overview{font-size:16px;line-height:1.8;letter-spacing:-.15px;margin:0 0 28px}.section{margin:27px 0}.section h3{font-size:11px;font-weight:650;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 13px}.section p{font-size:14px;line-height:1.85;margin:0}.quote-link{font-size:10px;vertical-align:super;background:var(--soft);border:0;color:var(--blue);padding:2px 5px;margin-left:3px;border-radius:4px}.decision{display:flex;gap:11px;align-items:baseline;padding:15px 16px;background:#f0f5f3;border-radius:12px}.decision .pill{font-size:9px;color:var(--green);font-weight:600;white-space:nowrap}.actions{list-style:none;margin:0;padding:0}.actions li{border-bottom:1px solid var(--line);padding:14px 0;display:grid;grid-template-columns:22px 1fr;gap:7px;font-size:14px;line-height:1.65}.actions li:last-child{border:0}.action-index{font-size:10px;color:#8799a6;padding-top:4px}.action-meta{font-size:11px;color:var(--muted);margin-top:5px}.quiet{font-size:12px;color:var(--muted);line-height:1.8}.coverage{padding:14px 16px;border:1px solid var(--line);border-radius:12px;margin-top:23px}.manual{white-space:pre-wrap;font-size:15px;line-height:1.9}.footer-note{font-size:10px;line-height:1.8;color:var(--muted);padding:15px 32px;border-top:1px solid var(--line)}
+.inspector{padding-top:5px}.inspector h2{font-size:12px;font-weight:600;letter-spacing:.02em;margin:0 0 17px}.setting{padding-bottom:22px;margin-bottom:23px;border-bottom:1px solid #dbe3e8}.setting-label{display:block;font-size:11px;color:var(--muted);margin-bottom:9px}.template-button{display:flex;align-items:center;justify-content:space-between;width:100%;text-align:left;background:#fff;border:1px solid #d7e0e6;padding:14px;font-size:13px;line-height:1.45;gap:10px}.helper{font-size:11px;color:var(--muted);line-height:1.8;margin:10px 0 0}.match{display:flex;align-items:center;gap:6px;color:var(--green);font-size:10px;margin-top:12px}.match::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--green)}.segmented{display:flex;background:#e6edf1;padding:3px;border-radius:10px;gap:2px}.segmented button{flex:1;background:none;border:0;padding:9px 3px;font-size:11px;color:var(--muted);border-radius:8px}.segmented button[aria-pressed=true]{background:white;color:var(--ink);box-shadow:0 1px 3px #253c5010}.primary{border:0;background:var(--ink);color:#fff;padding:13px 17px;font-size:12px;font-weight:550}.secondary{border:1px solid #d7e0e6;background:#fff;padding:11px 16px;font-size:12px}.full{width:100%}.history-button{display:flex;width:100%;justify-content:space-between;align-items:center;border:0;background:none;text-align:left;padding:0;font-size:12px}.history-button span{font-size:11px;color:var(--muted)}.saved{font-size:10px;color:var(--green);margin-top:15px}.note{font-size:11px;line-height:1.85;color:var(--muted);margin-top:22px}.note strong{font-weight:500;color:var(--ink)}.notice{border:1px solid #c9dce7;background:#edf5fa;color:#335f83;padding:12px 14px;font-size:12px;line-height:1.7;border-radius:10px;margin-bottom:18px}.transcript-entry{border-bottom:1px solid var(--line);padding:18px 0}.transcript-entry:first-child{padding-top:0}.transcript-entry header{display:flex;gap:12px;font-size:11px;color:var(--muted);margin-bottom:9px}.transcript-entry p{font-size:14px;line-height:1.8;margin:0}.timestamp{font-variant-numeric:tabular-nums;color:var(--blue)}
+dialog{border:1px solid #dce4ea;border-radius:23px;padding:0;width:min(720px,calc(100vw - 32px));max-height:calc(100dvh - 48px);color:var(--ink);background:var(--paper);box-shadow:0 30px 100px #192d4233}dialog::backdrop{background:#20334555;backdrop-filter:blur(4px)}.dialog-head{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:23px 26px;border-bottom:1px solid var(--line)}.dialog-head h2{margin:0;font-size:18px;letter-spacing:-.3px;font-weight:600}.close{border:0;background:#edf1f4;width:30px;height:30px;font-size:20px;border-radius:50%;display:grid;place-items:center}.dialog-body{padding:22px 26px;overflow:auto;max-height:calc(100dvh - 238px)}.dialog-actions{padding:18px 26px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:16px;background:var(--paper)}.dialog-actions small{font-size:11px;color:var(--muted);line-height:1.6}.search{width:100%;padding:12px 14px;border:1px solid #d8e1e8;background:white;margin-bottom:16px;outline-offset:2px}.auto-option{display:flex;align-items:center;gap:11px;padding:15px;border:1px solid #cbdbe7;border-radius:12px;background:#f0f6fa;font-size:13px}.auto-option small{display:block;font-size:11px;color:var(--muted);margin-top:4px}.category h3{font-size:11px;font-weight:600;color:var(--muted);margin:23px 0 10px}.template-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.template-option{display:flex;align-items:flex-start;gap:9px;border:1px solid var(--line);background:white;border-radius:10px;padding:12px;font-size:12px;line-height:1.5}.template-option:has(input:checked){border-color:#7597b2;background:#f2f7fb}.template-option input,.auto-option input{accent-color:var(--blue);margin-top:3px;flex-shrink:0}.template-option small{display:block;font-size:10px;line-height:1.6;color:var(--muted);margin-top:5px}.quote-sheet{width:min(520px,calc(100vw - 32px))}.source-label{font-size:11px;color:var(--muted);margin-bottom:17px}.source-quote{font-size:20px;line-height:1.65;letter-spacing:-.3px;margin:0 0 23px;padding:0 0 0 17px;border-left:2px solid #6e8ea6}.source-foot{font-size:12px;color:var(--muted);line-height:1.85}.edit-area{width:100%;height:320px;min-height:200px;resize:vertical;border:1px solid var(--line);padding:16px;background:white;font-size:14px;line-height:1.9}.history-row{display:flex;gap:14px;align-items:center;padding:17px 0;border-bottom:1px solid var(--line)}.history-row:first-child{padding-top:0}.history-row .info{flex:1}.history-row h3{font-size:13px;margin:0 0 5px;font-weight:550}.history-row p{font-size:11px;color:var(--muted);line-height:1.6;margin:0}.history-row button{font-size:11px;padding:8px 11px}.selected-label{font-size:10px;color:var(--green)}.history-preview{white-space:pre-wrap;font-size:13px;line-height:1.8;background:#fff;border:1px solid var(--line);padding:16px;border-radius:12px;margin-top:16px}.site-footer{max-width:1120px;padding:0 24px 25px;margin:auto;font-size:10px;line-height:1.8;color:var(--muted);display:flex;justify-content:space-between;gap:20px}
+@media(max-width:800px){.workspace{grid-template-columns:1fr;max-width:620px;margin-top:8px;gap:25px}.inspector{display:grid;grid-template-columns:1fr 1fr;gap:0 20px}.inspector>h2,.inspector>.note,.inspector>.saved{grid-column:1/-1}.setting{margin:0 0 20px}.inspector>.generate-area{align-self:start}.topbar{max-width:620px}.topbar small{display:none}.site-footer{max-width:620px;display:block}.site-footer>a{display:block;margin-top:8px}}@media(max-width:460px){.topbar{padding:20px 16px}.workspace{padding:0 12px}.document{border-radius:18px}.record-header{padding:24px 22px 19px}h1{font-size:26px}.tabs{padding:0 22px}.body{padding:23px 22px}.footer-note{padding:13px 22px}.inspector{padding:0 9px;grid-template-columns:1fr}.inspector>.note{margin-top:0}.template-grid{grid-template-columns:1fr}.dialog-head{padding:20px}.dialog-body{padding:18px 20px}.dialog-actions{padding:16px 20px}.topbar .demo{font-size:9px}.brand{font-size:14px}.language{padding:8px}.overview{font-size:15px}.site-footer{padding:0 22px 25px}}
+@media(prefers-reduced-motion:no-preference){button{transition:background .15s,border-color .15s}dialog[open]{animation:appear .15s ease-out}@keyframes appear{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}}
+</style>
+</head>
+<body>
+<header class="topbar"><span class="mark" aria-hidden="true">e</span><span class="brand">EurekaLife</span><small data-i18n="workspace">Summary workspace</small><span class="spacer"></span><span class="demo" data-i18n="demo">DEMO DATA</span><button class="language" id="language" type="button" aria-label="Switch to Chinese">中文</button></header>
+<main class="workspace">
+<article class="document" aria-labelledby="record-title">
+<header class="record-header"><div class="eyebrow"><span class="dot"></span><span data-i18n="excerpt">FINALIZED RECORDING EXCERPT</span></div><h1 id="record-title" data-i18n="recordTitle">Atlas launch check-in</h1><div class="meta" data-i18n="recordMeta">9 Nov 2026 · 09:30 · 12 min 38 sec</div><div class="wave" id="wave" aria-hidden="true"><div class="time">00:00 — 12:38</div></div></header>
+<div class="tabs" role="tablist" aria-label="Recording content"><button id="summary-tab" class="tab" type="button" role="tab" aria-selected="true" aria-controls="summary-panel" data-i18n="summary">Summary</button><button id="transcript-tab" class="tab" type="button" role="tab" aria-selected="false" aria-controls="transcript-panel" tabindex="-1" data-i18n="transcript">Transcript</button></div>
+<div class="body" id="summary-panel" role="tabpanel" aria-labelledby="summary-tab"><div id="notice" class="notice" role="status" hidden></div><div class="body-title"><div><h2 id="saved-template"></h2><p id="saved-meta"></p></div><button id="edit" class="text-button" type="button" data-i18n="edit">Edit summary</button></div><div id="summary-content"></div></div>
+<div class="body" id="transcript-panel" role="tabpanel" aria-labelledby="transcript-tab" hidden></div>
+<footer class="footer-note" data-i18n="actionBoundary">Actions are quoted from the recording. No reminders or calendar events are created.</footer>
+</article>
+<aside class="inspector" aria-label="Summary settings"><h2 data-i18n="shape">Shape this summary</h2><section class="setting"><label class="setting-label" for="choose-template" data-i18n="template">Template</label><button id="choose-template" class="template-button" type="button"><span id="option-template"></span><span aria-hidden="true">⌄</span></button><div class="match" id="match"></div><p class="helper" id="route-reason"></p></section><section class="setting"><span class="setting-label" data-i18n="detail">Detail</span><div class="segmented" id="detail-controls" role="group" aria-label="Summary detail"><button type="button" data-detail="concise" aria-pressed="false" data-i18n="concise">Concise</button><button type="button" data-detail="standard" aria-pressed="true" data-i18n="standard">Standard</button><button type="button" data-detail="detailed" aria-pressed="false" data-i18n="detailed">Detailed</button></div><p class="helper" id="option-note"></p></section><section class="setting"><button id="history" class="history-button" type="button"><strong data-i18n="history">Saved versions</strong><span id="version-count"></span></button><p class="helper" data-i18n="historyHint">Compare earlier versions or return to your own edits.</p></section><div class="generate-area"><button id="generate" class="primary full" type="button" data-i18n="regenerate">Regenerate summary</button><p class="helper" data-i18n="generationHint">Creates a new version from the same transcript.</p></div><p class="saved" data-i18n="saved">Saved version selected</p><p class="note"><strong data-i18n="demoTitle">A safe place to try the flow.</strong><br><span data-i18n="demoNote">This prototype uses synthetic text and canned results. No model, microphone or external service is connected. Demo edits reset when you reload.</span></p></aside>
+</main>
+<footer class="site-footer"><span data-i18n="footer">Interactive product prototype · 26 templates · 6 categories</span><a href="iphone-day.html" data-i18n="back">Open the main iPhone prototype</a></footer>
+<dialog id="template-dialog" aria-labelledby="template-title"><header class="dialog-head"><h2 id="template-title" data-i18n="chooseTitle">Choose a template</h2><button class="close" type="button" data-close="template-dialog" aria-label="Close">×</button></header><div class="dialog-body"><input id="template-search" class="search" type="search" placeholder="Search 26 templates" aria-label="Search templates"><label class="auto-option"><input type="radio" name="template" value="auto" checked><span><span data-i18n="auto">Automatic selection</span><small data-i18n="autoHint">Match the purpose of this recording. Use a general summary when uncertain.</small></span></label><div id="template-list"></div><p id="no-results" class="quiet" hidden data-i18n="noResults">No matching templates.</p></div><footer class="dialog-actions"><small data-i18n="pickerHint">Applies to this summary only.<br>Generate to save a new version.</small><button class="primary" id="apply-template" type="button" data-i18n="useTemplate">Use template</button></footer></dialog>
+<dialog id="source-dialog" class="quote-sheet" aria-labelledby="source-title"><header class="dialog-head"><h2 id="source-title" data-i18n="sourceTitle">From the transcript</h2><button class="close" type="button" data-close="source-dialog" aria-label="Close">×</button></header><div class="dialog-body"><p class="source-label" id="source-label"></p><blockquote class="source-quote" id="source-quote"></blockquote><p class="source-foot" data-i18n="sourceFoot">A continuous quote from the synthetic recording. Speaker names and timestamps are sample data; no audio is attached.</p></div><footer class="dialog-actions"><small data-i18n="recordTitle">Atlas launch check-in</small><button class="secondary" id="show-transcript" type="button" data-i18n="fullTranscript">View transcript</button></footer></dialog>
+<dialog id="edit-dialog" aria-labelledby="edit-title"><header class="dialog-head"><h2 id="edit-title" data-i18n="edit">Edit summary</h2><button class="close" type="button" data-close="edit-dialog" aria-label="Close">×</button></header><div class="dialog-body"><label class="setting-label" for="edit-text" data-i18n="editHint">Your words are saved as a separate version.</label><textarea id="edit-text" class="edit-area"></textarea></div><footer class="dialog-actions"><small data-i18n="editPreserve">New generated versions keep your edits selected.</small><button class="primary" id="save-edit" type="button" data-i18n="saveEdit">Save edited version</button></footer></dialog>
+<dialog id="history-dialog" aria-labelledby="history-title"><header class="dialog-head"><h2 id="history-title" data-i18n="history">Saved versions</h2><button class="close" type="button" data-close="history-dialog" aria-label="Close">×</button></header><div class="dialog-body"><div id="history-list"></div><div class="history-preview" id="history-preview" hidden></div></div><footer class="dialog-actions"><small data-i18n="historyBoundary">Choosing a version changes what you see.<br>Your transcript and other versions stay intact.</small><button class="secondary" type="button" data-close="history-dialog" data-i18n="done">Done</button></footer></dialog>
+<script>
+'use strict';
+const templates=[
+  {
+    "id": "general_summary",
+    "category": "personal",
+    "en": "General summary",
+    "zh": "通用总结",
+    "description": "Content without a clear specialist purpose"
+  },
+  {
+    "id": "fleeting_idea",
+    "category": "personal",
+    "en": "Fleeting idea",
+    "zh": "闪念与灵感",
+    "description": "Explicit personal idea or question to explore"
+  },
+  {
+    "id": "personal_journal",
+    "category": "personal",
+    "en": "Personal journal",
+    "zh": "生活随记与日常交流",
+    "description": "Daily experiences, family or friends"
+  },
+  {
+    "id": "team_update",
+    "category": "collaboration",
+    "en": "Team update",
+    "zh": "周／月例会与多人汇报",
+    "description": "Periodic work reports by people or teams"
+  },
+  {
+    "id": "project_followup",
+    "category": "collaboration",
+    "en": "Project follow-up",
+    "zh": "项目进展与任务闭环",
+    "description": "Execution status, blockers and next owners"
+  },
+  {
+    "id": "retrospective",
+    "category": "collaboration",
+    "en": "Retrospective",
+    "zh": "项目／活动复盘",
+    "description": "Explain outcomes and improvements"
+  },
+  {
+    "id": "discussion_decision",
+    "category": "collaboration",
+    "en": "Brainstorming & decisions",
+    "zh": "头脑风暴与决策讨论",
+    "description": "Explore alternatives and trade-offs"
+  },
+  {
+    "id": "one_on_one",
+    "category": "collaboration",
+    "en": "One-on-one & coaching",
+    "zh": "一对一沟通与辅导",
+    "description": "Feedback and development between manager/mentor and employee/learner"
+  },
+  {
+    "id": "formal_minutes",
+    "category": "collaboration",
+    "en": "Formal minutes",
+    "zh": "正式会议纪要",
+    "description": "Formal motions, voting or governance approval"
+  },
+  {
+    "id": "presales_discovery",
+    "category": "business",
+    "en": "Presales & discovery",
+    "zh": "售前交流与客户需求",
+    "description": "Purchase, procurement, supplier evaluation or trial intent"
+  },
+  {
+    "id": "commercial_negotiation",
+    "category": "business",
+    "en": "Commercial negotiation",
+    "zh": "商务谈判与合作",
+    "description": "Negotiate concrete transaction or cooperation terms"
+  },
+  {
+    "id": "consultation",
+    "category": "business",
+    "en": "Expert consultation",
+    "zh": "咨询与专家建议",
+    "description": "Seek professional analysis for a specific problem"
+  },
+  {
+    "id": "investor_meeting",
+    "category": "business",
+    "en": "Investor & fundraising meeting",
+    "zh": "投资人与融资交流",
+    "description": "Fundraising, funds, investment projects or LP cooperation"
+  },
+  {
+    "id": "market_research",
+    "category": "business",
+    "en": "Market & investment research",
+    "zh": "市场晨会与投资研究",
+    "description": "Macroeconomics, industries, securities or market strategy"
+  },
+  {
+    "id": "user_research",
+    "category": "technology",
+    "en": "User research",
+    "zh": "用户访谈与需求调研",
+    "description": "Understand actual use behavior and needs"
+  },
+  {
+    "id": "solution_review",
+    "category": "technology",
+    "en": "Product & technical review",
+    "zh": "产品／技术方案评审",
+    "description": "Evaluate proposed solutions against requirements and constraints"
+  },
+  {
+    "id": "incident_review",
+    "category": "technology",
+    "en": "Incident review",
+    "zh": "故障与事件复盘",
+    "description": "Concrete outage, abnormal event or loss with response or cause discussion"
+  },
+  {
+    "id": "class_notes",
+    "category": "learning",
+    "en": "Class & study notes",
+    "zh": "课堂与学习笔记",
+    "description": "Systematic instruction of concepts, worked examples or learning requirements"
+  },
+  {
+    "id": "training_procedure",
+    "category": "learning",
+    "en": "Training & procedures",
+    "zh": "培训与操作流程",
+    "description": "How to perform an operation in dependent steps"
+  },
+  {
+    "id": "talk_keynote",
+    "category": "learning",
+    "en": "Talk & keynote",
+    "zh": "演讲与主题分享",
+    "description": "One-way thematic speech and arguments"
+  },
+  {
+    "id": "podcast_interview",
+    "category": "learning",
+    "en": "Podcast & profile interview",
+    "zh": "播客与人物访谈",
+    "description": "Host and guest discuss experience, views or public topics"
+  },
+  {
+    "id": "academic_discussion",
+    "category": "learning",
+    "en": "Academic discussion",
+    "zh": "学术研讨与研究讨论",
+    "description": "Research hypotheses, methods, experiments or papers"
+  },
+  {
+    "id": "candidate_review",
+    "category": "learning",
+    "en": "Candidate & probation review",
+    "zh": "招聘面试与转正评审",
+    "description": "Hiring selection, probation assessment or employment review"
+  },
+  {
+    "id": "health_visit",
+    "category": "affairs",
+    "en": "Health visit & consultation",
+    "zh": "就诊与健康咨询记录",
+    "description": "Actual health consultation, treatment or medical visit"
+  },
+  {
+    "id": "legal_consultation",
+    "category": "affairs",
+    "en": "Legal consultation",
+    "zh": "法律咨询与条款沟通",
+    "description": "Legal rights, obligations, disputes or legal documents"
+  },
+  {
+    "id": "inspection_rectification",
+    "category": "affairs",
+    "en": "Inspection & rectification",
+    "zh": "现场检查与整改",
+    "description": "Item-by-item inspection, acceptance or maintenance checks"
+  }
+];
+const categories=[['personal','General & personal','通用与个人'],['collaboration','Meetings & collaboration','会议与协作'],['business','Business & consulting','商务与咨询'],['technology','Product & technology','产品与技术'],['learning','Learning, content & talent','学习、内容与人才'],['affairs','Professional & daily affairs','专业与生活事务']];
+const translations={workspace:['Summary workspace','总结工作区'],demo:['DEMO DATA','示例数据'],excerpt:['FINALIZED RECORDING EXCERPT','已定稿的录音片段'],recordTitle:['Atlas launch check-in','Atlas 上线进展沟通'],recordMeta:['9 Nov 2026 · 09:30 · 12 min 38 sec','2026 年 11 月 9 日 · 09:30 · 12 分 38 秒'],summary:['Summary','总结'],transcript:['Transcript','全文'],edit:['Edit summary','编辑总结'],actionBoundary:['Actions are quoted from the recording. No reminders or calendar events are created.','行动来自原文。本总结不会创建提醒或日历事项。'],shape:['Shape this summary','调整这份总结'],template:['Template','模板'],detail:['Detail','详略'],concise:['Concise','简洁'],standard:['Standard','标准'],detailed:['Detailed','详细'],history:['Saved versions','已保存版本'],historyHint:['Compare earlier versions or return to your own edits.','比较早期版本，或回到你自己编辑的内容。'],regenerate:['Regenerate summary','重新生成总结'],generationHint:['Creates a new version from the same transcript.','根据同一份原文生成新的版本。'],saved:['Saved version selected','当前显示已保存版本'],demoTitle:['A safe place to try the flow.','在这里体验操作流程。'],demoNote:['This prototype uses synthetic text and canned results. No model, microphone or external service is connected. Demo edits reset when you reload.','原型使用合成原文和预设结果，未连接模型、麦克风或外部服务。刷新页面会重置示例编辑。'],footer:['Interactive product prototype · 26 templates · 6 categories','交互产品原型 · 26 个模板 · 6 类场景'],back:['Open the main iPhone prototype','打开 iPhone 主原型'],chooseTitle:['Choose a template','选择模板'],auto:['Automatic selection','自动选择'],autoHint:['Match the purpose of this recording. Use a general summary when uncertain.','根据录音目的匹配；无法确定时使用通用总结。'],noResults:['No matching templates.','没有匹配的模板。'],pickerHint:['Applies to this summary only. Generate to save a new version.','仅作用于当前总结。点击生成后保存新版本。'],useTemplate:['Use template','使用此模板'],sourceTitle:['From the transcript','来自原文'],sourceFoot:['A continuous quote from the synthetic recording. Speaker names and timestamps are sample data; no audio is attached.','引文来自合成录音原文。人物名称与时间均为示例，没有附带真实音频。'],fullTranscript:['View transcript','查看全文'],editHint:['Your words are saved as a separate version.','你的编辑会单独保存为一个版本。'],editPreserve:['New generated versions keep your edits selected.','重新生成不会替换当前选中的手动版本。'],saveEdit:['Save edited version','保存编辑版本'],historyBoundary:['Choosing a version changes what you see. Your transcript and other versions stay intact.','选择版本只改变当前展示。原文与其他版本都会保留。'],done:['Done','完成']};
+const evidence=[{id:1,time:'01:24',speaker:'Maya',en:'The onboarding prototype is ready. We are still waiting for the accessibility review before we invite the pilot group.',zh:'引导流程原型已经完成。我们还在等无障碍审查，完成后再邀请试用小组。'},{id:2,time:'04:10',speaker:'Leo',en:'Let’s start with ten pilot users rather than thirty. We agreed to keep the public launch date undecided until the review is complete.',zh:'先邀请十名试用用户，不是三十名。我们同意在审查完成前不确定公开上线日期。'},{id:3,time:'08:32',speaker:'Maya',en:'I will send the revised prototype to the accessibility reviewer by Wednesday. We need feedback on navigation and text size.',zh:'我会在周三前把修改后的原型发给无障碍审查人员。我们需要导航和字体大小方面的反馈。'},{id:4,time:'11:05',speaker:'Leo',en:'Once that review is complete, I will prepare the invitation for ten pilot users. We have not agreed on an invitation date yet.',zh:'审查完成后，我来准备十名试用用户的邀请。邀请日期还没有确定。'}];
+let language='en',options={template:'auto',detail:'standard'},pendingTemplate='auto',activeTab='summary',nextID=3;
+let versions=[{id:1,template:'general_summary',mode:'auto',detail:'concise',manual:null,label:'09:43'},{id:2,template:'project_followup',mode:'auto',detail:'standard',manual:null,label:'09:44'}],selectedID=2,noticeKey=null;
+const $=id=>document.getElementById(id),t=key=>translations[key][language==='en'?0:1],choose=(en,zh)=>language==='en'?en:zh,esc=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),selected=()=>versions.find(v=>v.id===selectedID),template=id=>templates.find(v=>v.id===id),name=id=>template(id)[language];
+function citation(id){return `<button type="button" class="quote-link" data-quote="${id}" aria-label="${esc(choose('Read source quote','查看原文引用'))} ${id}">${id}</button>`}
+function overview(){return choose('The onboarding prototype is ready. The team will invite ten pilot users after the accessibility review; the public launch date is still undecided.','引导流程原型已完成。团队计划在无障碍审查后邀请十名试用用户；公开上线日期尚未确定。')}
+function documentText(version){if(version.manual!==null)return version.manual;let text=name(version.template)+'\n\n'+overview();if(version.detail!=='concise')text+='\n\n'+choose('Decision: Start with ten pilot users. Keep the public launch date open.','决定：先邀请十名试用用户。暂不确定公开上线日期。');text+='\n\n'+choose('Maya — Send the revised prototype for accessibility review by Wednesday.\nLeo — Prepare ten pilot invitations after the review. No invitation date agreed.','Maya — 周三前提交修改后的原型供无障碍审查。\nLeo — 审查后准备十名试用用户的邀请。邀请日期尚未确定。');return text}
+function bodyHTML(version){if(version.manual!==null)return `<div class="manual">${esc(version.manual)}</div>`;const specialist=!['project_followup','general_summary','team_update','discussion_decision','solution_review'].includes(version.template);return `<p class="overview">${esc(overview())}${citation(1)}${citation(2)}</p>`+(specialist?`<p class="notice">${esc(choose('This sample has no evidence for specialist sections in this template. Unsupported sections stay empty. Use Project follow-up to explore the full sample.','这份示例没有支持该专业模板章节的内容，因此不填充这些章节。选择“项目进展与任务闭环”可查看完整示例。'))}</p>`:'')+(version.detail==='concise'?'':`<section class="section"><h3>${esc(choose('Decision','明确决定'))}</h3><div class="decision"><span class="pill">${esc(choose('CONFIRMED','已确认'))}</span><p>${esc(choose('Start with ten pilot users. Keep the public launch date open until the review is complete.','先邀请十名试用用户。审查完成前不确定公开上线日期。'))}${citation(2)}</p></div></section>`)+`<section class="section"><h3>${esc(choose('Next steps','后续事项'))}</h3><ol class="actions"><li><span class="action-index">01</span><div>${esc(choose('Send the revised prototype for accessibility review.','提交修改后的原型，进行无障碍审查。'))}${citation(3)}<div class="action-meta">Maya · ${esc(choose('By Wednesday','周三前'))}</div></div></li>${version.detail==='concise'?'':`<li><span class="action-index">02</span><div>${esc(choose('Prepare invitations for ten pilot users after the review.','审查后准备十名试用用户的邀请。'))}${citation(4)}<div class="action-meta">Leo · ${esc(choose('Date not specified','日期未明确'))}</div></div></li>`}</ol></section>`+(version.detail==='detailed'?`<section class="section"><h3>${esc(choose('Open question','尚待确定'))}</h3><p>${esc(choose('When can pilot invitations be sent? The discussion does not establish a date.','试用邀请何时发送？讨论中没有确定日期。'))}${citation(4)}</p></section><div class="coverage quiet">${esc(choose('Coverage: four synthetic excerpts from this 12-minute discussion. Review source quotes to check the details.','覆盖范围：这段 12 分钟讨论中的四条合成摘录。可查看原文引用，核对具体信息。'))}</div>`:'')}
+function render(){document.documentElement.lang=language==='en'?'en':'zh-CN';document.querySelectorAll('[data-i18n]').forEach(el=>el.textContent=t(el.dataset.i18n));$('language').textContent=language==='en'?'中文':'English';$('language').setAttribute('aria-label',choose('Switch to Chinese','切换为英文'));const version=selected();$('saved-template').textContent=name(version.template);$('saved-meta').textContent=version.manual!==null?choose('Edited by you · Saved as a separate version','由你编辑 · 单独保存的版本'):choose('Saved summary · ','已保存总结 · ')+t(version.detail);$('summary-content').innerHTML=bodyHTML(version);$('option-template').textContent=options.template==='auto'?t('auto'):name(options.template);$('match').textContent=options.template==='auto'?choose('Project follow-up · High confidence (demo)','项目跟进 · 高置信度（示例）'):choose('Manually selected for this summary','仅对此总结手动选择');$('route-reason').textContent=options.template==='auto'?choose('The discussion centers on progress, a review blocker and clear next owners.','讨论围绕当前进展、审查阻碍和下一步负责人展开。'):choose('Only facts supported by the transcript will appear.','仅展示原文支持的内容。');document.querySelectorAll('[data-detail]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.detail===options.detail)));const changed=options.detail!==version.detail||(options.template==='auto'?'project_followup':options.template)!==version.template;$('option-note').textContent=changed?choose('New options selected. Generate to apply them.','已选择新选项，生成后应用。'):choose('Keeps the important facts, with room for context.','保留重要事实，并提供必要上下文。');$('version-count').textContent=String(versions.length);$('notice').hidden=!noticeKey;if(noticeKey)$('notice').textContent=noticeKey==='preserved'?choose('New version ready. Your edited version is still selected. Open saved versions to compare.','新版本已就绪。当前仍展示你的编辑，可打开已保存版本进行比较。'):choose('Your edited version is saved. The earlier version remains in history.','已保存你的编辑，较早版本仍保留在历史中。');$('transcript-panel').innerHTML=evidence.map(q=>`<section class="transcript-entry" id="evidence-${q.id}"><header><span class="timestamp">${q.time}</span><span>${q.speaker} · ${esc(choose('sample speaker','示例人物'))}</span></header><p>${esc(q[language])}</p></section>`).join('');$('template-search').placeholder=choose('Search 26 templates','搜索 26 个模板');renderPicker();if($('history-dialog').open)renderHistory()}
+function renderPicker(){const query=$('template-search').value.trim().toLowerCase();let found=0;$('template-list').innerHTML=categories.map(([id,en,zh])=>{const rows=templates.filter(row=>row.category===id&&`${row.en} ${row.zh} ${row.id}`.toLowerCase().includes(query));found+=rows.length;return rows.length?`<section class="category" data-category="${id}"><h3>${esc(choose(en,zh))} · ${rows.length}</h3><div class="template-grid">${rows.map(row=>`<label class="template-option"><input type="radio" name="template" value="${row.id}" ${pendingTemplate===row.id?'checked':''}><span>${esc(row[language])}<small>${esc(language==='en'?row.description:row.en)}</small></span></label>`).join('')}</div></section>`:''}).join('');$('no-results').hidden=found>0;document.querySelector('input[value="auto"]').checked=pendingTemplate==='auto'}
+function renderHistory(){const rows=[...versions].reverse();$('history-list').innerHTML=rows.map(v=>`<article class="history-row"><div class="info"><h3>${esc(name(v.template))}${v.manual!==null?' · '+esc(choose('Edited','已编辑')):''}</h3><p>${esc(v.label)} · ${esc(t(v.detail))} · ${esc(v.manual!==null?choose('Your words','手动内容'):choose('Generated demo','生成示例'))}</p></div><button type="button" class="text-button" data-preview="${v.id}">${esc(choose('Preview','预览'))}</button>${selectedID===v.id?`<span class="selected-label">${esc(choose('Selected','已选中'))}</span>`:`<button type="button" class="secondary" data-select="${v.id}">${esc(choose('Use version','使用此版'))}</button>`}</article>`).join('');$('history-preview').hidden=true}
+function switchTab(tab){activeTab=tab;for(const key of ['summary','transcript']){const active=key===tab;$(key+'-tab').setAttribute('aria-selected',String(active));$(key+'-tab').tabIndex=active?0:-1;$(key+'-panel').hidden=!active}}
+function openDialog(id){$(id).showModal()}function closeDialog(id){$(id).close()}
+$('language').addEventListener('click',()=>{language=language==='en'?'zh':'en';render()});$('choose-template').addEventListener('click',()=>{pendingTemplate=options.template;$('template-search').value='';renderPicker();openDialog('template-dialog')});$('template-search').addEventListener('input',renderPicker);$('template-dialog').addEventListener('change',event=>{if(event.target.name==='template')pendingTemplate=event.target.value});$('apply-template').addEventListener('click',()=>{options.template=pendingTemplate;closeDialog('template-dialog');render()});$('detail-controls').addEventListener('click',event=>{const button=event.target.closest('[data-detail]');if(button){options.detail=button.dataset.detail;render()}});
+$('generate').addEventListener('click',()=>{const manual=selected().manual!==null;const version={id:nextID++,template:options.template==='auto'?'project_followup':options.template,mode:options.template==='auto'?'auto':'manual',detail:options.detail,manual:null,label:choose('Just now','刚刚')};versions.push(version);if(manual)noticeKey='preserved';else{selectedID=version.id;noticeKey=null}switchTab('summary');render()});$('edit').addEventListener('click',()=>{$('edit-text').value=documentText(selected());$('save-edit').disabled=false;openDialog('edit-dialog')});$('edit-text').addEventListener('input',()=>{$('save-edit').disabled=!$('edit-text').value.trim()});$('save-edit').addEventListener('click',()=>{if(!$('edit-text').value.trim())return;const version={...selected(),id:nextID++,manual:$('edit-text').value,label:choose('Just now','刚刚')};versions.push(version);selectedID=version.id;noticeKey='edited';closeDialog('edit-dialog');render()});$('history').addEventListener('click',()=>{renderHistory();openDialog('history-dialog')});$('history-list').addEventListener('click',event=>{const preview=event.target.closest('[data-preview]'),select=event.target.closest('[data-select]');if(preview){$('history-preview').textContent=documentText(versions.find(v=>v.id===Number(preview.dataset.preview)));$('history-preview').hidden=false}if(select){selectedID=Number(select.dataset.select);noticeKey=null;const v=selected();options={template:v.mode==='auto'?'auto':v.template,detail:v.detail};closeDialog('history-dialog');switchTab('summary');render()}});
+document.addEventListener('click',event=>{const closeButton=event.target.closest('[data-close]');if(closeButton)closeDialog(closeButton.dataset.close);const quote=event.target.closest('[data-quote]');if(quote){const q=evidence.find(row=>row.id===Number(quote.dataset.quote));$('source-label').textContent=q.time+' · '+q.speaker+' · '+choose('Synthetic transcript','合成原文');$('source-quote').textContent=q[language];openDialog('source-dialog')}});$('show-transcript').addEventListener('click',()=>{closeDialog('source-dialog');switchTab('transcript');$('transcript-tab').focus()});for(const key of ['summary','transcript']){$(key+'-tab').addEventListener('click',()=>switchTab(key));$(key+'-tab').addEventListener('keydown',event=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(event.key)){event.preventDefault();const tab=event.key==='Home'?'summary':event.key==='End'?'transcript':activeTab==='summary'?'transcript':'summary';switchTab(tab);$(tab+'-tab').focus()}})}
+for(let i=0;i<48;i++){const bar=document.createElement('span');bar.style.height=(5+((i*17+7)%29))+'px';$('wave').insertBefore(bar,$('wave').lastElementChild)}render();
+</script>
+</body>
+</html>

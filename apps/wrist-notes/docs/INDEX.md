@@ -124,6 +124,8 @@ App 对外统一为 EurekaLife，历史文档保留当时名称。构建 16 已�
 
 ### 2026-11-09
 
+- **独立原型功能说明** · [iPhone 原型](../prototype/iphone-day.html)新增桌面可折叠说明侧栏，手机保留问号入口；九组说明覆盖记录、总结、记事本四类、AI、行动、硬件与隐私。跳转、折叠与 320／390px 弹层检查通过，见 [设计与验证](../prototype/daybook-design.md#当前入口与功能说明2026-11-09)。
+
 - **Apache-2.0 与 ChatGPT 套餐** · 官方授权、合成连接测试、Agent 工具循环与历史压缩已实现；专项测试和两端构建通过，真机原位安装，官方授权、固定文本和合成工具续传通过，并修复缺少 SSE 响应头的兼容问题。设置补充 Plus／Pro 套餐说明，刷新与连接测试按钮并排，真机显示已核验。当前验证进度见 [实施与验收](../verification/chatgpt-native.md#opensource-plan-20261109)，计划见 [任务计划](../../../docs/work/2026-11-09-chatgpt-plan-usage/plan.md)。
 
 - **ChatGPT 套餐调用范围** · 仅授权用户套餐调用 LLM，不建立 EurekaLife 注册／登录会话。源码已按独立模型连接实现；此前范围确认阶段仅更新说明和申请需求草稿；后续开启与验证见上条，申请未发送。见 [产品与技术边界](../verification/chatgpt-native.md#plan-usage-scope-20261109)。
