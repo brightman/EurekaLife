@@ -1,0 +1,177 @@
+{
+  "source": "/Users/karama/Library/Mobile Documents/com~apple~CloudDocs/Project/EurekaMind/sourcecode/frontend-components",
+  "commit": "f045b381ee8c8395524b1c424319ade9c3b5273b",
+  "method": "Wrapper source port from local Git objects; upstream blobs verified against supplied checkout index. Local layout adaptations have separate localSha256 and adaptation fields. Live remote was not queried.",
+  "files": [
+    {
+      "source": "src/components/Alert/Alert.tsx",
+      "target": "src/components/standard/Alert/Alert.tsx",
+      "sha256": "36bc80aad4a3c9049b5797f08912752c1efe49c7ba7bc3e465202609331eb05d",
+      "gitBlob": "981d629a718ea12f3850deb8a4a9601ebabebddf"
+    },
+    {
+      "source": "src/components/Alert/icons.tsx",
+      "target": "src/components/standard/Alert/icons.tsx",
+      "sha256": "791fe8e6433aef0110dcfdd7235caee09e254f2515dd7bf2bb7828306c39a4c6",
+      "gitBlob": "e4a08c86b0e92e8af1b8ec45888570e237983e06"
+    },
+    {
+      "source": "src/components/Button/Button.tsx",
+      "target": "src/components/standard/Button/Button.tsx",
+      "sha256": "773273f0e9bc2083a57af65d198c17f42f983b7b7f94f857ee47e97acf24d73c",
+      "gitBlob": "1c7d84b9aaec23389a15dadbbcc8a9f26d86e244"
+    },
+    {
+      "source": "src/components/Checkbox/Checkbox.tsx",
+      "target": "src/components/standard/Checkbox/Checkbox.tsx",
+      "sha256": "472a049a042d032d2250c2b76b263be67eec00a62421476694faae04d8f20f41",
+      "gitBlob": "234ab516dbfb7591a242a4c65211d57b12963063"
+    },
+    {
+      "source": "src/components/Checkbox/icons.tsx",
+      "target": "src/components/standard/Checkbox/icons.tsx",
+      "sha256": "6f5ba25e4c37e3af4d760e28f76d896ef3e00711479f487adf5c4c55db124d13",
+      "gitBlob": "48e1ccd53de844d886f37b9dc4bf653fcb27ae29"
+    },
+    {
+      "source": "src/components/CloseButton/CloseButton.tsx",
+      "target": "src/components/standard/CloseButton/CloseButton.tsx",
+      "sha256": "91f5893118bbfd9bc08eb976058e5f00b03530facb43923623ff4b0efd91a8a0",
+      "gitBlob": "350535992873bf60b89192c739cdfbc8d676c984"
+    },
+    {
+      "source": "src/components/CloseButton/icons.tsx",
+      "target": "src/components/standard/CloseButton/icons.tsx",
+      "sha256": "28e2b2341d96f6aa2b0aacb4ee4de27b8aea9254a2efbeeb9141d4a36a3f7662",
+      "gitBlob": "61f86402a3fe64236a54934929cae8241ead5336"
+    },
+    {
+      "source": "src/components/DateInput/DateInput.tsx",
+      "target": "src/components/standard/DateInput/DateInput.tsx",
+      "sha256": "91d4ad7cb425aaf6ea60f7bf0b69fe062849bcb34f7bea300acdfd9e5c52c919",
+      "gitBlob": "43ad170d367c69b9ef42fff6840a9b6cd5eac2bb"
+    },
+    {
+      "source": "src/components/DateInput/icons.tsx",
+      "target": "src/components/standard/DateInput/icons.tsx",
+      "sha256": "843117d3a9c2ff336014dc45fc05f641ec3f726635a1fa333e6a4d60d6a9a9f3",
+      "gitBlob": "661034c0debf70b075e335edcc260f913840a431"
+    },
+    {
+      "source": "src/components/DatePicker/DatePicker.tsx",
+      "target": "src/components/standard/DatePicker/DatePicker.tsx",
+      "sha256": "7f7ffa1f92a501d7bca48551b678676fd6c653ce58ac182722f46852667d5518",
+      "gitBlob": "3424d5949335ffa21588af95adbea36afe078d4f"
+    },
+    {
+      "source": "src/components/DatePicker/icons.tsx",
+      "target": "src/components/standard/DatePicker/icons.tsx",
+      "sha256": "368b68f26dfccfe88e9eebfd3f3f07f6d2bf939308c8d6859c4f5e0ef74c51d6",
+      "gitBlob": "56d838472020ec81e64449a2585064b1a34312af"
+    },
+    {
+      "source": "src/components/InputBase/InputBase.tsx",
+      "target": "src/components/standard/InputBase/InputBase.tsx",
+      "sha256": "15713cc99b4526a7cebbe09e22e259df86d3fe4744cc68afc31e49cdafdc8e07",
+      "gitBlob": "2141cfe75f3caf1e450d79d3270e63b651fca79f"
+    },
+    {
+      "source": "src/components/InputBase/icons.tsx",
+      "target": "src/components/standard/InputBase/icons.tsx",
+      "sha256": "8f820739f13226b697f1d0ff3925940fa4e7e3e6486156adab451861eee94eeb",
+      "gitBlob": "a9602eda7329e94635d507810a30c944f4eeae42"
+    },
+    {
+      "source": "src/components/Loader/Loader.tsx",
+      "target": "src/components/standard/Loader/Loader.tsx",
+      "sha256": "c64fdc9e1e5c590c658550f854a1c62680ee7fa2bd2eab85e54d787997c28992",
+      "gitBlob": "636336e64ab430bd3d18baeef6ceb4700a579d68"
+    },
+    {
+      "source": "src/components/Loader/icons.tsx",
+      "target": "src/components/standard/Loader/icons.tsx",
+      "sha256": "7fce175c0a81c991aa9bfc32408b24582093616b32d43a5ecd5cdcae08cdb0cf",
+      "gitBlob": "b3a69ffb1fd93640b16d661240fd1eb0d677c0d9"
+    },
+    {
+      "source": "src/components/Modal/Modal.tsx",
+      "target": "src/components/standard/Modal/Modal.tsx",
+      "sha256": "393c34a5683fb8a1a59cbb50423dce48d0fb2e4d427165b1a6f17856fd347bb3",
+      "gitBlob": "7e7a0d50c60475db5771af8d2fac957d21485cd3"
+    },
+    {
+      "source": "src/components/Modal/icons.tsx",
+      "target": "src/components/standard/Modal/icons.tsx",
+      "sha256": "426e8d0ad0d3847d44d70e2fa6ce7018a70b1ed79cfa2fa310b1eed3f6433380",
+      "gitBlob": "3af7af9b130426fade49327885d47a3ce2197a77"
+    },
+    {
+      "source": "src/components/Radio/Radio.tsx",
+      "target": "src/components/standard/Radio/Radio.tsx",
+      "sha256": "7b927ffa76435deeac13d526d1b88f36fb5d69bb596ec2b2bc1cdb82f7297007",
+      "gitBlob": "5317c532710de92fb5aca91f31625fe97b519ea7"
+    },
+    {
+      "source": "src/components/Select/Select.tsx",
+      "target": "src/components/standard/Select/Select.tsx",
+      "sha256": "159b999f7a508e82dee08a871a0fe534eecb654a5fca52932d7237e88d45e5ae",
+      "gitBlob": "00c71f3c6f0177ad353c103f20b511b9e17eea61"
+    },
+    {
+      "source": "src/components/Select/icons.tsx",
+      "target": "src/components/standard/Select/icons.tsx",
+      "sha256": "17cc6fca8cb3603bb92629e7128abd1962d6d24c0f4b2414edfd90786b5e63fe",
+      "gitBlob": "c86b77928494ec7460ff3ad69d0fc010133d11c2"
+    },
+    {
+      "source": "src/components/Switch/Switch.tsx",
+      "target": "src/components/standard/Switch/Switch.tsx",
+      "sha256": "e82cb015910a6dbec26d3f4ecae489dfb2c656e2417d495746f9129e8cf2ac61",
+      "gitBlob": "c187ba870ee1e9748b8935cb0103e043b4219dcb"
+    },
+    {
+      "source": "src/components/Table/Table.tsx",
+      "target": "src/components/standard/Table/Table.tsx",
+      "sha256": "3148b61f86712333803fdfd44edca2532a1e86892c374371eb983ccf5e4c6908",
+      "gitBlob": "5082e7951449c57778d815070038170ca994fde2"
+    },
+    {
+      "source": "src/components/Tabs/Tabs.tsx",
+      "target": "src/components/standard/Tabs/Tabs.tsx",
+      "sha256": "44b359cb3333a44c0a5bedb3214c36af2d4e883f9fdb80007130c9c6120d648d",
+      "gitBlob": "b3ea9887bfeb7215b104abccaa757038ee0d3a2d"
+    },
+    {
+      "source": "src/components/Tag/Tag.tsx",
+      "target": "src/components/standard/Tag/Tag.tsx",
+      "sha256": "0a2927fbbb4c8a66559c0f00855bae9fdd022405af7f5b1b97408dc729e8c117",
+      "gitBlob": "0e87394e2fde3ce5c6754431ebfa1eccede32a62"
+    },
+    {
+      "source": "src/components/Tag/icons.tsx",
+      "target": "src/components/standard/Tag/icons.tsx",
+      "sha256": "3587b3f16cd1d934d5495a16fa1f9f1064ca40fb9c00468bc1af72fdbcbcf40a",
+      "gitBlob": "48e970a3026f91919c2031a237d270e2510ceae2"
+    },
+    {
+      "source": "src/components/ThreeColumnLayout/ThreeColumnLayout.tsx",
+      "target": "src/components/standard/ThreeColumnLayout/ThreeColumnLayout.tsx",
+      "sha256": "89af55bb8e4fb3396305f1c0e3ebf45da4a5d08bb0f249da6a8b424981114200",
+      "gitBlob": "396efb1c8918e029762fb37072ceee83d504da3f",
+      "localSha256": "3315366920f16b207bb97370e17f26e778315b9327f15cd1d47328a47460a5b9",
+      "adaptation": "EurekaLife: optional showMenuCollapseButton and withAgent props; upstream sha256 and gitBlob retained.; retainMenuRail host option keeps desktop close/header controls in icon-rail collapse mode. Desktop rail mode omits duplicate content-header navigation control; focus returns to the sidebar control."
+    },
+    {
+      "source": "src/components/ThreeColumnLayout/use-resizable-panel.ts",
+      "target": "src/components/standard/ThreeColumnLayout/use-resizable-panel.ts",
+      "sha256": "b52ca2d3815b850a2974c5233e232f05bf8ea985092bd22ed0761bdae26b7b94",
+      "gitBlob": "2a9a91248b922d2616e3caf74e6cad54e581c560"
+    },
+    {
+      "source": "src/components/Tooltip/Tooltip.tsx",
+      "target": "src/components/standard/Tooltip/Tooltip.tsx",
+      "sha256": "f646aa34a8fceee139be7b5be62de1484181de1d71870d8208cd3c033e7e02a8",
+      "gitBlob": "1b8c67fe3d81c67ee10caaf5541d6a619cd6d874"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # EurekaLife 文档入口
 
-> 发布范围（2026-11-16）：本次提交仅包含账本相关文档，描述已核对的本地工作区实现；配套原生源码和可运行原型尚未随本次提交推送。
+> 账本文档提交范围（2026-11-16，`43d86d8`）：该提交仅包含账本相关文档；配套 iPhone 原生源码和可运行原型尚未随该提交推送。
 
 类型：导航 · 状态：current · 更新：2026-11-16 · 适用：EurekaLife iPhone／Watch、Mac Companion。
 
@@ -18,8 +18,28 @@
 
 ## 2026-11-16
 
+Mac Companion 源码与产品原型同步至 GitHub：会议录制／回放、本地 Whisper 转写、MLX 总结与会议 Ask AI、当前会议说话人分析，以及 React 设置／每日记录原型；补齐依赖锁定、许可、技术设计与验证记录。每日记录备份和按日 Ask AI 仍为前端演示，未声称原生同步已实现。[Mac 入口](../apps/wiselife-mac/README.md) · [当前会议能力](../apps/wiselife-mac/docs/meeting-recording.md) · [本次验证](../apps/wiselife-mac/verification/README.md#github-sync-20261116)。
+
 补齐闪念新分类与共享生活账本的现行技术说明：[识别及确认流程](../apps/wrist-notes/docs/local-storage-and-retrieval.md#life-ledgers-20261113)、[三张 SQLite 表及迁移](../apps/wrist-notes/docs/local-data-schema.md#life-ledger-schema-20261113)、[模型输入输出契约](../apps/wrist-notes/docs/ai-prompts.md#flash-ledger-extraction-20261113)。说明去重、候选阈值、历史收录、统计日期／精度与 Ask AI 隐私边界，两级索引增加直接阅读入口。本次仅维护文档；实现及历史验收仍见[11 月 13 日记录](../apps/wrist-notes/docs/superpowers/plans/2026-11-13-life-ledgers-native.md)，不新增模型效果或真机通过声明。
 
+
+## 2026-11-13
+
+Mac产品原型增加设置（主目录、隐私与说明）、会议列表确认删除，以及会议下方的每日记录备份入口。统一模型／会议／每日备份路径，支持按日浏览、离线历史和备份中断演示。随后移除知识库入口，每日记录增加可折叠的整页 Ask AI 右栏，按日期隔离对话并支持引用返回原文；Ask AI 仅在会议和每日记录出现。类型与构建、17组浏览器检查通过，仅前端原型，未改动原生存储或发布。见[原型入口](../apps/wiselife-mac/prototype/README.md)与[交互及验证](../apps/wiselife-mac/prototype/docs/component-migration.md#2026-11-13-设置会议删除与每日记录)。
+
+Mac会议已接入本地SpeakerKit/WeSpeaker说话人分离：跨窗口编号、原文归属、重命名、检查点恢复和已有录制补分析；重叠／不可靠归属保持未确定。修复长媒体解码舍入并以PTS保留空隙；本地LLM/ASR/说话人推理共用串行入口。功能与隐私见[当前说明](../apps/wiselife-mac/docs/meeting-recording.md#当前会议说话人2026-11-13)，构建、合成和真实录制验收见[验证记录](../apps/wiselife-mac/verification/README.md#meeting-speakers-20261113)。未发布。
+
+Mac 长会议转写修复：Whisper 末尾时间戳超出实际分块（60秒输入曾返回60.32秒）不再使整块失败；裁齐真实边界并过滤补零区结果，保留异常时间校验。对75分钟真实MP4检查音轨与编码，并评估HEVC压缩副本，原文件保留。测试与完整录制验证见[验证记录](../apps/wiselife-mac/verification/README.md#long-meeting-asr-20261113)，存储取舍见[当前说明](../apps/wiselife-mac/docs/meeting-recording.md#视频存储体积2026-11-13)。
+
+## 2026-11-12
+
+Mac 原生界面已采用统一中性样式、220/56pt 图标导航、可折叠会议 Ask AI 和时间行下方播放器；新增本地 Whisper 转写与 MLX 总结，分块原文和结果持久保存，关闭 LAN 服务仍支持本机推理。编译、模块测试、真实本地模型音频样本及应用视图检查见[验证记录](../apps/wiselife-mac/verification/README.md#meeting-intelligence-20261112)，行为与限制见[当前说明](../apps/wiselife-mac/docs/meeting-recording.md)。未发布。
+
+Mac 产品原型的会议详情将音频／视频置于录制时间下一行、内容标签之前；左侧栏 × 改为保留 56px 图标导航，中间页头移除重复折叠图标。构建与浏览器验证见[组件迁移](../apps/wiselife-mac/prototype/docs/component-migration.md)，仅原型调整，未发布。
+
+Mac 原生会议录制主链路已接入：设置优先，仅录音直接开始，屏幕与音频通过 macOS 单屏／单窗口选择器确定范围；结束后校验本地文件，再进入详情回放。会议元数据持久化，中断文件保留。7 项合成测试及完整 Debug 编译通过；电脑控制连接不可用，真实选屏／录制／音源回放待现场验收，未发布。见[当前说明](../apps/wiselife-mac/docs/meeting-recording.md)和[验证记录](../apps/wiselife-mac/verification/README.md#meeting-capture-20261112)。
+
+Mac 新增会议录制产品原型：参考用户提供的 Notta 截图，覆盖即时录音／录制会议／上传文件三个入口、录制设置、整页 Ask AI 右侧栏、左右侧栏折叠、总结与行动审核，以及权限／断连／延迟／失败恢复。初版浏览器交互与 7 种宽度检查通过；随后使用指定 frontend-components 的原始源码迁移为 React / Mantine / Tailwind 三栏原型，加入拖拽／键盘调宽并统一控件；左栏品牌与关闭按钮合并到顶部，状态标签使用浅底深色字，Ask AI 仅在会议／知识库出现。「录制会议」第一步为录制设置：仅录音直接开始，屏幕与音频才进入第二步选择 Entire Screen / Application Window，确认画面后开始。当前源码与验证见 [组件迁移](../apps/wiselife-mac/prototype/docs/component-migration.md)，产品行为见 [会议设计](../apps/wiselife-mac/prototype/meeting-recording-design.md)。该条记录为本地原型阶段；后续原生采集实现与验收边界见本日上方记录。尚未发布。
 
 ## 2026-11-09
 

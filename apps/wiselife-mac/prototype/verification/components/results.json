@@ -1,0 +1,71 @@
+{
+  "date": "2026-11-12T12:43:12.559Z",
+  "browser": "153.0.8010.12",
+  "source": "uncommitted working tree",
+  "results": [
+    {
+      "name": "Standard source provenance and documented local layout adaptation",
+      "passed": true
+    },
+    {
+      "name": "Meeting entry order and real component styles",
+      "passed": true
+    },
+    {
+      "name": "Sidebar collapse retains all five icons; keyboard and pointer resizing",
+      "passed": true
+    },
+    {
+      "name": "Meeting audio and video sit below recording time and above content tabs",
+      "passed": true
+    },
+    {
+      "name": "Settings first; audio-only starts without a screen picker",
+      "passed": true
+    },
+    {
+      "name": "Screen recording: settings validation, picker, back preserves draft, confirm starts",
+      "passed": true
+    },
+    {
+      "name": "Live Ask AI is bounded to captured lines; pause, navigation and draft persistence",
+      "passed": true
+    },
+    {
+      "name": "Device disconnection and transcription recovery; summary failure and retry",
+      "passed": true
+    },
+    {
+      "name": "Upload validates extensions and imports only a simulated sample",
+      "passed": true
+    },
+    {
+      "name": "Meeting search, favorite, AI citations, stop and action editing",
+      "passed": true
+    },
+    {
+      "name": "Knowledge date, filters, scoped answers, citations and recording persistence",
+      "passed": true
+    },
+    {
+      "name": "Models distinguish download/load/unload/delete; ASR and pairing",
+      "passed": true
+    },
+    {
+      "name": "Responsive five-route layout, mobile navigation and modal focus",
+      "passed": true
+    },
+    {
+      "name": "No browser errors, missing resources, external requests or network writes",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "failures": [],
+  "network": [],
+  "limitations": [
+    "Synthetic frontend only",
+    "No native build/device/real AI acceptance",
+    "Real Chinese IME and physical touch not tested"
+  ]
+}

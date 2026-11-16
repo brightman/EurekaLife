@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "origin": "http://127.0.0.1:8791",
+  "checks": [
+    "three ordered entry points, page-height AI, independent collapsible navigation, upload validation and simulated import",
+    "search and starred filter",
+    "live transcript, bounded AI, draft preservation, pause/resume, navigation, highlight",
+    "device interruption, summary failure/retry, citations, reviewed task edits",
+    "playback demo, screen source, transcription delay/recovery, reset",
+    "existing overview/model/knowledge/privacy flows; 7 viewport sizes; keyboard sheet dismissal"
+  ],
+  "errors": [],
+  "failedRequests": [],
+  "writes": [],
+  "boundary": "HTML demo only; no native audio, video, model, device or persistence validation"
+}

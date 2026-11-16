@@ -8,9 +8,17 @@
 
 产品名、窗口、菜单栏、权限提示及原型统一为 EurekaLife，产物为 `dist/EurekaLife.app` 和 `dist/EurekaLife-macOS.zip`。现有 Bundle ID、模型目录、Keychain 与 Bonjour／配对协议保持不变。Release 编译、23 项测试（1 项按默认设置跳过、0 失败）以及 ZIP 解压签名校验通过；安装包仅为本机 ad-hoc 签名，未公证或进行本次真机端到端验收。发布汇总见 [记录](../wrist-notes/docs/testflight-release-2026-10-19.md#eurekalife-build16-20261108)。
 
+## 原生会议录制（2026-11-12）
+
+新增会议列表、录制设置、系统屏幕／窗口选择、本地保存和详情回放。仅录音跳过屏幕选择，屏幕与音频先设置再选画面。系统声音与麦克风可分别开关；中断文件保留并可尝试恢复。已接入录制结束后本地 Whisper 转写、本地 MLX 总结和当前会议 Ask AI，结果持久保存；文件导入尚未开放。当前实现、存储和权限见[会议录制](docs/meeting-recording.md)，完整编译与合成媒体测试结果见[验证记录](verification/README.md#meeting-capture-20261112)；已验证一条真实窗口录制文件与详情页，并修复结束录制时因 AVKit 链接缺失导致的崩溃；新录制流程和实际声音仍需复测。
+
+## 会议说话人分离（2026-11-13）
+
+原文支持本地说话人标签、当前会议内重命名及暂停／继续。已有会议可独立补分析，保留录音、原文和总结；新录制在已安装模型时自动处理。模型库需显式下载约19.2 MB模型；不确定发言保持未确定，无跨会议联系人识别。真实75分钟样本目前仅211/2631段获得自动标签，归属效果仍需校准。行为与隐私见[当前说明](docs/meeting-recording.md#当前会议说话人2026-11-13)，实际验证与局限见[记录](verification/README.md#meeting-speakers-20261113)。
+
 ## 构建与启动
 
-开发要求：Apple silicon、macOS 15+、Xcode 26.3／Swift 6.2。此最低版本是本次构建配置，产品支持范围仍需 M3 Air 验收。
+开发要求：Apple silicon、macOS 15+。原有验证环境为 Xcode 26.3／Swift 6.2；2026-11-12 会议功能在 Xcode 27.2、macOS 27.2.1 上编译。产品支持范围仍需 M3 Air 验收。
 
 ```sh
 cd apps/wiselife-mac
@@ -99,7 +107,7 @@ QR 格式：`wiselife-mac://pair?v=1&service=<opaque-id>&fingerprint=<sha256>&no
 
 模型目录为当前应用 Application Support 下的 `WiseLifeMacCompanion/Models`，sandbox App 位于自身 container 内。只保存固定模型文件与验证 receipt；下载先进入 0700 staging 目录，逐文件大小／SHA-256 校验后在同一卷原子重命名。网络重定向仅在下载模型时允许 HTTPS 的 Hugging Face/CDN 主机，生成服务本身没有重定向。
 
-Mac TLS 私钥与设备 token 校验值保存在 `cloud.karama.wiselife.mac-companion` Keychain service，不使用 UserDefaults 保存秘密。服务开关、非秘密模型选择可保存到 UserDefaults。配对尝试按来源限流；单次 nonce 在凭据持久化后消费。设备最多 16 台。Mac 不保存提示、转写、回复或完整会话；内存指标只含 token 数与耗时。瞬时内存不宣称安全擦除。
+Mac TLS 私钥与设备 token 校验值保存在 `cloud.karama.wiselife.mac-companion` Keychain service，不使用 UserDefaults 保存秘密。服务开关、非秘密模型选择可保存到 UserDefaults。配对尝试按来源限流；单次 nonce 在凭据持久化后消费。设备最多 16 台。Mac 不保存配对 iPhone 的提示、转写、回复或完整会话；Mac 自身会议的原文、总结和 Ask AI 问答保存在会议目录；内存指标只含 token 数与耗时。瞬时内存不宣称安全擦除。
 
 空闲 10 分钟卸载模型；内存 pressure warning／critical 时取消任务并卸载。每次活跃推理仅持有有超时上限的临时防休眠 assertion，所有退出路径释放。不会长期阻止系统休眠。
 
@@ -136,4 +144,6 @@ sh scripts/benchmark.sh --run --download --model mlx-community/Qwen3-1.7B-4bit \
 
 ## 产品交互原型
 
-[HTML 原型说明与预览](prototype/README.md)单独维护产品设计。2026-11-02 更新了概览配置与运行状态合并、知识库 Ask AI 收起／展开及 Mac 录音流程演示；这些原型设计不等同于当前 Swift 功能已实现。
+[产品原型说明与预览](prototype/README.md)单独维护产品设计。2026-11-02 更新了概览配置与运行状态合并、知识库 Ask AI 收起／展开及 Mac 录音流程演示；这些原型设计不等同于当前 Swift 功能已实现。
+
+会议录制新增 [2026-11-12 原型设计](prototype/meeting-recording-design.md)：会议列表、录制准备、实时转写与 Ask AI、总结、行动项审核和异常恢复。可按 [启动说明](prototype/README.md) 进入会议页；2026-11-12 已迁移到指定 frontend-components 的 React / Mantine / Tailwind 标准组件，见 [组件迁移](prototype/docs/component-migration.md)。此目录仍为浏览器交互；原生采集、保存与回放实现见[会议录制](docs/meeting-recording.md)，原生本地转写、总结与当前会议 Ask AI 已接入，实时转写仍属原型。

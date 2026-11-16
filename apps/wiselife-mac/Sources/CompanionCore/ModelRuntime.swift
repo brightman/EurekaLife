@@ -1,4 +1,5 @@
 import Foundation
+import MeetingKit
 import IOKit.pwr_mgt
 
 public protocol TextEngine: Sendable {
@@ -43,6 +44,7 @@ public actor ModelRuntime {
     private struct Job {
         let id: UUID
         let device: UUID
+        let local: Bool
         let request: TextRequest
         let continuation: CheckedContinuation<GenerationResult, Error>
         let deadline: Task<Void, Never>
@@ -63,6 +65,7 @@ public actor ModelRuntime {
     private var loadSeconds: Double?
     private var metrics: GenerationMetrics?
     private var revokedDevices: Set<UUID> = []
+    private let localClient = UUID()
 
     public init(engine: any TextEngine, queueLimit: Int = 2, timeout: Duration = .seconds(120), contextLimit: Int = 8192) {
         self.engine = engine; self.queueLimit = max(0, queueLimit); self.timeout = timeout
@@ -75,7 +78,13 @@ public actor ModelRuntime {
         guard active == nil, queue.isEmpty, state != .loading, state != .unloading, accepting else { throw ServiceError.busy }
         state = .loading; selectedModel = modelID; metrics = nil; loadSeconds = nil
         let start = Date(), engine = self.engine
-        let task = Task { await engine.unload(); try Task.checkCancellation(); try await engine.load(directory: directory) }
+        let task = Task {
+            try await MeetingInferenceGate.shared.run {
+                await engine.unload()
+                try Task.checkCancellation()
+                try await engine.load(directory: directory)
+            }
+        }
         loadTask = task
         do {
             try await task.value
@@ -87,8 +96,15 @@ public actor ModelRuntime {
         }
     }
     public func generate(_ request: TextRequest, device: UUID) async throws -> GenerationResult {
+        try await enqueue(request, device: device, local: false)
+    }
+    /// Native meeting inference shares the serial engine, independently of LAN admission.
+    public func generateLocal(_ request: TextRequest) async throws -> GenerationResult {
+        try await enqueue(request, device: localClient, local: true)
+    }
+    private func enqueue(_ request: TextRequest, device: UUID, local: Bool) async throws -> GenerationResult {
         try Task.checkCancellation()
-        guard accepting, state == .ready else { throw ServiceError.notReady }
+        guard (accepting || local), state == .ready else { throw ServiceError.notReady }
         guard !revokedDevices.contains(device) else { throw ServiceError.unauthorized }
         guard request.model == selectedModel else { throw ServiceError(404, "unknown_model", "请使用 /v1/models 返回的 Mac 模型。") }
         guard active == nil || queue.count < queueLimit else { throw ServiceError.busy }
@@ -98,7 +114,7 @@ public actor ModelRuntime {
                 let deadline = Task { [timeout] in
                     do { try await Task.sleep(for: timeout); self.cancel(id: id, reason: .timeout) } catch { }
                 }
-                let job = Job(id: id, device: device, request: request, continuation: continuation, deadline: deadline)
+                let job = Job(id: id, device: device, local: local, request: request, continuation: continuation, deadline: deadline)
                 if Task.isCancelled { deadline.cancel(); continuation.resume(throwing: ServiceError.cancelled) }
                 else if active == nil { start(job) } else { queue.append(job) }
             }
@@ -109,7 +125,12 @@ public actor ModelRuntime {
         let task = Task {
             let lease = PowerLease(); defer { lease.release() }
             let result: Result<GenerationResult, Error>
-            do { try Task.checkCancellation(); result = .success(try await engine.generate(job.request, contextLimit: contextLimit)) }
+            do {
+                try Task.checkCancellation()
+                result = .success(try await MeetingInferenceGate.shared.run {
+                    try await engine.generate(job.request, contextLimit: contextLimit)
+                })
+            }
             catch { result = .failure(error) }
             finish(id: job.id, result: result)
         }
@@ -129,7 +150,7 @@ public actor ModelRuntime {
             }
         }
         self.active = nil; activeCancellation = nil; lastUsed = Date()
-        if state == .ready, accepting, !queue.isEmpty { start(queue.removeFirst()) }
+        if state == .ready, let next = queue.first, accepting || next.local { start(queue.removeFirst()) }
     }
     private func cancel(id: UUID, reason: ServiceError) {
         if active?.job.id == id { activeCancellation = reason; active?.task.cancel() }
@@ -143,7 +164,11 @@ public actor ModelRuntime {
     }
     public func revoke(device: UUID) { revokedDevices.insert(device); cancel(device: device) }
     public func allow(device: UUID) { revokedDevices.remove(device) }
-    public func suspend() { accepting = false; cancelAll() }
+    public func suspend() {
+        accepting = false
+        for id in queue.filter({ !$0.local }).map(\.id) { cancel(id: id, reason: .cancelled) }
+        if let active, !active.job.local { cancel(id: active.job.id, reason: .cancelled) }
+    }
     public func cancelAll() {
         for id in queue.map(\.id) { cancel(id: id, reason: .cancelled) }
         if let id = active?.job.id { cancel(id: id, reason: .cancelled) }
@@ -156,7 +181,9 @@ public actor ModelRuntime {
         let task = Task {
             if let loading { _ = await loading.result }
             if let generation { await generation.value }
-            await engine.unload()
+            // This independently owned cleanup task is never cancelled: unloading
+            // waits for shared admission even when its caller has been cancelled.
+            try? await MeetingInferenceGate.shared.run { await engine.unload() }
         }
         unloadTask = task
         await task.value

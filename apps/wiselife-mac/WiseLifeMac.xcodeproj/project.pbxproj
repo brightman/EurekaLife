@@ -12,29 +12,46 @@
 		331B1FCDCB11535BC52ADDD0 /* CompanionCore in Frameworks */ = {isa = PBXBuildFile; productRef = C70989AE3DFBE3D461E0782B /* CompanionCore */; };
 		3A6A8E752AEC90CC1046F397 /* ThirdPartyNotices.txt in Resources */ = {isa = PBXBuildFile; fileRef = 71F5BE94DB894538236F203C /* ThirdPartyNotices.txt */; };
 		4995B7D6D0F59C79FA01CC4C /* CompanionStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF672441A47F1E5182C1CA30 /* CompanionStyle.swift */; };
+		4ADDAA245C50500F0D10A4D6 /* MeetingIntelligenceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82B0E3AE19F6B816541DB88F /* MeetingIntelligenceModel.swift */; };
+		59B5E3EF10388F5845AFFE35 /* CompanionSpeakers in Frameworks */ = {isa = PBXBuildFile; productRef = 54527FDD30F56C43BD625713 /* CompanionSpeakers */; };
+		5CBCD6E566A1369E8BF5DC4D /* MeetingModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9607F217C91AD54C957EEE39 /* MeetingModel.swift */; };
 		6811A82B9D3FCDDD1A44570C /* CompanionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E48E01AA03F88D0923CE6D0 /* CompanionView.swift */; };
+		70DE4B378F45627C25FF9A0D /* MeetingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D265CFEC8C46F27F9DC7054 /* MeetingView.swift */; };
 		82BB788B8C6625D6FB0D6798 /* CompanionMLX in Frameworks */ = {isa = PBXBuildFile; productRef = 0E75DBB5AD93DC3D91B23EAB /* CompanionMLX */; };
+		8406CA0E59DDD8C8EAB3BFAD /* CompanionASR in Frameworks */ = {isa = PBXBuildFile; productRef = 60C53DBC6C9B154AE61792B9 /* CompanionASR */; };
+		8D36E1F920AF641A0AA9D92D /* MeetingIntelligenceViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45E3B840B5B17792C6C54660 /* MeetingIntelligenceViews.swift */; };
 		8F972B0AB83EA3123953D7C1 /* CompanionMLX in Frameworks */ = {isa = PBXBuildFile; productRef = 3D461D963D7C84D6009BAE23 /* CompanionMLX */; };
 		943B4F3D7CE518F15140FFA3 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B0A02B52A419F842B38A909 /* Cocoa.framework */; };
+		A95AD4E87B47A154796CF5B5 /* AVKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E2819A1C9D113A69B370B661 /* AVKit.framework */; };
+		B0740443E9E093BDAD2C96D7 /* MeetingKit in Frameworks */ = {isa = PBXBuildFile; productRef = AC0E3F79760F4922869DC62B /* MeetingKit */; };
 		B77001023FD221B5ABC4949F /* CompanionModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86CAAA77A0DCA1D1FB41D57C /* CompanionModel.swift */; };
+		BF0AC15654F434D7F9365E0D /* MeetingSpeakerModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22D49ED082DD3D871AB53842 /* MeetingSpeakerModel.swift */; };
 		C3F7D7E3EEC8ABED64C98145 /* WiseLifeCompanionApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFC02C6698DCFE8F9076E562 /* WiseLifeCompanionApp.swift */; };
 		C45296632B9E40517B39E215 /* CompanionBenchmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F4653361C47C378EEE2B293 /* CompanionBenchmark.swift */; };
 		ED03F7C0C3157946F40FBBFD /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 78F1EAEC49670FE431FDE063 /* PrivacyInfo.xcprivacy */; };
 		F372F822DA8D5A5F312DCE4D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C05D77A452A163DD8AC4EBED /* Assets.xcassets */; };
+		FC5B0B8046E9E14C541DED43 /* MeetingSpeakerViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C76B4EE7E8B4A17C0B4A360 /* MeetingSpeakerViews.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		22D49ED082DD3D871AB53842 /* MeetingSpeakerModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MeetingSpeakerModel.swift; path = Sources/WiseLifeCompanion/MeetingSpeakerModel.swift; sourceTree = "<group>"; };
 		27E786BD2666D10CDF35C0DF /* CompanionBenchmark */ = {isa = PBXFileReference; includeInIndex = 0; path = CompanionBenchmark; sourceTree = BUILT_PRODUCTS_DIR; };
+		45E3B840B5B17792C6C54660 /* MeetingIntelligenceViews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MeetingIntelligenceViews.swift; path = Sources/WiseLifeCompanion/MeetingIntelligenceViews.swift; sourceTree = "<group>"; };
 		4E48E01AA03F88D0923CE6D0 /* CompanionView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CompanionView.swift; path = Sources/WiseLifeCompanion/CompanionView.swift; sourceTree = "<group>"; };
 		5149925EA56F3F808B371BF0 /* EurekaLife.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EurekaLife.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5C76B4EE7E8B4A17C0B4A360 /* MeetingSpeakerViews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MeetingSpeakerViews.swift; path = Sources/WiseLifeCompanion/MeetingSpeakerViews.swift; sourceTree = "<group>"; };
 		5F4653361C47C378EEE2B293 /* CompanionBenchmark.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CompanionBenchmark.swift; path = Sources/CompanionBenchmark/CompanionBenchmark.swift; sourceTree = "<group>"; };
 		71F5BE94DB894538236F203C /* ThirdPartyNotices.txt */ = {isa = PBXFileReference; includeInIndex = 1; name = ThirdPartyNotices.txt; path = Resources/ThirdPartyNotices.txt; sourceTree = "<group>"; };
 		78F1EAEC49670FE431FDE063 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Resources/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		82B0E3AE19F6B816541DB88F /* MeetingIntelligenceModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MeetingIntelligenceModel.swift; path = Sources/WiseLifeCompanion/MeetingIntelligenceModel.swift; sourceTree = "<group>"; };
 		86CAAA77A0DCA1D1FB41D57C /* CompanionModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CompanionModel.swift; path = Sources/WiseLifeCompanion/CompanionModel.swift; sourceTree = "<group>"; };
+		8D265CFEC8C46F27F9DC7054 /* MeetingView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MeetingView.swift; path = Sources/WiseLifeCompanion/MeetingView.swift; sourceTree = "<group>"; };
+		9607F217C91AD54C957EEE39 /* MeetingModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MeetingModel.swift; path = Sources/WiseLifeCompanion/MeetingModel.swift; sourceTree = "<group>"; };
 		9B0A02B52A419F842B38A909 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
 		BFC02C6698DCFE8F9076E562 /* WiseLifeCompanionApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WiseLifeCompanionApp.swift; path = Sources/WiseLifeCompanion/WiseLifeCompanionApp.swift; sourceTree = "<group>"; };
 		C05D77A452A163DD8AC4EBED /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = Resources/Assets.xcassets; sourceTree = "<group>"; };
 		DF672441A47F1E5182C1CA30 /* CompanionStyle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CompanionStyle.swift; path = Sources/WiseLifeCompanion/CompanionStyle.swift; sourceTree = "<group>"; };
+		E2819A1C9D113A69B370B661 /* AVKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVKit.framework; path = System/Library/Frameworks/AVKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -45,6 +62,10 @@
 				943B4F3D7CE518F15140FFA3 /* Cocoa.framework in Frameworks */,
 				331B1FCDCB11535BC52ADDD0 /* CompanionCore in Frameworks */,
 				8F972B0AB83EA3123953D7C1 /* CompanionMLX in Frameworks */,
+				B0740443E9E093BDAD2C96D7 /* MeetingKit in Frameworks */,
+				A95AD4E87B47A154796CF5B5 /* AVKit.framework in Frameworks */,
+				8406CA0E59DDD8C8EAB3BFAD /* CompanionASR in Frameworks */,
+				59B5E3EF10388F5845AFFE35 /* CompanionSpeakers in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -74,6 +95,7 @@
 			isa = PBXGroup;
 			children = (
 				9B0A02B52A419F842B38A909 /* Cocoa.framework */,
+				E2819A1C9D113A69B370B661 /* AVKit.framework */,
 			);
 			name = "OS X";
 			sourceTree = "<group>";
@@ -88,6 +110,12 @@
 				C05D77A452A163DD8AC4EBED /* Assets.xcassets */,
 				78F1EAEC49670FE431FDE063 /* PrivacyInfo.xcprivacy */,
 				71F5BE94DB894538236F203C /* ThirdPartyNotices.txt */,
+				9607F217C91AD54C957EEE39 /* MeetingModel.swift */,
+				8D265CFEC8C46F27F9DC7054 /* MeetingView.swift */,
+				82B0E3AE19F6B816541DB88F /* MeetingIntelligenceModel.swift */,
+				45E3B840B5B17792C6C54660 /* MeetingIntelligenceViews.swift */,
+				22D49ED082DD3D871AB53842 /* MeetingSpeakerModel.swift */,
+				5C76B4EE7E8B4A17C0B4A360 /* MeetingSpeakerViews.swift */,
 			);
 			name = WiseLifeCompanion;
 			path = .;
@@ -159,6 +187,9 @@
 			packageProductDependencies = (
 				C70989AE3DFBE3D461E0782B /* CompanionCore */,
 				3D461D963D7C84D6009BAE23 /* CompanionMLX */,
+				AC0E3F79760F4922869DC62B /* MeetingKit */,
+				60C53DBC6C9B154AE61792B9 /* CompanionASR */,
+				54527FDD30F56C43BD625713 /* CompanionSpeakers */,
 			);
 			productName = WiseLifeCompanion;
 			productReference = 5149925EA56F3F808B371BF0 /* EurekaLife.app */;
@@ -227,6 +258,12 @@
 				4995B7D6D0F59C79FA01CC4C /* CompanionStyle.swift in Sources */,
 				6811A82B9D3FCDDD1A44570C /* CompanionView.swift in Sources */,
 				C3F7D7E3EEC8ABED64C98145 /* WiseLifeCompanionApp.swift in Sources */,
+				5CBCD6E566A1369E8BF5DC4D /* MeetingModel.swift in Sources */,
+				70DE4B378F45627C25FF9A0D /* MeetingView.swift in Sources */,
+				4ADDAA245C50500F0D10A4D6 /* MeetingIntelligenceModel.swift in Sources */,
+				8D36E1F920AF641A0AA9D92D /* MeetingIntelligenceViews.swift in Sources */,
+				BF0AC15654F434D7F9365E0D /* MeetingSpeakerModel.swift in Sources */,
+				FC5B0B8046E9E14C541DED43 /* MeetingSpeakerViews.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -402,8 +439,8 @@
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 0.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "cloud.karama.wiselife.mac-companion";
-				PRODUCT_NAME = EurekaLife;
 				PRODUCT_MODULE_NAME = WiseLifeCompanion;
+				PRODUCT_NAME = EurekaLife;
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -430,8 +467,8 @@
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 0.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "cloud.karama.wiselife.mac-companion";
-				PRODUCT_NAME = EurekaLife;
 				PRODUCT_MODULE_NAME = WiseLifeCompanion;
+				PRODUCT_NAME = EurekaLife;
 				SDKROOT = macosx;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
@@ -487,6 +524,21 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 1A3AC65B1CBD3E09F95597BF /* XCLocalSwiftPackageReference "." */;
 			productName = CompanionMLX;
+		};
+		54527FDD30F56C43BD625713 /* CompanionSpeakers */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1A3AC65B1CBD3E09F95597BF /* XCLocalSwiftPackageReference "." */;
+			productName = CompanionSpeakers;
+		};
+		60C53DBC6C9B154AE61792B9 /* CompanionASR */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1A3AC65B1CBD3E09F95597BF /* XCLocalSwiftPackageReference "." */;
+			productName = CompanionASR;
+		};
+		AC0E3F79760F4922869DC62B /* MeetingKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1A3AC65B1CBD3E09F95597BF /* XCLocalSwiftPackageReference "." */;
+			productName = MeetingKit;
 		};
 		C70989AE3DFBE3D461E0782B /* CompanionCore */ = {
 			isa = XCSwiftPackageProductDependency;

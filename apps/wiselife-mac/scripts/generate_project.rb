@@ -14,7 +14,9 @@ project.root_object.package_references << package
   Dir.glob(File.join(root, source, '*.swift')).sort.each do |path|
     target.source_build_phase.add_file_reference(group.new_file(path.delete_prefix(root + '/')))
   end
-  %w[CompanionCore CompanionMLX].each do |product_name|
+  products = %w[CompanionCore CompanionMLX]
+  products += %w[MeetingKit CompanionASR CompanionSpeakers] if type == :application
+  products.each do |product_name|
     dependency = project.new(Xcodeproj::Project::Object::XCSwiftPackageProductDependency)
     dependency.package = package
     dependency.product_name = product_name
@@ -24,6 +26,11 @@ project.root_object.package_references << package
     target.frameworks_build_phase.files << build_file
   end
   if type == :application
+    # The SwiftUI VideoPlayer overlay does not itself link AVPlayerView's framework.
+    target.add_system_framework('AVKit')
+    avkit = target.frameworks_build_phase.files_references.compact.find { |ref| ref.path.end_with?('AVKit.framework') }
+    avkit.path = 'System/Library/Frameworks/AVKit.framework'
+    avkit.source_tree = 'SDKROOT'
     %w[Assets.xcassets PrivacyInfo.xcprivacy ThirdPartyNotices.txt].each do |resource|
       path = File.join('Resources', resource)
       target.resources_build_phase.add_file_reference(group.new_file(path)) if File.exist?(File.join(root, path))

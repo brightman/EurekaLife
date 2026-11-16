@@ -3,13 +3,14 @@ import SwiftUI
 import Network
 import CompanionCore
 import CompanionMLX
+import MeetingKit
 
 @MainActor final class CompanionModel: ObservableObject {
     enum Page: String, CaseIterable, Identifiable {
-        case overview = "概览", models = "模型库", devices = "已配对设备", privacy = "隐私与说明"
+        case overview = "概览", models = "模型库", meetings = "会议", devices = "已配对设备", privacy = "隐私与说明"
         var id: String { rawValue }
         var icon: String {
-            switch self { case .overview: "square.grid.2x2"; case .models: "cpu"; case .devices: "iphone.and.arrow.forward"; case .privacy: "lock.shield" }
+            switch self { case .overview: "square.grid.2x2"; case .models: "cpu"; case .meetings: "video"; case .devices: "iphone.and.arrow.forward"; case .privacy: "lock.shield" }
         }
     }
     @Published var page: Page = .overview
@@ -64,6 +65,7 @@ import CompanionMLX
     private var lastStartAttempt = Date.distantPast
     private var observers: [NSObjectProtocol] = []
     private let preview: Bool
+    private let localOnly: Bool
     private var speedSampleTime = Date()
     private var speedSampleBytes: Int64 = 0
     private var downloadFileName = ""
@@ -82,8 +84,9 @@ import CompanionMLX
     var pairingRegistryLoaded: Bool { registry != nil || preview }
     var busy: Bool { operationID != nil || state == .loading || state == .unloading }
 
-    init(preview: Bool = false) {
+    init(preview: Bool = false, localOnly: Bool = false) {
         self.preview = preview
+        self.localOnly = localOnly
         if preview {
             models = (try? CatalogModel.bundled()) ?? []; initialized = true
             serviceMessage = "连接局域网后，即可为 iPhone 提供本地 AI"
@@ -101,7 +104,7 @@ import CompanionMLX
         do {
             models = try CatalogModel.bundled()
             self.store = try ModelStore()
-            available = UserDefaults.standard.bool(forKey: "companion.available")
+            available = !localOnly && UserDefaults.standard.bool(forKey: "companion.available")
             selectedID = UserDefaults.standard.string(forKey: "companion.selected-model") ?? selectedID
             if !models.contains(where: { $0.id == selectedID }) { selectedID = models[0].id }
             let source = DispatchSource.makeMemoryPressureSource(eventMask: [.warning, .critical], queue: .main)
@@ -207,7 +210,7 @@ import CompanionMLX
         }
     }
     private func reconcile() async {
-        guard !preview, !reconciling, let router, let registry, let identity else { return }
+        guard !preview, !localOnly, !reconciling, let router, let registry, let identity else { return }
         reconciling = true; defer { reconciling = false }
         let pairingOpen = await registry.isPairing()
         let wanted = !sleeping && (available || pairingOpen)
@@ -319,6 +322,26 @@ import CompanionMLX
         if state == .loading { Task { await runtime.unload() } }
     }
     func unload() { Task { await runtime.unload(); await refresh() } }
+    /// Explicit local meeting work can load an installed model without opening the LAN service.
+    func ensureMeetingModel() async throws -> String {
+        let snapshot = await runtime.snapshot()
+        if snapshot.state == .ready, let id = snapshot.modelID { return id }
+        guard !preview, !busy, let store else { throw ServiceError.notReady }
+        guard let chosen = models.first(where: { $0.id == selectedID && installed.contains($0.id) })
+            ?? orderedModels.first(where: { installed.contains($0.id) }) else {
+            throw MeetingFailure.message("请先在模型库下载一个本地 LLM，再继续生成总结。")
+        }
+        operationID = chosen.id; operationLabel = "正在加载会议总结模型"
+        defer { operationID = nil; operationLabel = "" }
+        let directory = try await store.verifiedDirectory(chosen)
+        try Task.checkCancellation()
+        await runtime.resume()
+        do { try await runtime.load(chosen.id, directory: directory) }
+        catch { if !available { await runtime.suspend() }; throw error }
+        if !available { await runtime.suspend() }
+        await refresh()
+        return chosen.id
+    }
     func cancelGeneration() { Task { await runtime.cancelAll(); await refresh() } }
     func remove(_ model: CatalogModel) {
         guard !busy else { return }

@@ -9,3 +9,19 @@
 .hardware-specs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin:24px 0 0;padding:0}.hardware-specs>div{min-width:0}.hardware-specs dt{font-size:10px;color:var(--muted)}.hardware-specs dd{margin:5px 0 0;font-size:29px;line-height:1.25;font-weight:550;font-variant-numeric:tabular-nums}.hardware-specs dd span{font-size:13px;font-weight:400;color:var(--muted)}
 .hardware-runtime{border-top:1px solid var(--line);margin-top:23px;padding-top:17px}.hardware-runtime>.flex{margin-bottom:13px}.hardware-runtime .label{margin-bottom:0}.hardware-runtime .metrics{gap:16px}.hardware-runtime .metrics strong{font-size:19px}.hardware-runtime .metrics small{display:block}.hardware-overview .recommendation{margin-top:19px}
 @media(max-width:700px){.hardware-heading{gap:12px}.hardware-heading h3{font-size:16px}.hardware-specs{gap:9px;margin-top:20px}.hardware-specs dd{font-size:25px}.hardware-specs dt{font-size:9px}.hardware-runtime .metrics{grid-template-columns:1fr;gap:12px}.hardware-runtime .metrics>div{display:grid;grid-template-columns:1fr auto;align-items:baseline;gap:2px 10px}.hardware-runtime .metrics strong{margin:0;font-size:17px}.hardware-runtime .metrics small{grid-column:1/-1}.hardware-runtime .text-button{font-size:10px}}
+
+/* Shared navigation: expand to labels, collapse to a persistent icon rail. */
+.workspace>aside{padding-top:12px}
+.sidebar-toolbar{display:flex;justify-content:flex-end;margin-bottom:8px;min-height:30px}
+#sidebar-toggle{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:7px;color:#7b8c98}
+#sidebar-toggle:hover{background:#dde6ed;color:#335f83}
+.window.sidebar-collapsed .workspace{grid-template-columns:68px minmax(0,1fr)}
+.window.sidebar-collapsed .workspace>aside{padding:12px 9px}
+.sidebar-collapsed .sidebar-toolbar{justify-content:center}
+.sidebar-collapsed #sidebar-toggle .icon{transform:scaleX(-1)}
+.window.sidebar-collapsed .brand{margin:4px auto 30px;padding:0}
+.window.sidebar-collapsed .brand .app-icon{width:32px;height:32px}
+.sidebar-collapsed .brand>span,.sidebar-collapsed .nav-caption,.sidebar-collapsed .sidebar-foot,.sidebar-collapsed .nav-item>span,.sidebar-collapsed .nav-item>small{display:none}
+.window.sidebar-collapsed .nav-item{justify-content:center;padding:13px 0;gap:0;margin-bottom:6px}
+.sidebar-collapsed .nav-item .icon{width:20px;height:20px}
+@media(max-width:700px){.sidebar-toolbar{float:right;margin:0}.window.sidebar-collapsed .workspace{display:block}.window.sidebar-collapsed .brand{margin:0 0 15px}.window.sidebar-collapsed .nav-item{padding:10px 0;margin:0}.window.sidebar-collapsed .workspace>aside{padding:12px}}

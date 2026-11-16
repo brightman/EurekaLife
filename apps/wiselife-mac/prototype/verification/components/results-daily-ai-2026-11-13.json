@@ -1,0 +1,83 @@
+{
+  "date": "2026-11-13T08:34:28.560Z",
+  "browser": "153.0.8010.12",
+  "source": "uncommitted working tree",
+  "results": [
+    {
+      "name": "Standard source provenance and documented local layout adaptation",
+      "passed": true
+    },
+    {
+      "name": "Meeting entry order and real component styles",
+      "passed": true
+    },
+    {
+      "name": "Sidebar collapse retains all five icons; keyboard and pointer resizing",
+      "passed": true
+    },
+    {
+      "name": "Meeting audio and video sit below recording time and above content tabs",
+      "passed": true
+    },
+    {
+      "name": "Settings first; audio-only starts without a screen picker",
+      "passed": true
+    },
+    {
+      "name": "Screen recording: settings validation, picker, back preserves draft, confirm starts",
+      "passed": true
+    },
+    {
+      "name": "Live Ask AI is bounded to captured lines; pause, navigation and draft persistence",
+      "passed": true
+    },
+    {
+      "name": "Device disconnection and transcription recovery; summary failure and retry",
+      "passed": true
+    },
+    {
+      "name": "Upload validates extensions and imports only a simulated sample",
+      "passed": true
+    },
+    {
+      "name": "Meeting search, favorite, AI citations, stop and action editing",
+      "passed": true
+    },
+    {
+      "name": "Daily Ask AI scopes history and drafts by date, citations, cancel and backup boundaries",
+      "passed": true
+    },
+    {
+      "name": "Models distinguish download/load/unload/delete; ASR and pairing",
+      "passed": true
+    },
+    {
+      "name": "Settings hierarchy and directory change update every storage location",
+      "passed": true
+    },
+    {
+      "name": "Meeting deletion cancels safely, confirms once and blocks live recording",
+      "passed": true
+    },
+    {
+      "name": "Daily backups browse offline, retain state across routes and reset",
+      "passed": true
+    },
+    {
+      "name": "Responsive six-route layout, mobile navigation and modal focus",
+      "passed": true
+    },
+    {
+      "name": "No browser errors, missing resources, external requests or network writes",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "failures": [],
+  "network": [],
+  "limitations": [
+    "Synthetic frontend only",
+    "No native build/device/real AI acceptance",
+    "Real Chinese IME and physical touch not tested"
+  ]
+}

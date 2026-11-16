@@ -1,6 +1,6 @@
 # Third-party licensing boundaries
 
-Updated: 2026-11-09. This is an index of existing notices, not a replacement for their terms. The root Apache-2.0 license covers original EurekaLife code and project documentation only where no different license is specified. It does not relicense third-party materials or establish that all bundled dependencies are open source.
+Updated: 2026-11-16. This is an index of existing notices, not a replacement for their terms. The root Apache-2.0 license covers original EurekaLife code and project documentation only where no different license is specified. It does not relicense third-party materials or establish that all bundled dependencies are open source.
 
 | Component | Existing terms / notice | Scope |
 | --- | --- | --- |
@@ -9,6 +9,8 @@ Updated: 2026-11-09. This is an index of existing notices, not a replacement for
 | Ring BLE / recorder SDK | [Proprietary notice](pods/br_flutter_plugin_ble/Licenses/BRBluetoothLib.txt) and [package definition](pods/br_flutter_plugin_ble/br_flutter_plugin_ble.podspec) | Vendor SDKs remain separately licensed; this repository's license grants no right to relicense or redistribute them. The supplied notice alone does not establish public redistribution permission. Obtain any necessary authorization from the rights holder. |
 | Opus | [COPYING](pods/br_flutter_plugin_ble/Licenses/Opus-COPYING.txt), [AUTHORS](pods/br_flutter_plugin_ble/Licenses/Opus-AUTHORS.txt) | Preserve the upstream notices bundled with the codec |
 | WhisperKit / SpeakerKit and speaker models | [SDK and model notices](apps/wrist-notes/Sources/iPhone/SpeakerModels-NOTICES.txt) | MIT SDK and separately licensed CC-BY-4.0 model artifacts as described in the notice |
+| Mac meeting speaker separation | [SpeakerKit and Pyannote notices](apps/wiselife-mac/Sources/CompanionSpeakers/SpeakerModels-NOTICES.txt), [WeSpeaker attribution](apps/wiselife-mac/Sources/CompanionSpeakers/VoiceIdentityModels-NOTICES.txt) | MIT SDK; pinned CC-BY-4.0 model artifacts, downloaded unchanged on explicit action; within-meeting analysis only |
+| Mac Whisper transcription | [Model provenance and privacy](apps/wiselife-mac/Sources/CompanionASR/NOTICE.txt), [WhisperKit MIT](apps/wiselife-mac/Sources/CompanionASR/WhisperKit-LICENSE.txt) | Explicitly downloaded Whisper Tiny/Base/Small; pinned Core ML weights and local tokenizer; no weights bundled |
 | Voice identity model | [Pinned model notice](apps/wrist-notes/Sources/iPhone/VoiceIdentityModels-NOTICES.txt) | Separately licensed model artifact; model weights are not covered by the root license |
 | Lucide icons | [iPhone notice](apps/wrist-notes/Sources/iPhone/Lucide-LICENSE.txt), [website notice](apps/wiselife-website/lucide-LICENSE.txt) | Preserve each notice in redistributed copies |
 | Inter font | [Font license](apps/wiselife-website/design-preview-v2/assets/inter-LICENSE.txt) | Website font assets |

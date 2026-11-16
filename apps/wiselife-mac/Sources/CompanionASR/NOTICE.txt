@@ -1,0 +1,41 @@
+EurekaLife Mac meeting transcription
+
+Installer adapted from EurekaLife iPhone WhisperModelStore.swift; model catalog
+copied without changes from iPhone WhisperModels.json on 2026-11-12.
+
+WhisperKit 0.18.0, Argmax, Inc.: MIT license (WhisperKit-LICENSE.txt).
+https://github.com/argmaxinc/WhisperKit/tree/v0.18.0
+
+OpenAI Whisper multilingual Tiny, Base and Small model weights, converted to
+Core ML by Argmax. Model repository declares MIT. Weights are not modified.
+https://huggingface.co/argmaxinc/whisperkit-coreml
+Pinned revision: 0f63a7800b00dd0226abd051b906c246e1907482
+Tokenizer source: https://huggingface.co/openai/whisper-tiny
+Pinned revision: 169d4a4341b33bc18d8881c4b69c2e104e1cc0af
+Original model source and license: https://github.com/openai/whisper
+
+MIT License
+
+Copyright (c) 2022 OpenAI
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+Only explicit model download contacts Hugging Face/CDNs. Inference uses the
+verified installed model and tokenizer, with SDK downloads disabled. No audio,
+transcript or meeting metadata is sent to the model hosting service.

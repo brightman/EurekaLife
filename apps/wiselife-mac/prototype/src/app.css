@@ -1,0 +1,40 @@
+@layer theme, base, mantine, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "@mantine/core/styles.layer.css";
+@import "@mantine/dates/styles.layer.css";
+@import "tailwindcss/utilities.css" layer(utilities) source(none);
+@source './';
+@layer base {
+  body {
+    margin: 0;
+    background: #f5f5f5;
+    color: #262626;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  button,
+  input,
+  textarea {
+    font: inherit;
+  }
+  h1,
+  h2,
+  h3,
+  p {
+    margin-top: 0;
+  }
+  button {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid #165dff;
+    outline-offset: 3px;
+  }
+}

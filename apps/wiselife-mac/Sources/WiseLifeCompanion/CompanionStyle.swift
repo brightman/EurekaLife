@@ -1,16 +1,16 @@
 import SwiftUI
 
-/// Light appearance shared with iPhone NotesStyle / DaybookStyle.
+/// Native tokens matching the approved Mac product prototype.
 enum Theme {
-    static let ink = color(0x20272e)
-    static let muted = color(0x65717c)
-    static let accent = color(0x335f83)
-    static let blueSoft = color(0xedf3f8)
+    static let ink = color(0x262626)
+    static let muted = color(0x8c8c8c)
+    static let accent = color(0x262626)
+    static let blueSoft = color(0xebebeb)
     static let green = color(0x34745e)
-    static let line = color(0xe5e9ed)
-    static let background = color(0xf5f5f7)
-    static let sidebar = color(0xedf0f3)
-    static let field = color(0xedf0f3)
+    static let line = color(0xf0f0f0)
+    static let background = color(0xffffff)
+    static let sidebar = color(0xfafafa)
+    static let field = color(0xfafafa)
     static let card = Color.white
     static let warning = color(0x916014)
     static func color(_ hex: UInt32) -> Color {
@@ -21,20 +21,21 @@ enum Theme {
 struct CompanionPrimaryButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var enabled
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label.font(.system(size: 12, weight: .semibold))
+        configuration.label.font(.system(size: 14, weight: .semibold))
             .foregroundStyle(enabled ? .white : Theme.muted.opacity(0.55))
-            .padding(.horizontal, 16).padding(.vertical, 11)
+            .padding(.horizontal, 16).padding(.vertical, 9)
             .background(enabled ? Theme.accent.opacity(configuration.isPressed ? 0.8 : 1) : Theme.field,
-                        in: RoundedRectangle(cornerRadius: 12))
+                        in: RoundedRectangle(cornerRadius: 8))
     }
 }
 
 struct CompanionSecondaryButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var enabled
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label.font(.system(size: 12, weight: .medium))
+        configuration.label.font(.system(size: 14, weight: .medium))
             .foregroundStyle(Theme.accent.opacity(enabled ? 1 : 0.4))
-            .padding(.horizontal, 14).padding(.vertical, 11)
-            .background(Theme.field.opacity(configuration.isPressed ? 0.65 : 1), in: RoundedRectangle(cornerRadius: 12))
+            .padding(.horizontal, 14).padding(.vertical, 9)
+            .background(configuration.isPressed ? Theme.blueSoft : Theme.card, in: RoundedRectangle(cornerRadius: 8))
+            .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Theme.line))
     }
 }
