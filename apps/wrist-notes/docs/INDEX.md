@@ -1,6 +1,10 @@
 # EurekaLife 文档总索引
 
-> 整理日期：2026-10-31；更新：2026-11-09。面向产品、开发、测试与交接；链接指向原文，保留现有文件位置。
+> 发布范围（2026-11-16）：本次提交仅包含账本相关文档，描述已核对的本地工作区实现；配套原生源码和可运行原型尚未随本次提交推送。
+
+**闪念分类与生活账本阅读路径：**[产品原型](../prototype/flash-assets-design.md#flash-home-categories-20261113) → [技术流程](local-storage-and-retrieval.md#life-ledgers-20261113) → [SQLite 结构](local-data-schema.md#life-ledger-schema-20261113) → [Prompt 契约](ai-prompts.md#flash-ledger-extraction-20261113) → [实施与验收](superpowers/plans/2026-11-13-life-ledgers-native.md)。
+
+> 整理日期：2026-10-31；更新：2026-11-16。面向产品、开发、测试与交接；链接指向原文，保留现有文件位置。
 
 ## 当前品牌（2026-11-08）
 
@@ -92,10 +96,10 @@ App 对外统一为 EurekaLife，历史文档保留当时名称。构建 16 已�
 | [Flash Capture 在 WiseLife 闪念语音中的应用研究](2026-10-21-flash-capture-assets-research.md) | 2026-10-21 | 技术方案、研究或实现说明；状态以原文为准 |
 | [Watch 配对与同步状态](2026-10-21-watch-sync-status.md) | 2026-10-21 | 技术方案、研究或实现说明；状态以原文为准 |
 | [2026-10-22 长录音退出与时长修复](2026-10-22-long-recording-incident.md) | 2026-10-22 | 技术方案、研究或实现说明；状态以原文为准 |
-| [WiseLife AI Prompt 目录](ai-prompts.md) | 2026-10-31 | 标题、总结、主题拆分／合并、建议、每日回顾与 Ask AI；源码原文及调用路径 |
+| [EurekaLife AI Prompt 目录](ai-prompts.md) | 更新 2026-11-16 | 标题、总结、主题拆分、每日回顾与 Ask AI；补齐[闪念生活事实契约](ai-prompts.md#flash-ledger-extraction-20261113)与合成 JSON 示例 |
 | [Ask AI 会话、上下文与工具编排](ask-ai-session-orchestration.md) | 2026-11-01 | 已批准；首期运行时、只读工具、同轮重试、五类附属表与实现边界；验证分项记录 |
-| [WiseLife iPhone 与 Apple Watch 数据生命周期及本地结构](local-data-schema.md) | 2026-10-30 | 数据生命周期、SQLite 表、文件与迁移；字段以代码为准 |
-| [WiseLife 本地存储与检索](local-storage-and-retrieval.md) | 2026-11-01 | 存储、全文／向量检索、Speaker Ask 的主要阅读入口；数据库保护说明已按代码勘误 |
+| [WiseLife iPhone 与 Apple Watch 数据生命周期及本地结构](local-data-schema.md) | 更新 2026-11-16 | 数据生命周期、SQLite 表与迁移；补齐[生活账本三表 DDL、字段、定点精度与幂等](local-data-schema.md#life-ledger-schema-20261113) |
+| [WiseLife 本地存储与检索](local-storage-and-retrieval.md) | 更新 2026-11-16 | 存储与检索主入口；[闪念分类流程、候选阈值、确认、共享查询和统计](local-storage-and-retrieval.md#life-ledgers-20261113) |
 | [WiseLife 原型与原生 App 功能核对](prototype-completion-audit.md) | 2026-10-19 | 技术方案、研究或实现说明；状态以原文为准 |
 | [WiseLife 长录音：分片保存、分段处理与内容时间轴](superpowers/specs/2026-10-22-long-recording-design.md) | 2026-10-22 | 技术方案、研究或实现说明；状态以原文为准 |
 | [WiseLife：切片录音、上传、处理与内容分段全流程](superpowers/specs/2026-10-22-streaming-recording-design.md) | 2026-10-22 | 技术方案、研究或实现说明；状态以原文为准 |
@@ -121,6 +125,14 @@ App 对外统一为 EurekaLife，历史文档保留当时名称。构建 16 已�
 按**文件名、文档标题、文首日期以及明确日期的更新章节**倒序组织设计、实施、修复和验证材料。这里是文档所记载工作的入口，不是 Git 提交日志，也不是 App 版本发布日期。
 
 同一文档有明确的多日更新时会在多天出现；示例录音日期、测试数据日期及文件修改时间不作为变更日期。未标注日期的文档集中列于末尾。
+
+### 2026-11-16
+
+- **闪念新分类技术文档补全** · 将分类识别、已有分类匹配、用户确认、三表 SQLite 结构、迁移／去重、统计和隐私边界补入现有说明，同步当前 Prompt 与两级首页索引。[流程](local-storage-and-retrieval.md#life-ledgers-20261113) · [数据结构](local-data-schema.md#life-ledger-schema-20261113) · [模型契约](ai-prompts.md#flash-ledger-extraction-20261113)。仅文档维护，历史代码与验证见[实施记录](superpowers/plans/2026-11-13-life-ledgers-native.md)。本次在 macOS 未提交工作区核验：五份文档的 `git diff --check` 通过，35 处新增／修改的本地链接可达、锚点唯一、代码块闭合；内存 SQLite 对比三张表的字段／约束／索引与源码迁移一致，两个 JSON 示例可解析，当前闪念 Prompt 与 Swift 源码一致。未运行原生构建或真机验收。
+
+### 2026-11-13
+
+- **闪念分类与共享记事本原生实现** · 最多八类、生活记录与候选确认、可选历史收录、SQLite 精确统计及只读 Ask AI 查询已接入；保留旧收支和灵感，设置分出地点·人物。[实施与分项验证](superpowers/plans/2026-11-13-life-ledgers-native.md)。原型阶段与原生验收分别记录。
 
 ### 2026-11-09
 
@@ -530,6 +542,7 @@ App 对外统一为 EurekaLife，历史文档保留当时名称。构建 16 已�
 | 说话人与我的声音 | [说话人关联](../prototype/people-reminders-design.md) · [分离方案](../../../docs/superpowers/specs/2026-10-19-local-speaker-diarization-design.md) | [Speaker Ask](../verification/speaker-ask-2026-10-31.md) · [声音登记](../verification/my-voice-native.md) |
 | 每日回顾、标题与摘要 | [AI Prompt 目录](ai-prompts.md) · [每日回顾](../../../docs/superpowers/specs/2026-10-22-daily-recaps-design.md) · [摘要预算](superpowers/specs/2026-10-24-adaptive-content-summary-budget-design.md) | [一次自动生成](../verification/2026-10-23-daily-recap-once.md) · [证据权重](../verification/daily-recap-evidence-authority.md) · [标题时长](../verification/ai-recording-titles-duration.md) |
 | 地点、HealthKit 与生活片段 | [地点与设备](../prototype/places-design.md) · [生活片段](../prototype/life-moments-design.md) · [健康更新](2026-10-20-health-background.md) | [GPS 真机记录](../verification/2026-10-23-recording-location-content-device.md) · [运动记录](../verification/health-workouts-2026-10-25.md) |
+| 生活账本与闪念分类 | [首页产品规则](../prototype/flash-assets-design.md#flash-home-categories-20261113) · [识别与统计](local-storage-and-retrieval.md#life-ledgers-20261113) · [SQLite](local-data-schema.md#life-ledger-schema-20261113) · [Prompt](ai-prompts.md#flash-ledger-extraction-20261113) | [原生实施与验收](superpowers/plans/2026-11-13-life-ledgers-native.md) |
 | 闪念、联系人与行动 | [闪念资产](../prototype/flash-assets-design.md) · [联系人与提醒](../prototype/people-reminders-design.md) | [联系人与提醒实现](../verification/people-reminders-native.md) · [行动 Tab](../verification/actions-native.md) |
 | 设置、模型与隐私 | [设置层级](superpowers/plans/2026-10-31-settings-navigation.md) · [隐私政策](../prototype/privacy/index.html) | [设置验证](../verification/settings-hierarchy-2026-10-31.md) · [模型独立配置](../verification/ai-provider-configurations-2026-10-25.md) · [发送确认](../verification/remote-ai-confirmation.md) |
 | 快捷录音、Siri 与锁屏 | [Siri 查询](../../../docs/superpowers/specs/2026-10-29-wiselife-siri-local-query-design.md) · [Watch 表盘](../../../docs/superpowers/specs/2026-10-22-watch-recording-complication-design.md) | [快捷录音](../verification/quick-recording.md) · [锁屏录音](../verification/lock-screen-recording.md) · [表盘验收边界](../verification/watch-recording-complication.md) |

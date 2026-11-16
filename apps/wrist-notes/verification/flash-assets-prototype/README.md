@@ -416,3 +416,92 @@ xcodebuild -workspace WristNotes.xcworkspace -scheme WristNotes -configuration D
 ### 验收边界
 
 CUA 分别按 bundle ID 和官方 Xcode 路径获取 Simulator 均返回 `Invalid app`，当前文件环境也无 Simulator.app；本轮无法进行原生点击／视觉／软键盘验收。浏览器原型检查、SwiftUI 编译及进程启动不能代替原生交互通过。未安装真机、未验证真实模型与片段音频回听、未修改版本号或上传 TestFlight；未提交或推送。
+
+<a id="life-ledger-prototype-20261112"></a>
+## 2026-11-12 · 生活账本与新类型建议原型
+
+范围：中文 HTML 产品评审版本。沿用既有视觉与记事本共用代码；未修改 Swift、SQLite、全局 skill，未安装或发布。
+
+入口：主原型 `iphone-day.html?preview=ledger`；专项 `notebook.html#money`；独立人物／地点 `?preview=people`／`?preview=places`。产品约定见[生活账本原型](../../prototype/flash-assets-design.md#life-ledger-prototype-20261112)。
+
+验证环境：macOS 上独立、无用户 Profile 的本地 Chrome，由 Playwright 启动；只访问本机虚构数据页面。浏览器控制连接不可用，改用独立浏览器测试。静态服务绑定 `127.0.0.1:8789`；首次默认 Python 服务出现并发请求 `ERR_CONNECTION_RESET`，扩大监听队列后重新运行全部流程，最终无失败资源请求／JavaScript 错误。深色样式等待颜色过渡完成后核验。
+
+已通过的交互：
+
+- 两个记事本栏目；人物／地点从主原型设置独立进入，原人物详情／编辑与地点列表保留。
+- 饮水的 3 条证据查看、以后再说、不再建议、管理中恢复；同一页面来回切换状态保持。
+- 新增饮水账本改名为每日补水，选择 L；历史收录初始全部不选，手动勾选两条。当天 300 ml 显示 0.3 L，本周两条合计 0.55 L。
+- 快捷新增 300 ml 后当天 0.6 L；编辑该条为 0.5 L 后 0.8 L；取消删除保持，确认删除恢复 0.3 L；周统计图由两个发生日生成。
+- 新闪念饮水自动进入已启用、已改名的账本，不再次出现建议；未勾选的旧饮水仍留待归类，可单独归入且不复制记录。
+- 明确要求持续记录阅读，立即展示新增预览；创建后手动保存 25 分钟，明细和统计更新。
+- 新建测量型体重账本，保存 65.8 kg；空状态中新建次数型账本可正确退出空状态。
+- 灵感合并入口保留；原收支复用现有数据与原编辑流程。主原型显示收支 4,356 CNY，专项为 4,429 CNY，这是两者既有虚构资料集不同，不混算或伪称同一个真实数据库。
+- 1440×1050、390×844、320×844；页面／内容区无横向溢出，窄屏新增表单和历史勾选可滚动，浅色／深色截图已目视核对，深色选中项背景及文字可读。
+- `node --check` 检查 `notebook-ledger.js`、`notebook.js`、`daybook.js`；相关变更 `git diff --check` 通过。
+
+本机证据目录 `/tmp/eurekalife-ledger-browser/`：`verify.cjs`、`verify.log`、`overview.png`、`create.png`、`stats.png`、`main-desktop.png`、`main-390.png`、`main-320.png`、`form-320.png`、`main-dark-320.png`。截图和临时浏览器依赖未加入 Git。
+
+边界：数据及建议决定仅在当前页面内存中保持，刷新重置；录入是明确标注的预设文字规则，不调用真实 ASR／LLM，不读取麦克风、通讯录或位置。7 天冷却展示的是产品约定，未声称跨真实日期／跨启动持久化已实现。新界面中文优先评审，尚未完成全量中英日文案验收。
+
+
+<a id="flash-home-categories-20261113"></a>
+## 2026-11-13 · 首页闪念分类设计验证
+
+范围：HTML 首页评审，不修改 Swift／SQLite，不安装、不发布。未提交的工作区版本；既有其他修改保留。产品规则见[首页分类设计](../../prototype/flash-assets-design.md#flash-home-categories-20261113)。
+
+环境：本机 `127.0.0.1:8789` 静态服务，独立无用户 Profile 的 Chrome，Playwright 驱动。临时脚本 `/tmp/eurekalife-ledger-browser/verify-flash-home.cjs`；运行 `node /tmp/eurekalife-ledger-browser/verify-flash-home.cjs` 通过，无 JavaScript 错误或失败资源请求。
+
+已验证：
+
+- 一级闪念显示二级分类；其他一级筛选隐藏。选择／再次点击／清除筛选正确，7 个初始分类及默认记账／其他保留。
+- 混合来源筛选记账只展示三个记账结果，不混入行动；我的记录仍完整展示原整理结果。
+- 建议暂缓后切换筛选不重复出现；新增前显示 3 条依据，历史勾选默认关闭。未勾选新增后旧记录留在其他；勾选新增后今天 2 条、昨天 1 条，类别总数 8，无第九项。
+- 日期切换、无记录日期、空分类提示可用。上方概览／回顾与导航保留。
+- 桌面 1440×1050、手机 390／320×844，二级分类两行且无横向溢出；深色模式与新增后八类状态已截图目视检查。
+- 新模块、主控制器和闪念结果控制器通过 `node --check`；本轮涉及文件通过 `git diff --check`。
+
+截图保留本机临时目录（不入 Git）：`flash-home-desktop.png`、`flash-home-overview.png`、`flash-home-390.png`、`flash-home-320.png`、`flash-home-preview-390.png`、`flash-home-preview-320.png`、`flash-home-eight.png`、`flash-home-dark-320.png`。
+
+边界：中文设计评审、合成数据及内存状态；刷新重置；未验证原生／真实模型／持久化。首页分类与账本目录尚未共享一套状态，分类管理、满额替换规则、长期建议状态和多语言留待后续讨论。
+
+
+### 同日调整：二级标签的视觉层级
+
+按评审反馈，将原 42px 图标卡片收为 24px 文字标签；一级高度仍为 28px。二级字体不超过一级，去除图标／边框，宽度随文字收缩，选中用浅底色。沿用两行最多 8 类。
+
+本地 Chrome 在 1440／390／320px 下实测：一级闪念 52×28px、字号 10px；二级约 44–50×24px、字号 10px。无横向溢出，筛选记账仍显示 3 项；无脚本或资源错误。浅色 390px 与深色 320px 截图已目视核验，临时证据 `flash-home-compact-*.png` 位于同一 `/tmp/eurekalife-ledger-browser/` 目录。本轮仅调整原型样式。
+
+
+### 同日调整：标签自然换行
+
+二级标签改为按内容宽度排列，先填满当前行，剩余空间不足时换行，不固定每行四个；24px 高度与 8 类上限保留。浏览器实测桌面手机框初始 7 个同排一行，390px 为 6+1，320px 为 5+2；新增至 8 类分别为 7+1、6+2、5+3。各尺寸无溢出或浏览器错误，390px 截图已目视检查。临时截图 `flash-home-wrap-*.png` 位于上述证据目录。
+
+
+<a id="places-people-20261113"></a>
+## 2026-11-13 · 地点·人物统一入口
+
+范围：设置与共用资料原型控制器，未修改原生／数据库，未安装、发布或提交。当前导航规则见[设置设计](../../prototype/settings-design.md#places-people-20261113)，替代本文件 11 月 12 日验证的独立入口及隐藏人物／地点标签的旧行为。
+
+本地静态服务与独立 Chrome / Playwright 验证通过：设置无记事本入口，人物／地点只有一个入口；默认地点、地点／人物两个标签；地点详情；人物详情、修改公司保存、返回人物列表；左右键切换及焦点；返回设置；390／320 窄屏无横向溢出。专项 `notebook.html#places` 也显示两类，旧账本预览仍保留灵感／账本两个栏目，无脚本或资源加载错误。
+
+已目视检查设置、390px 地点和 320px 人物页面；深色 320px 截图已生成。临时截图在 `/tmp/eurekalife-ledger-browser/places-people-*.png`，不入 Git。`node --check` 与相关变更 `git diff --check` 通过；中文原型评审不代表原生或全量多语言验收。
+
+
+<a id="notebook-shared-20261113"></a>
+## 2026-11-13 · 恢复记事本并共享首页数据
+
+用户要求恢复设置中的记事本，用于历史明细与统计，并与首页共用数据。此验收替代本文件上文“设置无记事本”及“首页分类与账本目录尚未共享”的旧状态；地点·人物合并方案继续保留。
+
+实现：生活分类／记录／建议共享内存集合，首页从同一集合生成展示结果；灵感和金额保留原闪念读写接口，主原型移除独立账本的另一套示例数据。添加全部历史周期，动态计算当前周／月；手动文字条目无虚构录音时长。原始来源保留，删除只隐藏对应的整理结果。无 Swift／SQLite 改动、未安装发布。
+
+初次联调发现日期常量被种子函数提前访问（`Cannot access 'notebookToday' before initialization`），将其移到工厂初始化前部后修复。随后本机独立 Chrome / Playwright 脚本 `/tmp/eurekalife-ledger-browser/verify-shared-notebook.cjs` 全流程通过，命令 `node /tmp/eurekalife-ledger-browser/verify-shared-notebook.cjs`，无脚本或失败请求。结果：
+
+- 首页新增饮水并收录历史，记事本当天 550 ml、全部 850 ml／3 条／2 天；无重复建议。
+- 记事本把 300 ml 改成 500 ml 并改备注，全部 1,050 ml，首页同步；删除后首页少一条、当天剩 250 ml；快捷新增 300 ml 后当天 550 ml、首页显示新增文字条目。
+- 从记事本新增建议改名“每日补水”、选择 L、只勾选一条历史，首页同步名称、归属与 0.3 L；总分类 8，继续新增被阻止。记事本暂缓建议后首页也收起。
+- 原支出 38 改为 50，月支出从 73 变为 85，首页同一账目也显示 50；手动新增 12 后首页可见同一条目。
+- 新建灵感出现在首页，首页打开后删除，再返回首页条目消失。
+- 补充验证独立 `notebook.html` 的账本创建正常；地点·人物标签与人物列表保留；网球历史合计 105 分钟（19 日 45 分钟、15 日 60 分钟）。
+- 桌面 1440×1050、390／320×844 无横向溢出；历史统计、390px 记事本与深色 320px 已目视检查；静态 JavaScript 与变更空白检查通过。
+
+本机临时截图（不入 Git）：`shared-history-stats.png`、`shared-notebook-390.png`、`shared-notebook-320.png`、`shared-notebook-dark-320.png`、`shared-settings-390.png`、`shared-tennis-history-390.png`，位于上述临时目录。中文示例仅在当前主原型页面共用状态，刷新重置；独立评审页面不跨页面同步。真实持久化、模型与原生设备仍不在本次验收范围。

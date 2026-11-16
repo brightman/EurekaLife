@@ -1,10 +1,13 @@
 # EurekaLife 文档入口
 
-类型：导航 · 状态：current · 更新：2026-11-09 · 适用：EurekaLife iPhone／Watch、Mac Companion。
+> 发布范围（2026-11-16）：本次提交仅包含账本相关文档，描述已核对的本地工作区实现；配套原生源码和可运行原型尚未随本次提交推送。
+
+类型：导航 · 状态：current · 更新：2026-11-16 · 适用：EurekaLife iPhone／Watch、Mac Companion。
 
 - [仓库首页与构建](../README.md)
 - [初始代码导入与验证](repository-import.md)
 - [iPhone 文档索引](../apps/wrist-notes/docs/INDEX.md)
+- 闪念分类与生活账本：[识别流程](../apps/wrist-notes/docs/local-storage-and-retrieval.md#life-ledgers-20261113) · [SQLite 结构](../apps/wrist-notes/docs/local-data-schema.md#life-ledger-schema-20261113) · [Prompt 契约](../apps/wrist-notes/docs/ai-prompts.md#flash-ledger-extraction-20261113)
 - [iPhone / Watch 使用与开发](../apps/wrist-notes/README.md)
 - [Mac Companion 开发、测试与协议](../apps/wiselife-mac/README.md)
 - [Ring 编译与录音兼容](../apps/wrist-notes/docs/2026-10-20-ring-build-switch.md)
@@ -12,6 +15,11 @@
 - [EurekaLife 官网与产品演示](../apps/wiselife-website/docs/INDEX.md)
 - [文档维护规则](documentation-rules.md)
 - [Apache-2.0 许可](../LICENSE) · [NOTICE](../NOTICE) · [第三方许可索引](../THIRD_PARTY_NOTICES.md) · [品牌规则](../TRADEMARKS.md)
+
+## 2026-11-16
+
+补齐闪念新分类与共享生活账本的现行技术说明：[识别及确认流程](../apps/wrist-notes/docs/local-storage-and-retrieval.md#life-ledgers-20261113)、[三张 SQLite 表及迁移](../apps/wrist-notes/docs/local-data-schema.md#life-ledger-schema-20261113)、[模型输入输出契约](../apps/wrist-notes/docs/ai-prompts.md#flash-ledger-extraction-20261113)。说明去重、候选阈值、历史收录、统计日期／精度与 Ask AI 隐私边界，两级索引增加直接阅读入口。本次仅维护文档；实现及历史验收仍见[11 月 13 日记录](../apps/wrist-notes/docs/superpowers/plans/2026-11-13-life-ledgers-native.md)，不新增模型效果或真机通过声明。
+
 
 ## 2026-11-09
 

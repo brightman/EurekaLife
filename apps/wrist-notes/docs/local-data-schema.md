@@ -1,6 +1,6 @@
 # WiseLife iPhone 与 Apple Watch 数据生命周期及本地结构
 
-更新：2026-11-04。本文先按数据生命周期划分 iPhone/Watch 数据，再列当前代码中的文件和 SQLite 表，供技术评审。数据库版本、文件布局和模型字段以代码为准；未来保留策略、Mac 同步和知识库能力会明确标为“计划”，不代表已实现。主要实现：`Sources/iPhone/DaybookDatabase.swift`、各 Repository/Store、`Sources/Watch/WatchRecorder.swift`、`WatchRecordingSessionStore.swift` 与 `Shared/RecordingChunkProtocol.swift`。
+更新：2026-11-16。本文先按数据生命周期划分 iPhone/Watch 数据，再列当前代码中的文件和 SQLite 表，供技术评审。数据库版本、文件布局和模型字段以代码为准；未来保留策略、Mac 同步和知识库能力会明确标为“计划”，不代表已实现。主要实现：`Sources/iPhone/DaybookDatabase.swift`、各 Repository/Store、`Sources/Watch/WatchRecorder.swift`、`WatchRecordingSessionStore.swift` 与 `Shared/RecordingChunkProtocol.swift`。
 
 Mac 每日记录同步的主要设计见 [iPhone → Mac 资料与音频同步](iphone-mac-sync.md)。2026-11-04 用户明确首期需要 Mac 回听：计划增加独立片段音频导出与传输，原始长录音仍不整份同步；整体方案待评审，尚未实现。
 
@@ -409,3 +409,109 @@ Watch 生成的传输描述不直接包含文件路径；iPhone 仅按已校验�
 `run_provenance` 单独保存实际送入模型的历史、摘要、初始证据和工具结果所继承的数据领域、来源类型、外发限制、版本依赖与历史轮次指纹；不受最多 5 个展示引用的数量限制。字段以兼容迁移添加，旧记录缺少完整继承信息时按仅本机处理。引用查询描述保留原查询范围，重开时与当前授权相交，不把原远端统计扩大为本机全部数据。
 
 账目 SUM/COUNT 不依赖 FTS／向量。Reader 和 ConversationStore 的初始化顺序均有覆盖。原问答不被摘要替换；具体失效、权限与验证规则见[会话编排](ask-ai-session-orchestration.md#memory-notebook-agent-20261108)。
+
+<a id="life-ledger-schema-20261113"></a>
+
+## 生活账本与闪念分类（2026-11-13）
+
+> 发布范围（2026-11-16）：本次提交仅包含账本相关文档，描述已核对的本地工作区实现；配套原生源码和可运行原型尚未随本次提交推送。
+
+说明更新：2026-11-16；实现基线：2026-11-13。与旧 `flash_assets` 共用 `Library/Application Support/WristNotes/Database/daybook.sqlite3`。增量迁移，不重建旧录音、灵感、财务或行动表。流程与产品规则统一维护在[识别与归类技术说明](local-storage-and-retrieval.md#life-ledgers-20261113)。
+
+### 表和字段
+
+以下是合并 `life-ledgers-v1`、`life-ledgers-indexed-v2`、`life-ledgers-local-v3` 后的结构说明，不替代 `LifeLedgerRepository`（本地源码：`../Sources/iPhone/LifeLedgerRepository.swift`） 中的迁移顺序。业务类型和定点转换见 `LifeLedger.swift`（本地源码：`../Sources/iPhone/LifeLedger.swift`）：
+
+```sql
+CREATE TABLE ledger_categories (
+    id TEXT PRIMARY KEY,
+    payload BLOB NOT NULL
+);
+
+CREATE TABLE ledger_records (
+    id TEXT PRIMARY KEY,
+    source_id TEXT,
+    dedup TEXT UNIQUE,
+    category_id TEXT NOT NULL,
+    occurred_on TEXT,
+    captured_at REAL NOT NULL,
+    revision INTEGER NOT NULL,
+    payload BLOB NOT NULL,
+    revoked INTEGER NOT NULL DEFAULT 0,
+    mode TEXT NOT NULL DEFAULT 'increment',
+    confidence REAL NOT NULL DEFAULT 1,
+    is_request INTEGER NOT NULL DEFAULT 0,
+    quantity INTEGER,
+    requires_local INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE ledger_decisions (
+    concept TEXT PRIMARY KEY,
+    dismissed INTEGER NOT NULL,
+    until_date REAL NOT NULL,
+    evidence BLOB NOT NULL
+);
+
+CREATE INDEX ledger_records_scope
+ON ledger_records(category_id, occurred_on, captured_at);
+
+CREATE INDEX ledger_records_stats
+ON ledger_records(category_id, revoked, is_request,
+                  confidence, occurred_on, mode);
+```
+
+| 字段／结构 | 含义 |
+| --- | --- |
+| categories.id | 稳定分类 ID；内置 `money` 和 `other`，自定义分类使用 UUID 字符串 |
+| categories.payload | UTF-8 JSON：概念键、名称、度量、单位、统计操作、版本、启用状态、仅本机标记 |
+| records.id / source_id | 独立事项 UUID 与可选原录音来源 UUID；手动条目可以没有来源 |
+| records.dedup | JSON 字符串数组 `[source UUID, conceptKey, 空白归一化原话]`；有来源时唯一，手动无来源可为 NULL |
+| records.category_id | 分类 ID，未归类保存为 `other` |
+| records.occurred_on | 已知实际发生日期，`yyyy-MM-dd`，未知为 NULL |
+| records.captured_at | 采集时间；REAL 使用 Foundation reference date（2001-01-01 UTC）后的秒数，不是 Unix 秒数 |
+| records.revision / revoked | 编辑乐观锁与撤销墓碑，避免旧页面覆盖和重试复活 |
+| records.mode | `increment` 单次增量、`periodTotal` 周期总量、`measurement` 测量值 |
+| records.quantity | 分类单位下六位小数定点整数，未知／不可转换时为 NULL |
+| records.confidence / is_request | 模型置信度及追踪请求标记，供候选与统计规则使用 |
+| records.requires_local | 外发限制的查询列，继承原来源及既有隐私标记 |
+| records.payload | 完整业务 JSON：正文、原话来源、原始十进制数值字符串／单位、时间、分类、状态及修订 |
+| decisions.concept | 规范概念键；决定独立于具体原录音存活 |
+| decisions.dismissed / until_date | 持久关闭自动建议标记／暂缓截止时间；时间同样为 Foundation reference date 秒数 |
+| decisions.evidence | UTF-8 JSON 记录 UUID 数组，保存作决定时同概念的全部记录 ID，供比较新证据 |
+
+数据库采用“完整业务 JSON＋筛选／统计所需独立列”。写入事务同步维护 payload 与查询列，不从 UI 文本反向解析汇总。`ledger_records_scope` 服务分类／日期范围查询，`ledger_records_stats` 服务统计过滤；没有为通用生活记录新增 FTS 或向量表。
+
+当前 DDL 没有声明 SQL 外键；分类存在性、概念／度量／单位兼容与创建数量上限由 Repository 事务校验。`source_id` 是来源追溯字段，不设置音频删除级联。`conceptKey` 唯一性在分类创建事务中检查；不能把 payload 内的键误当成独立 UNIQUE 列。
+
+`LifeLedgerRecord.payload` 包含 `id/categoryID/conceptKey/conceptName/measure/text/source/capturedAt/occurredOn/value/unit/mode/confidence/isTrackingRequest/requiresLocalAI/revoked/revision`。`source` 为可选 `ActionSource`，保留原话、录制时间／时区和设备等来源；手动记录可为空。模型响应中的 `date` 映射到 `occurredOn`，`factScope` 经本地核对转为请求标记、置信度及可用日期／数值，不原样存成 SQL 列。
+
+分类 payload 的简化示例：
+
+```json
+{
+  "id": "D88D5532-0A23-4B0D-BE35-D720943B22BC",
+  "conceptKey": "water",
+  "name": "饮水",
+  "measure": "volume",
+  "unit": "ml",
+  "aggregation": "sum",
+  "version": 1,
+  "enabled": true,
+  "requiresLocalAI": false
+}
+```
+
+分类支持 `sum/average/count/latest` 四种统计操作；度量枚举包含 `count/duration/distance/mass/volume/score/money/text/other`，其中 `money` 用于兼容内置目录，财务写入仍走旧收支模型。名称与概念键上限各 80 字符；`version` 当前为 1、`enabled` 为 true，尚无分类编辑版本升级界面。
+
+记录中的 `value: "300", unit: "ml"` 保留已校验的数值表达，逐字原话在 `source.quote` 中。当分类单位为 ml，索引数量为 `300000000`；分类单位为 L，则规范数量为 `300000`，表示 0.3 L。原始十进制输入最多六位小数，缩放整数限制在 ±10^18（即数值 ±10^12）；换算检查 Int64 乘法溢出及整除性，不能精确转换则 `quantity` 为 NULL。不会先转 Double，也不四舍五入补值；财务继续使用独立的币种最小单位规则。
+
+### 迁移、事务与生命周期
+
+- 三个命名迁移通过 `DaybookDatabase.migrate`／`storage_migrations` 增量执行。v1 创建三张表及记账／其他默认分类；v2 添加统计投影列和索引并从 payload 回填；v3 添加仅本机查询列并回填。重复初始化不重置分类或记录，不另覆盖主库 `PRAGMA user_version`。
+- 闪念结果与批次状态原子提交。分类创建、八项上限校验与选中历史收录原子提交，收录只改变归属，不复制原记录。
+- `save` 比较旧 revision，更新后加 1，并在同事务同步索引列；撤销保留身份。`importRecords` 先检查 ID 再检查 dedup，命中后返回既有结果（包括人工编辑或撤销）。来源删除不级联删除结果；手动无来源记录只能按 ID 去重。
+- 候选建议由记录和决定表计算，不另维护一份候选事实表。
+- 分类与记录写入同时受 Ask AI ledger 领域变更追踪，旧引用和派生记忆随业务版本失效。
+- 仅本机证据影响分类定义时，即使不收录历史记录，类别仍保存 `requiresLocalAI`；查询统计的引用限制覆盖数值、记录数及缺失覆盖等所有返回字段。
+
+候选与统计的置信度、日期及聚合口径见[识别和统计规则](local-storage-and-retrieval.md#life-ledgers-20261113)，模型输入输出见[Prompt 契约](ai-prompts.md#flash-ledger-extraction-20261113)。迁移、精度、幂等、隐私与模拟器验收见[原生实施记录](superpowers/plans/2026-11-13-life-ledgers-native.md)。
